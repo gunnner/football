@@ -1,0 +1,31 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    command: ./bin/rails server -b 0.0.0.0
+    environment:
+      RAILS_ENV: development
+      DATABASE_URL: postgresql://${DB_USERNAME}:${DB_PASSWORD}@postgres:5432/${DB_NAME}_development
+      REDIS_URL: redis://redis:6379/0
+      ELASTICSEARCH_URL: http://elasticsearch:9200
+    volumes:
+      - .:/rails
+      - bundle_cache:/usr/local/bundle
+    ports:
+      - "3000:3000"
+      - "3036:3036"
+
+  sidekiq:
+    volumes:
+    - .:/rails
+    - bundle_cache:/usr/local/bundle
+    environment:
+      RAILS_ENV: development
+      DATABASE_URL: postgresql://${DB_USERNAME}:${DB_PASSWORD}@postgres:5432/${DB_NAME}_development
+
+  elasticsearch:
+    environment:
+      - ES_JAVA_OPTS=-Xms256m -Xmx256m
+volumes:
+  bundle_cache:

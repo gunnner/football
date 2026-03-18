@@ -21,7 +21,7 @@ gem "redis", "~> 5.0"
 gem "sentry-ruby"
 gem "sentry-rails"
 gem "sentry-sidekiq"
-gem "sidekiq", "~> 7.0"
+gem "sidekiq", "~> 8.1"
 gem "sidekiq-cron"
 gem "stimulus-rails"
 gem "turbo-rails"
@@ -52,3 +52,4 @@ group :test do
   gem "webmock"
   gem "vcr"
 end
+
