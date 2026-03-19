@@ -8,14 +8,15 @@ default: &default
 
 development:
   <<: *default
-  database: fotmob_clone_development
+  database: football_development
 
 test:
   <<: *default
-  database: fotmob_clone_test
+  url: <%= ENV.fetch("TEST_DATABASE_URL", nil) %>
+  database: football_test
 
 production:
   <<: *default
-  database: fotmob_clone_production
+  database: football_production
   pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 10 } %>
   
