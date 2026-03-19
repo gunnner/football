@@ -3,7 +3,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.dev
-    command: ./bin/rails server -b 0.0.0.0
+    command: sh -c "rm -f tmp/pids/server.pid && ./bin/rails server -b 0.0.0.0"
     environment:
       RAILS_ENV: development
       DATABASE_URL: postgresql://${DB_USERNAME}:${DB_PASSWORD}@postgres:5432/${DB_NAME}_development
@@ -12,14 +12,30 @@ services:
     volumes:
       - .:/rails
       - bundle_cache:/usr/local/bundle
+      - node_modules:/rails/node_modules
     ports:
       - "3000:3000"
+
+  vite:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    command: bundle exec vite dev
+    environment:
+      RAILS_ENV: development
+      VITE_RUBY_HOST: 0.0.0.0
+    volumes:
+      - .:/rails
+      - bundle_cache:/usr/local/bundle
+      - node_modules:/rails/node_modules
+    ports:
       - "3036:3036"
 
   sidekiq:
     volumes:
-    - .:/rails
-    - bundle_cache:/usr/local/bundle
+      - .:/rails
+      - bundle_cache:/usr/local/bundle
+      - node_modules:/rails/node_modules
     environment:
       RAILS_ENV: development
       DATABASE_URL: postgresql://${DB_USERNAME}:${DB_PASSWORD}@postgres:5432/${DB_NAME}_development
@@ -27,5 +43,8 @@ services:
   elasticsearch:
     environment:
       - ES_JAVA_OPTS=-Xms256m -Xmx256m
+
 volumes:
   bundle_cache:
+  node_modules:
+  
