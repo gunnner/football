@@ -1,24 +1,82 @@
-# README
+# Football App
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+A FotMob-inspired football application built with Ruby on Rails.
 
-Things you may want to cover:
+## Tech Stack
 
-* Ruby version
+- Ruby 4.0.2 / Rails 8.1
+- PostgreSQL, Redis, Sidekiq
+- Elasticsearch
+- Hotwire (Turbo + Stimulus) + React
+- Docker
 
-* System dependencies
+## Requirements
 
-* Configuration
+- Docker + Docker Compose
+- Ruby 4.0.2 (via RVM)
 
-* Database creation
+## Getting Started
 
-* Database initialization
+### 1. Clone the repository
+```bash
+git clone git@github.com:your-username/football.git
+cd football
+```
 
-* How to run the test suite
+### 2. Set up environment variables
+```bash
+cp .env.example .env
+# Edit .env — fill in DB_USERNAME, DB_PASSWORD, API_FOOTBALL_KEY
+```
 
-* Services (job queues, cache servers, search engines, etc.)
+### 3. Start Docker
+```bash
+docker compose up
+```
 
-* Deployment instructions
+### 4. Create and migrate the database
+```bash
+docker compose exec app bundle exec rails db:create db:migrate
+```
 
-* ...
+### 5. Open in browser
+```
+http://localhost:3000
+```
+
+## Useful Commands
+```bash
+# Rails console
+docker compose exec app bundle exec rails console
+
+# Run tests
+docker compose exec app bundle exec rspec
+
+# Tail logs
+docker compose logs -f app
+docker compose logs -f sidekiq
+
+# Stop all services
+docker compose down
+```
+
+## CI/CD
+
+- Push to `main` → runs CI (RSpec, Rubocop, Brakeman) + builds Docker image
+- Push tag `v*` → deploys to production
+
+## Project Structure
+```
+app/
+  controllers/    # Rails controllers
+  models/         # ActiveRecord models
+  views/          # Hotwire/ERB templates
+  javascript/     # React components + Stimulus
+  services/       # Service layer
+    api_football/ # API client and importers
+config/
+  sidekiq.yml     # Queue configuration
+  initializers/   # Sentry, Lograge
+docker/
+  nginx/          # Nginx configuration
+```
