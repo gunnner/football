@@ -33,6 +33,7 @@ group :development, :test do
   gem "brakeman", require: false
   gem "bundler-audit", "~> 0.9.3"
   gem "debug", platforms: %i[mri windows], require: "debug/prelude"
+  gem "database_cleaner-active_record", "~> 2.2"
   gem "dotenv-rails"
   gem "factory_bot_rails"
   gem "faker"
