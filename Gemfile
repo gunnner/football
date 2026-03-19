@@ -36,13 +36,13 @@ group :development, :test do
   gem "dotenv-rails"
   gem "factory_bot_rails"
   gem "faker"
+  gem "prosopite"
   gem "pry-rails"
   gem "rubocop-rails-omakase", require: false
   gem "rspec-rails"
 end
 
 group :development do
-  gem "prosopite"
   gem "web-console"
 end
 
