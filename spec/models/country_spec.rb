@@ -1,6 +1,6 @@
 RSpec.describe Country, type: :model do
   describe 'associations' do
-    pending 'has many leagues' do
+    it 'has many leagues' do
       is_expected.to have_many(:leagues).dependent(:destroy)
     end
   end
