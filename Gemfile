@@ -31,6 +31,7 @@ gem "vite_rails"
 
 group :development, :test do
   gem "brakeman", require: false
+  gem "bundler-audit", "~> 0.9.3"
   gem "debug", platforms: %i[mri windows], require: "debug/prelude"
   gem "dotenv-rails"
   gem "factory_bot_rails"
@@ -52,4 +53,3 @@ group :test do
   gem "webmock"
   gem "vcr"
 end
-
