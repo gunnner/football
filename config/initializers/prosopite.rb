@@ -1,4 +1,4 @@
-require "prosopite"
+require 'prosopite'
 
 Rails.application.configure do
   if Rails.env.development?
