@@ -8,6 +8,7 @@ gem "elasticsearch-model"
 gem "elasticsearch-rails"
 gem "flipper"
 gem "flipper-redis"
+gem "httparty", "~> 0.24.2"
 gem "jsonapi-serializer"
 gem "kredis"
 gem "lograge"
@@ -33,13 +34,13 @@ gem "vite_rails"
 group :development, :test do
   gem "brakeman", require: false
   gem "bundler-audit", "~> 0.9.3"
+  gem "byebug", "~> 13.0"
   gem "debug", platforms: %i[mri windows], require: "debug/prelude"
   gem "database_cleaner-active_record", "~> 2.2"
   gem "dotenv-rails"
   gem "factory_bot_rails"
   gem "faker"
   gem "prosopite"
-  gem "pry-rails"
   gem "rubocop-rails-omakase", require: false
   gem "rspec-rails"
 end

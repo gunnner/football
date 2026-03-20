@@ -18,4 +18,5 @@ production:
   <<: *default
   database: <%= "#{ENV['DB_NAME']}_production" %>
   pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 10 } %>
+
   
