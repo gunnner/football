@@ -2,11 +2,11 @@ RSpec.describe League, type: :model do
   describe 'associations' do
     it { is_expected.to belong_to(:country) }
 
-    pending 'have many matches' do
+    it 'have many matches' do
       is_expected.to have_many(:matches).dependent(:destroy)
     end
 
-    pending 'have many standings' do
+    it 'have many standings' do
       is_expected.to have_many(:standings).dependent(:destroy)
     end
   end
@@ -24,7 +24,7 @@ RSpec.describe League, type: :model do
       let!(:ukraine) { create(:country, code: 'UA', name: 'Ukraine') }
       let!(:france)  { create(:country, code: 'FR', name: 'France') }
       let!(:upl)     { create(:league, country: ukraine, name: 'UPL') }
-      let!(:ligue_1)  { create(:league, country: france, name: 'Ligue 1') }
+      let!(:ligue_1) { create(:league, country: france, name: 'Ligue 1') }
 
       it 'returns leagues for given country code' do
         expect(League.by_country('UA')).to     include(upl)

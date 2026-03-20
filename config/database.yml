@@ -8,15 +8,15 @@ default: &default
 
 development:
   <<: *default
-  database: football_development
+  database: <%= "#{ENV['DB_NAME']}_development" %>
 
 test:
   <<: *default
-  url: <%= ENV.fetch("TEST_DATABASE_URL", nil) %>
-  database: football_test
+  database: <%= "#{ENV['DB_NAME']}_test" %>
 
 production:
   <<: *default
-  database: football_production
+  database: <%= "#{ENV['DB_NAME']}_production" %>
   pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 10 } %>
+
   
