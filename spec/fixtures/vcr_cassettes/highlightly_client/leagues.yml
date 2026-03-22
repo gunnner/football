@@ -1,0 +1,88 @@
+---
+http_interactions:
+- request:
+    method: get
+    uri: https://soccer.highlightly.net/leagues?limit=5
+    body:
+      encoding: US-ASCII
+      string: ''
+    headers:
+      X-Rapidapi-Key:
+      - "<API_KEY>"
+      Content-Type:
+      - application/json
+      User-Agent:
+      - Faraday v2.14.1
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Date:
+      - Sun, 22 Mar 2026 10:31:29 GMT
+      Content-Type:
+      - application/json; charset=utf-8
+      Transfer-Encoding:
+      - chunked
+      Connection:
+      - keep-alive
+      Server:
+      - cloudflare
+      Content-Security-Policy:
+      - 'default-src ''self'';base-uri ''self'';font-src ''self'' https: data:;form-action
+        ''self'';frame-ancestors ''self'';img-src ''self'' data:;object-src ''none'';script-src
+        ''self'';script-src-attr ''none'';style-src ''self'' https: ''unsafe-inline'';upgrade-insecure-requests'
+      Cross-Origin-Opener-Policy:
+      - same-origin
+      Cross-Origin-Resource-Policy:
+      - same-origin
+      Origin-Agent-Cluster:
+      - "?1"
+      Referrer-Policy:
+      - no-referrer
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubDomains
+      X-Content-Type-Options:
+      - nosniff
+      X-Dns-Prefetch-Control:
+      - 'off'
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Permitted-Cross-Domain-Policies:
+      - none
+      X-Xss-Protection:
+      - '0'
+      Vary:
+      - Origin
+      X-Ratelimit-Requests-Limit:
+      - '100'
+      X-Ratelimit-Requests-Remaining:
+      - '57'
+      Etag:
+      - W/"604-uMZQ1tnZLWGrGfNWZFkZUBIXEmg"
+      Nel:
+      - '{"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}'
+      Cf-Cache-Status:
+      - DYNAMIC
+      Report-To:
+      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=JggJoNqia68D55TufNDoYzh4TUK%2BbMOyR8k9%2BCMfkEYAeWnxmcBomOg15Fy2YPk%2FKr7GwaurvhpKZDZ%2FabcxULtQUm4DFpFrsWgncYWvW8Q%2FyxWM"}]}'
+      Cf-Ray:
+      - 9e0486eb6ba50260-WAW
+      Alt-Svc:
+      - h3=":443"; ma=86400
+    body:
+      encoding: ASCII-8BIT
+      string: '{"data":[{"id":1635,"logo":null,"name":"World Cup","seasons":[{"season":2026},{"season":2022}],"country":{"code":"World","name":"World","logo":"https://highlightly.net/soccer/images/countries/World.png"}},{"id":2486,"logo":"https://highlightly.net/soccer/images/leagues/2486.png","name":"UEFA
+        Champions League","seasons":[{"season":2021},{"season":2025},{"season":2024},{"season":2023},{"season":2019},{"season":2020},{"season":2022}],"country":{"code":"World","name":"World","logo":"https://highlightly.net/soccer/images/countries/World.png"}},{"id":3337,"logo":"https://highlightly.net/soccer/images/leagues/3337.png","name":"UEFA
+        Europa League","seasons":[{"season":2023},{"season":2025},{"season":2019},{"season":2020},{"season":2024},{"season":2021},{"season":2022}],"country":{"code":"World","name":"World","logo":"https://highlightly.net/soccer/images/countries/World.png"}},{"id":4188,"logo":"https://highlightly.net/soccer/images/leagues/4188.png","name":"Euro
+        Championship","seasons":[{"season":2024},{"season":2020}],"country":{"code":"World","name":"World","logo":"https://highlightly.net/soccer/images/countries/World.png"}},{"id":5039,"logo":"https://highlightly.net/soccer/images/leagues/5039.png","name":"UEFA
+        Nations League","seasons":[{"season":2022},{"season":2024},{"season":2020}],"country":{"code":"World","name":"World","logo":"https://highlightly.net/soccer/images/countries/World.png"}}],"plan":{"tier":"BASIC","message":"All
+        data available with current plan."},"pagination":{"totalCount":883,"offset":0,"limit":5}}'
+  recorded_at: Sun, 22 Mar 2026 10:31:29 GMT
+recorded_with: VCR 6.4.0

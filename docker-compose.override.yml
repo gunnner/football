@@ -40,6 +40,9 @@ services:
     environment:
       RAILS_ENV: development
       DB_NAME: ${DB_NAME}
+      DB_HOST: postgres
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
 
   elasticsearch:
     environment:
