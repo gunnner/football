@@ -98,6 +98,7 @@ jobs:
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/football_test
       REDIS_URL: redis://localhost:6379/0
       ELASTICSEARCH_URL: http://localhost:9200
+      API_FOOTBALL_KEY: test_key
 
     steps:
       - name: Checkout code

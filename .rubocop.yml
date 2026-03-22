@@ -7,5 +7,4 @@ Style/StringLiterals:
   EnforcedStyle: single_quotes
 
 Style/StringLiteralsInInterpolation:
-  Enabled: true
-  EnforcedStyle: double_quotes
+  EnforcedStyle: single_quotes
