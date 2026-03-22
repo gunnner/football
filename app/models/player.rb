@@ -1,4 +1,6 @@
 class Player < ApplicationRecord
+  after_commit :invalidate_cache
+
   has_one  :player_profile,       dependent: :destroy
   has_many :player_statistics,    dependent: :destroy
   has_many :player_transfers,     dependent: :destroy
@@ -15,4 +17,13 @@ class Player < ApplicationRecord
   scope :search_by_name, ->(query) {
     where('name ILIKE ?', "%#{query}%")
   }
+
+  private
+
+  def invalidate_cache
+    CacheService::Store.invalidate(CacheService::Keys.player(id))
+    CacheService::Store.invalidate(CacheService::Keys.player_profile(id))
+    CacheService::Store.invalidate(CacheService::Keys.player_statistics(id))
+    CacheService::Store.invalidate(CacheService::Keys.player_transfers(id))
+  end
 end

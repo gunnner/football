@@ -1,9 +1,6 @@
 module Interactors
   module CacheWarmup
     class Leagues < Interactors::Base
-      LEAGUE_KEY_PREFIX = 'league:'.freeze
-      TTL_1_HOUR        = 3600
-
       def call
         warm_leagues
       end
@@ -12,8 +9,11 @@ module Interactors
 
       def warm_leagues
         League.includes(:country).find_each do |league|
-          key = "#{LEAGUE_KEY_PREFIX}#{league.id}"
-          RedisService.set(key, league.to_json, ex: TTL_1_HOUR)
+          CacheService::Store.write(
+            CacheService::Keys.league(league.id),
+            league.as_json(include: :country),
+            ttl: CacheService::Ttl::HOUR_1
+          )
         end
 
         log "Warmed #{League.count} leagues"

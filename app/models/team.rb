@@ -1,4 +1,6 @@
 class Team < ApplicationRecord
+  after_commit :invalidate_cache
+
   has_many :home_matches,
             class_name:  'Match',
             foreign_key: :home_team_id,
@@ -17,5 +19,13 @@ class Team < ApplicationRecord
 
   def matches
     Match.where(home_team: self).or(Match.where(away_team: self))
+  end
+
+  private
+
+  def invalidate_cache
+    CacheService::Store.invalidate(CacheService::Keys.team(id))
+    CacheService::Store.invalidate(CacheService::Keys.team_statistics(id, nil))
+    CacheService::Store.invalidate_pattern("team:#{id}:*")
   end
 end
