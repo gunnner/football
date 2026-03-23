@@ -56,4 +56,18 @@ RSpec.describe Player, type: :model do
       end
     end
   end
+
+  describe '#as_indexed_json' do
+    let(:player) { create(:player, name: 'Ronaldo', full_name: 'Cristiano Ronaldo') }
+
+    it 'returns correct structure' do
+      json = player.as_indexed_json
+      expect(json).to include(
+        name:        'Ronaldo',
+        full_name:   'Cristiano Ronaldo',
+        name_exact:  'Ronaldo',
+        external_id: player.external_id
+      )
+    end
+  end
 end

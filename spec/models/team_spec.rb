@@ -45,4 +45,18 @@ RSpec.describe Team, type: :model do
       expect(team.matches).not_to include(unrelated)
     end
   end
+
+  describe '#as_indexed_json' do
+    let(:team) { create(:team, name: 'Manchester United', logo: 'https://example.com/logo.png') }
+
+    it 'returns correct structure' do
+      json = team.as_indexed_json
+      expect(json).to include(
+        name:        'Manchester United',
+        name_exact:  'Manchester United',
+        external_id: team.external_id,
+        logo:        'https://example.com/logo.png'
+      )
+    end
+  end
 end

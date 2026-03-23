@@ -39,5 +39,21 @@ RSpec.describe League, type: :model do
         expect(league.name).to eq('Premier League')
       end
     end
+
+    describe '#as_indexed_json' do
+      let!(:country) { create(:country, name: 'England', code: 'GB-ENG') }
+      let(:league)   { create(:league, name: 'Premier League', country: country) }
+
+      it 'returns correct structure' do
+        json = league.as_indexed_json
+        expect(json).to include(
+          name:         'Premier League',
+          name_exact:   'Premier League',
+          external_id:  league.external_id,
+          country_name: 'England',
+          country_code: 'GB-ENG'
+        )
+      end
+    end
   end
 end
