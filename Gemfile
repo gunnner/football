@@ -3,12 +3,17 @@ source 'https://rubygems.org'
 ruby '4.0.2'
 
 gem 'bootsnap', require: false
+gem 'connection_pool', '~> 3.0'
 gem 'devise'
 gem 'elasticsearch-model'
 gem 'elasticsearch-rails'
+gem 'faraday', '~> 2.14'
+gem 'faraday-retry', '~> 2.4'
 gem 'flipper'
 gem 'flipper-redis'
 gem 'jsonapi-serializer'
+gem 'interactor', '~> 3.2'
+gem 'interactor-contracts', '~> 0.3.0'
 gem 'kredis'
 gem 'lograge'
 gem 'pagy'
@@ -39,7 +44,6 @@ group :development, :test do
   gem 'factory_bot_rails'
   gem 'faker'
   gem 'prosopite'
-  gem 'pry-rails'
   gem 'rubocop-rails-omakase', require: false
   gem 'rspec-rails'
 end

@@ -1,0 +1,84 @@
+---
+http_interactions:
+- request:
+    method: get
+    uri: https://soccer.highlightly.net/matches?date=2024-03-20&limit=5
+    body:
+      encoding: US-ASCII
+      string: ''
+    headers:
+      X-Rapidapi-Key:
+      - "<API_KEY>"
+      Content-Type:
+      - application/json
+      User-Agent:
+      - Faraday v2.14.1
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Date:
+      - Sun, 22 Mar 2026 10:31:30 GMT
+      Content-Type:
+      - application/json; charset=utf-8
+      Transfer-Encoding:
+      - chunked
+      Connection:
+      - keep-alive
+      Server:
+      - cloudflare
+      Content-Security-Policy:
+      - 'default-src ''self'';base-uri ''self'';font-src ''self'' https: data:;form-action
+        ''self'';frame-ancestors ''self'';img-src ''self'' data:;object-src ''none'';script-src
+        ''self'';script-src-attr ''none'';style-src ''self'' https: ''unsafe-inline'';upgrade-insecure-requests'
+      Cross-Origin-Opener-Policy:
+      - same-origin
+      Cross-Origin-Resource-Policy:
+      - same-origin
+      Origin-Agent-Cluster:
+      - "?1"
+      Referrer-Policy:
+      - no-referrer
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubDomains
+      X-Content-Type-Options:
+      - nosniff
+      X-Dns-Prefetch-Control:
+      - 'off'
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Permitted-Cross-Domain-Policies:
+      - none
+      X-Xss-Protection:
+      - '0'
+      Vary:
+      - Origin
+      X-Ratelimit-Requests-Limit:
+      - '100'
+      X-Ratelimit-Requests-Remaining:
+      - '56'
+      Etag:
+      - W/"b24-acsl42gKJviI0DhraiXZg8v32vI"
+      Nel:
+      - '{"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}'
+      Cf-Cache-Status:
+      - DYNAMIC
+      Report-To:
+      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=RZoe4os4YNiI7V5tqWOemYAZLvbo7xae80tQgebNJTJBt9YyPTFTEXGCi%2F9eDBcDvmbNfKLEvrCGbmg6kKRR0dH7RRpm9SYOGi4ccvdsYVJeCxgh"}]}'
+      Cf-Ray:
+      - 9e0486ed4ed43563-WAW
+      Alt-Svc:
+      - h3=":443"; ma=86400
+    body:
+      encoding: ASCII-8BIT
+      string: !binary |-
+        eyJkYXRhIjpbeyJpZCI6MTAxMTgxMTcwMSwicm91bmQiOiIxc3QgR3JvdXAgU3RhZ2UgLSA0IiwiZGF0ZSI6IjIwMjQtMDMtMjBUMjM6MzA6MDAuMDAwWiIsImNvdW50cnkiOnsiY29kZSI6IldvcmxkIiwibmFtZSI6IldvcmxkIiwibG9nbyI6Imh0dHBzOi8vaGlnaGxpZ2h0bHkubmV0L3NvY2Nlci9pbWFnZXMvY291bnRyaWVzL1dvcmxkLnBuZyJ9LCJzdGF0ZSI6eyJjbG9jayI6OTAsInNjb3JlIjp7ImN1cnJlbnQiOiIyIC0gMCIsInBlbmFsdGllcyI6bnVsbH0sImRlc2NyaXB0aW9uIjoiRmluaXNoZWQifSwiYXdheVRlYW0iOnsiaWQiOjE5ODk2MzEzLCJsb2dvIjpudWxsLCJuYW1lIjoiUGVydSBVMTcgV29tZW4ifSwiaG9tZVRlYW0iOnsiaWQiOjE5ODk0NjExLCJsb2dvIjpudWxsLCJuYW1lIjoiQ29sb21iaWEgVTE3IFdvbWVuIn0sImxlYWd1ZSI6eyJpZCI6OTIwNzE1LCJsb2dvIjpudWxsLCJuYW1lIjoiQ09OTUVCT0wgU3ViLTE3IEZlbWVuaW5vIiwic2Vhc29uIjoyMDI0fX0seyJpZCI6MTAwNTkyOTU4OSwicm91bmQiOiIxc3QgUm91bmQiLCJkYXRlIjoiMjAyNC0wMy0yMFQyMzozMDowMC4wMDBaIiwiY291bnRyeSI6eyJjb2RlIjoiVVMiLCJuYW1lIjoiVVNBIiwibG9nbyI6Imh0dHBzOi8vaGlnaGxpZ2h0bHkubmV0L3NvY2Nlci9pbWFnZXMvY291bnRyaWVzL1VTLnN2ZyJ9LCJzdGF0ZSI6eyJjbG9jayI6OTAsInNjb3JlIjp7ImN1cnJlbnQiOiIxIC0gMCIsInBlbmFsdGllcyI6bnVsbH0sImRlc2NyaXB0aW9uIjoiRmluaXNoZWQifSwiYXdheVRlYW0iOnsiaWQiOjE5NzYxODU1LCJsb2dvIjpudWxsLCJuYW1lIjoiR2VvcmdpYSBMaW9ucyJ9LCJob21lVGVhbSI6eyJpZCI6MTk3NTc2MDAsImxvZ28iOm51bGwsIm5hbWUiOiJBcG90aGVvcyJ9LCJsZWFndWUiOnsiaWQiOjIxOTQ5MSwibG9nbyI6Imh0dHBzOi8vaGlnaGxpZ2h0bHkubmV0L3NvY2Nlci9pbWFnZXMvbGVhZ3Vlcy8yMTk0OTEucG5nIiwibmFtZSI6IlVTIE9wZW4gQ3VwIiwic2Vhc29uIjoyMDI0fX0seyJpZCI6MTAwOTQwMzM3MSwicm91bmQiOiJTZW1pLWZpbmFscyIsImRhdGUiOiIyMDI0LTAzLTIwVDIzOjMwOjAwLjAwMFoiLCJjb3VudHJ5Ijp7ImNvZGUiOiJCUiIsIm5hbWUiOiJCcmF6aWwiLCJsb2dvIjoiaHR0cHM6Ly9oaWdobGlnaHRseS5uZXQvc29jY2VyL2ltYWdlcy9jb3VudHJpZXMvQlIuc3ZnIn0sInN0YXRlIjp7ImNsb2NrIjo5MCwic2NvcmUiOnsiY3VycmVudCI6IjIgLSAwIiwicGVuYWx0aWVzIjpudWxsfSwiZGVzY3JpcHRpb24iOiJGaW5pc2hlZCJ9LCJhd2F5VGVhbSI6eyJpZCI6MTI0MTc5LCJsb2dvIjoiaHR0cHM6Ly9oaWdobGlnaHRseS5uZXQvc29jY2VyL2ltYWdlcy90ZWFtcy8xMjQxNzkucG5nIiwibmFtZSI6IkF2YcOtIn0sImhvbWVUZWFtIjp7ImlkIjoxMDMxMzQ1LCJsb2dvIjoiaHR0cHM6Ly9oaWdobGlnaHRseS5uZXQvc29jY2VyL2ltYWdlcy90ZWFtcy8xMDMxMzQ1LnBuZyIsIm5hbWUiOiJCcnVzcXVlIn0sImxlYWd1ZSI6eyJpZCI6NTE0Nzg4LCJsb2dvIjoiaHR0cHM6Ly9oaWdobGlnaHRseS5uZXQvc29jY2VyL2ltYWdlcy9sZWFndWVzLzUxNDc4OC5wbmciLCJuYW1lIjoiQ2F0YXJpbmVuc2UgLSAxIiwic2Vhc29uIjoyMDI0fX0seyJpZCI6MTAwMzY0MDM5OSwicm91bmQiOiIxc3QgUGhhc2UgLSAyIiwiZGF0ZSI6IjIwMjQtMDMtMjBUMjM6MzA6MDAuMDAwWiIsImNvdW50cnkiOnsiY29kZSI6IkJSIiwibmFtZSI6IkJyYXppbCIsImxvZ28iOiJodHRwczovL2hpZ2hsaWdodGx5Lm5ldC9zb2NjZXIvaW1hZ2VzL2NvdW50cmllcy9CUi5zdmcifSwic3RhdGUiOnsiY2xvY2siOjkwLCJzY29yZSI6eyJjdXJyZW50IjoiMSAtIDEiLCJwZW5hbHRpZXMiOm51bGx9LCJkZXNjcmlwdGlvbiI6IkZpbmlzaGVkIn0sImF3YXlUZWFtIjp7ImlkIjoxOTcwNzM5MSwibG9nbyI6bnVsbCwibmFtZSI6IkZsdW1pbmVuc2UgV29tZW4ifSwiaG9tZVRlYW0iOnsiaWQiOjMyNTY3MTAsImxvZ28iOm51bGwsIm5hbWUiOiJJbnRlcm5hY2lvbmFsIFdvbWVuIn0sImxlYWd1ZSI6eyJpZCI6NjM3NTgsImxvZ28iOiJodHRwczovL2hpZ2hsaWdodGx5Lm5ldC9zb2NjZXIvaW1hZ2VzL2xlYWd1ZXMvNjM3NTgucG5nIiwibmFtZSI6IkJyYXNpbGVpcm8gV29tZW4iLCJzZWFzb24iOjIwMjR9fSx7ImlkIjo5OTk3NjE1NDEsInJvdW5kIjoiMXN0IFBoYXNlIC0gMiIsImRhdGUiOiIyMDI0LTAzLTIwVDIzOjMwOjAwLjAwMFoiLCJjb3VudHJ5Ijp7ImNvZGUiOiJCUiIsIm5hbWUiOiJCcmF6aWwiLCJsb2dvIjoiaHR0cHM6Ly9oaWdobGlnaHRseS5uZXQvc29jY2VyL2ltYWdlcy9jb3VudHJpZXMvQlIuc3ZnIn0sInN0YXRlIjp7ImNsb2NrIjo5MCwic2NvcmUiOnsiY3VycmVudCI6IjIgLSAwIiwicGVuYWx0aWVzIjpudWxsfSwiZGVzY3JpcHRpb24iOiJGaW5pc2hlZCJ9LCJhd2F5VGVhbSI6eyJpZCI6MTEwMTg2ODEsImxvZ28iOiJodHRwczovL2hpZ2hsaWdodGx5Lm5ldC9zb2NjZXIvaW1hZ2VzL3RlYW1zLzExMDE4NjgxLnBuZyIsIm5hbWUiOiJVbmnDo28gQ2Fjb2FsZW5zZSJ9LCJob21lVGVhbSI6eyJpZCI6MTEwMTc4MzAsImxvZ28iOm51bGwsIm5hbWUiOiJQb3J0byBWZWxobyJ9LCJsZWFndWUiOnsiaWQiOjUyNDE0OSwibG9nbyI6Imh0dHBzOi8vaGlnaGxpZ2h0bHkubmV0L3NvY2Nlci9pbWFnZXMvbGVhZ3Vlcy81MjQxNDkucG5nIiwibmFtZSI6IlJvbmRvbmllbnNlIiwic2Vhc29uIjoyMDI0fX1dLCJwbGFuIjp7InRpZXIiOiJCQVNJQyIsIm1lc3NhZ2UiOiJBbGwgZGF0YSBhdmFpbGFibGUgd2l0aCBjdXJyZW50IHBsYW4uIn0sInBhZ2luYXRpb24iOnsidG90YWxDb3VudCI6MTU5LCJvZmZzZXQiOjAsImxpbWl0Ijo1fX0=
+  recorded_at: Sun, 22 Mar 2026 10:31:30 GMT
+recorded_with: VCR 6.4.0

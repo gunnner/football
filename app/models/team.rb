@@ -1,4 +1,8 @@
 class Team < ApplicationRecord
+  include Searchable
+
+  after_commit :invalidate_cache
+
   has_many :home_matches,
             class_name:  'Match',
             foreign_key: :home_team_id,
@@ -15,7 +19,32 @@ class Team < ApplicationRecord
 
   normalizes :name, with: -> { it.strip }
 
+  settings index: { number_of_shards: 1 } do
+    mapping dynamic: false do
+      indexes :name,        type: :text,   analyzer: :english
+      indexes :name_exact,  type: :keyword
+      indexes :external_id, type: :integer
+    end
+  end
+
+  def as_indexed_json(_ = {})
+    {
+      name:        name,
+      name_exact:  name,
+      external_id: external_id,
+      logo:        logo
+    }
+  end
+
   def matches
     Match.where(home_team: self).or(Match.where(away_team: self))
+  end
+
+  private
+
+  def invalidate_cache
+    CacheService::Store.invalidate(CacheService::Keys.team(id))
+    CacheService::Store.invalidate(CacheService::Keys.team_statistics(id, nil))
+    CacheService::Store.invalidate_pattern("team:#{id}:*")
   end
 end
