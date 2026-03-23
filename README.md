@@ -44,9 +44,20 @@ docker compose up
 docker compose exec app bundle exec rails db:create db:migrate
 ```
 
-### 5. Open in browser
+### 5. Create Elasticsearch indexes and index data
+```bash
+docker compose exec app bundle exec rails elasticsearch:reindex
+```
+
+### 6. Seed initial data from API
+```bash
+docker compose exec app bundle exec rails db:seed
+```
+
+### 7. Open in browser
 ```
 http://localhost:3000
+Sidekiq UI: http://localhost:3000/admin/sidekiq
 ```
 
 ## Running Tests
@@ -54,11 +65,52 @@ http://localhost:3000
 # Run all tests
 docker compose exec -e RAILS_ENV=test app bundle exec rspec
 
-# Run specific model tests
+# Run by category
 docker compose exec -e RAILS_ENV=test app bundle exec rspec spec/models/
+docker compose exec -e RAILS_ENV=test app bundle exec rspec spec/services/
+docker compose exec -e RAILS_ENV=test app bundle exec rspec spec/workers/
 
 # Run specific file
 docker compose exec -e RAILS_ENV=test app bundle exec rspec spec/models/match_spec.rb
+```
+
+## Data Synchronization
+
+Data is synced automatically via Sidekiq Cron:
+
+| Worker | Schedule | Description |
+|---|---|---|
+| `SyncStaticDataWorker` | Daily at 3:00 | Countries and leagues |
+| `SyncMatchesWorker` | Daily at 6:00 | Today's matches |
+| `SyncLiveMatchesWorker` | Every minute | Live match scores and events |
+| `SyncHighlightsWorker` | Every 6 hours | Match highlights |
+| `CacheWarmupWorker` | Every 5 minutes | Redis cache warmup |
+
+Run manually:
+```bash
+docker compose exec app bundle exec rails runner "SyncStaticDataWorker.new.perform"
+docker compose exec app bundle exec rails runner "SyncMatchesWorker.new.perform"
+docker compose exec app bundle exec rails runner "SyncHighlightsWorker.new.perform"
+```
+
+## Search
+
+Reindex elasticsearch
+```bash
+docker compose exec app bundle exec rails elasticsearch:reindex  
+```
+
+Full-text search powered by Elasticsearch across Teams, Players and Leagues:
+```ruby
+# In Rails console
+SearchService.new('manchester').call
+SearchService.new('premier league').call
+SearchService.new('ronaldo').call
+```
+
+Reindex all data:
+```bash
+docker compose exec app bundle exec rails elasticsearch:reindex
 ```
 
 ## Useful Commands
@@ -79,6 +131,9 @@ docker compose down
 
 # Rebuild containers
 docker compose build --no-cache
+
+# Check API rate limit
+docker compose exec app bundle exec rails runner "puts RedisService.get('requested_attempts')"
 ```
 
 ## CI/CD
@@ -112,21 +167,34 @@ docker compose build --no-cache
 ## Project Structure
 ```
 app/
-  controllers/    # Rails controllers
-  models/         # ActiveRecord models (18 models)
-  views/          # Hotwire/ERB templates
-  javascript/     # React components + Stimulus
-    entrypoints/  # Vite entrypoints
-  services/       # Service layer
-    api_football/ # API client and importers
+  controllers/        # Rails controllers
+  models/             # ActiveRecord models (18 models)
+    concerns/         # Searchable, etc.
+  views/              # Hotwire/ERB templates
+  javascript/         # React components + Stimulus
+    entrypoints/      # Vite entrypoints
+  services/           # Service layer
+    highlightly/      # API client and importers
+      importers/      # Country, League, Match, Standing, Highlight
+    interactors/      # Business logic
+      match_data/     # Fetch, UpdateState, SyncEvents, etc.
+      cache_warmup/   # Leagues, TodayMatches
+    organizers/       # SyncMatchData
+    cache_service/    # Redis caching layer
+  workers/            # Sidekiq background jobs
 config/
-  sidekiq.yml     # Queue configuration
-  vite.json       # Vite configuration
-  initializers/   # Sentry, Lograge, Prosopite
+  sidekiq.yml         # Queue configuration
+  schedule.yml        # Cron schedule
+  vite.json           # Vite configuration
+  initializers/       # Sentry, Lograge, Elasticsearch
 docker/
-  nginx/          # Nginx configuration
+  nginx/              # Nginx configuration
+lib/
+  tasks/              # Rake tasks (elasticsearch)
 spec/
-  models/         # Model specs
-  factories/      # FactoryBot factories
-  support/        # RSpec helpers
+  models/             # Model specs
+  services/           # Service and interactor specs
+  workers/            # Worker specs
+  factories/          # FactoryBot factories
+  support/            # RSpec helpers, VCR
 ```

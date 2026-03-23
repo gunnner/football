@@ -1,4 +1,6 @@
 class Standing < ApplicationRecord
+  after_commit :invalidate_cache
+
   belongs_to :league
   belongs_to :team
 
@@ -9,4 +11,10 @@ class Standing < ApplicationRecord
 
   scope :ordered,    -> { order(position: :asc) }
   scope :for_season, ->(season) { where(season: season) }
+
+  private
+
+  def invalidate_cache
+    CacheService::Store.invalidate(CacheService::Keys.league_standings(league_id, season))
+  end
 end

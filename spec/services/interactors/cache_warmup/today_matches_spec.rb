@@ -8,7 +8,7 @@ RSpec.describe Interactors::CacheWarmup::TodayMatches do
   describe '#call' do
     it 'caches today matches in Redis' do
       described_class.call
-      expect(RedisService.get('matches:today')).to be_present
+      expect(RedisService.get(CacheService::Keys.today_matches)).to be_present
     end
 
     it 'succeeds' do
