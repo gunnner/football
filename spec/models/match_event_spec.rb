@@ -7,8 +7,8 @@ RSpec.describe MatchEvent, type: :model do
     subject { build(:match_event) }
 
     it { is_expected.to validate_presence_of(:time) }
-    it { is_expected.to validate_presence_of(:type) }
-    it { is_expected.to validate_inclusion_of(:type).in_array(MatchEvent::TYPES) }
+    it { is_expected.to validate_presence_of(:event_type) }
+    it { is_expected.to validate_inclusion_of(:event_type).in_array(MatchEvent::TYPES) }
   end
 
   describe 'constants' do

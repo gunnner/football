@@ -99,6 +99,7 @@ jobs:
       REDIS_URL: redis://localhost:6379/0
       ELASTICSEARCH_URL: http://localhost:9200
       API_FOOTBALL_KEY: test_key
+      ACTIVE_LEAGUE_IDS: ${{ secrets.ACTIVE_LEAGUE_IDS }}
 
     steps:
       - name: Checkout code

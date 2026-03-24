@@ -25,7 +25,7 @@ module Interactors
           {
             match_id:                     context.match.id,
             time:                         event['time'],
-            type:                         event['type'],
+            event_type:                   event['event_type'],
             team_external_id:             event['team']['id'],
             team_name:                    event['team']['name'],
             team_logo:                    event['team']['logo'],
@@ -47,7 +47,7 @@ module Interactors
       def upsert_events(event_records)
         MatchEvent.upsert_all(
           event_records,
-          unique_by: %i[match_id time type player_external_id],
+          unique_by: %i[match_id time event_type player_external_id],
         )
       end
     end
