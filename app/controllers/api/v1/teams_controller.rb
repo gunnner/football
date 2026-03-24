@@ -19,8 +19,8 @@ module Api
       end
 
       def matches
-        scope = team.matches.includes(:home_team, :away_team, :league)
-        scope = scope.public_send(params[:status]) if valid_status_scope?
+        scope   = team.matches.includes(:home_team, :away_team, :league)
+        scope   = apply_status_scope(scope) if valid_status_scope?
         matches = paginate(scope.order(date: :desc))
 
         render_success(MatchSerializer.new(matches).serializable_hash, meta: pagination_meta)
@@ -55,10 +55,6 @@ module Api
         return paginate(Team.where('name ILIKE ?', "%#{params[:name]}%")) if params[:name].present?
 
         paginate(Team.order(:name))
-      end
-
-      def valid_status_scope?
-        params[:status].present? && params[:status].in?(%w[live finished upcoming today])
       end
     end
   end

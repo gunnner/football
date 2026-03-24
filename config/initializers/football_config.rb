@@ -5,6 +5,6 @@ module FootballConfig
 
 
   def self.active_league_ids
-    ENV.fetch('ACTIVE_LEAGUE_IDS').split(',').map(&:to_i)
+    ENV.fetch('ACTIVE_LEAGUE_IDS', '').split(',').map(&:to_i)
   end
 end

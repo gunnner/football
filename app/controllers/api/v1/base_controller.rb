@@ -51,6 +51,19 @@ module Api
       def per_page
         [ params.fetch(:per_page, 20).to_i, 100 ].min
       end
+
+      def apply_status_scope(scope)
+        case params[:status].to_s
+        when 'live'     then scope.live
+        when 'finished' then scope.finished
+        when 'upcoming' then scope.upcoming
+        when 'today'    then scope.today
+        end
+      end
+
+      def valid_status_scope?
+        params[:status].present? && params[:status].to_s.in?(%w[live finished upcoming today])
+      end
     end
   end
 end

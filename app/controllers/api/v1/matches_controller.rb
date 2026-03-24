@@ -55,12 +55,8 @@ module Api
         scope = Match.includes(:home_team, :away_team, :league)
         scope = scope.where(league_id: params[:league_id])   if params[:league_id].present?
         scope = scope.where('date::date = ?', params[:date]) if params[:date].present?
-        scope = scope.public_send(params[:status])           if valid_status_scope?
+        scope = apply_status_scope(scope)                    if valid_status_scope?
         paginate(scope.order(date: :asc))
-      end
-
-      def valid_status_scope?
-        params[:status].present? && params[:status].in?(%w[live finished upcoming today])
       end
     end
   end
