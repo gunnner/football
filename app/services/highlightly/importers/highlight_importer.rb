@@ -1,10 +1,13 @@
 module Highlightly
   module Importers
     class HighlightImporter < BaseImporter
-      def call(date: Date.today, limit: 40)
+      def call(date: Date.today, limit: 40, league_id: nil)
         log "Starting highlights import for #{date}..."
 
-        data   = @client.highlights(date: date.to_s, limit: limit)
+        params = { date: date.to_s, limit: limit }
+        params[:leagueId] = league_id if league_id.present?
+
+        data   = @client.highlights(params)
         result = upsert_highlights(data)
 
         log "Done. Imported: #{result[:imported]}"

@@ -1,10 +1,13 @@
 module Highlightly
   module Importers
     class MatchImporter < BaseImporter
-      def call(date: Date.today, limit: 100)
+      def call(date: Date.today, limit: 100, league_id: nil)
         log "Starting matches import for #{date}..."
 
-        data = @client.matches(date: date.to_s, limit: limit)
+        params = { date: date.to_s, limit: limit }
+        params[:leagueId] = league_id if league_id.present?
+
+        data = @client.matches(params)
         return if data.blank?
 
         result = upsert_matches(data)

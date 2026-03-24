@@ -9,5 +9,57 @@ Rails.application.routes.draw do
     end
   end
 
+  namespace :api do
+    namespace :v1 do
+      resources :leagues, only: %w[index show] do
+        member do
+          get :standings
+          get :top_scorers
+        end
+      end
+
+      resources :matches, only: %w[index show] do
+        member do
+          get :lineups
+          get :events
+          get :statistics
+          get :highlights
+        end
+
+        collection do
+          get :live
+          get :h2h
+        end
+      end
+
+      resources :teams, only: %w[index show] do
+        member do
+          get :statistics
+          get :players
+          get :matches
+          get :transfers
+        end
+      end
+
+      resources :players, only: %w[index show] do
+        member do
+          get :statistics
+          get :transfers
+        end
+      end
+
+      get 'search', to: 'search#index'
+    end
+  end
+
+  resources :leagues, only: %w[index show]
+  resources :matches, only: %w[index show]
+  resources :players, only: %w[index show]
+  resources :teams,   only: %w[index show]
+
+  get 'search', to: 'search#index'
+
   get 'up' => 'rails/health#show', as: :rails_health_check
+
+  root 'matches#index'
 end

@@ -7,5 +7,5 @@ class MatchEvent < ApplicationRecord
   ]
 
   validates :time, presence: true
-  validates :type, presence: true, inclusion: { in: TYPES }
+  validates :event_type, presence: true, inclusion: { in: TYPES }
 end

@@ -9,6 +9,13 @@ class SyncStandingsWorker < BaseWorker
       season:             season
     )
 
+    league = League.find_by(external_id: league_external_id)
+
+    if league
+      CacheService::Store.invalidate(CacheService::Keys.league_standings(league.id, season))
+      log "Cache invalidated for league #{league.id}"
+    end
+
     log 'Standings sync completed'
   rescue Highlightly::RateLimitError => e
     log_error "Rate limit reached: #{e.message}"

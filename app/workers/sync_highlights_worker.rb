@@ -4,9 +4,9 @@ class SyncHighlightsWorker < BaseWorker
   def perform(date = Date.today.to_s)
     log "Syncing highlights for #{date}..."
 
-    Highlightly::Importers::HighlightImporter.new.(
-      date: Date.parse(date)
-    )
+    FootballConfig.active_league_ids.each do |league_id|
+      Highlightly::Importers::HighlightImporter.new.(date: Date.parse(date), league_id: league_id)
+    end
 
     log 'Highlights sync completed'
   rescue Highlightly::RateLimitError => e

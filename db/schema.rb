@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_22_055615) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_24_124635) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -120,6 +120,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_22_055615) do
     t.bigint "assisting_player_external_id"
     t.string "assisting_player_name"
     t.datetime "created_at", null: false
+    t.string "event_type", null: false
     t.bigint "match_id", null: false
     t.bigint "player_external_id"
     t.string "player_name"
@@ -128,12 +129,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_22_055615) do
     t.string "team_logo"
     t.string "team_name"
     t.string "time", null: false
-    t.string "type", null: false
     t.datetime "updated_at", null: false
-    t.index ["match_id", "time", "type", "player_external_id"], name: "index_match_events_unique", unique: true
+    t.index ["event_type"], name: "index_match_events_on_event_type"
+    t.index ["match_id", "time", "event_type", "player_external_id"], name: "index_match_events_unique", unique: true
     t.index ["match_id", "time"], name: "index_match_events_on_match_id_and_time"
     t.index ["match_id"], name: "index_match_events_on_match_id"
-    t.index ["type"], name: "index_match_events_on_type"
   end
 
   create_table "match_lineups", force: :cascade do |t|
