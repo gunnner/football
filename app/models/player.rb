@@ -3,12 +3,14 @@ class Player < ApplicationRecord
 
   after_commit :invalidate_cache
 
-  has_one  :player_profile,       dependent: :destroy
-  has_many :player_statistics,    dependent: :destroy
-  has_many :player_transfers,     dependent: :destroy
-  has_many :player_injuries,      dependent: :destroy
-  has_many :player_rumours,       dependent: :destroy
-  has_many :player_market_values, dependent: :destroy
+  has_one  :player_profile,              dependent: :destroy
+  has_many :player_statistics,           dependent: :destroy
+  has_many :player_transfers,            dependent: :destroy
+  has_many :player_injuries,             dependent: :destroy
+  has_many :player_rumours,              dependent: :destroy
+  has_many :player_market_values,        dependent: :destroy
+  has_many :favorites, as: :favoritable, dependent: :destroy
+
 
   validates :external_id, presence: true, uniqueness: true
   validates :name,        presence: true

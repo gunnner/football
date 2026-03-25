@@ -5,8 +5,10 @@ class League < ApplicationRecord
 
   belongs_to :country
 
-  has_many :matches, dependent: :destroy
-  has_many :standings, dependent: :destroy
+  has_many :matches,                     dependent: :destroy
+  has_many :standings,                   dependent: :destroy
+  has_many :favorites, as: :favoritable, dependent: :destroy
+
 
   validates :external_id, presence: true, uniqueness: true
   validates :name, presence: true

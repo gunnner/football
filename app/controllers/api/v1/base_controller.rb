@@ -2,8 +2,10 @@ module Api
   module V1
     class BaseController < ApplicationController
       protect_from_forgery with: :null_session
+      skip_before_action :authenticate_user!
 
       before_action :set_default_format
+      before_action :authenticate_api_user!
 
       rescue_from ActiveRecord::RecordNotFound,       with: :not_found
       rescue_from ActionController::ParameterMissing, with: :bad_request
@@ -14,13 +16,34 @@ module Api
         request.format = :json
       end
 
+      def authenticate_api_user!
+        token = extract_token
+        raise Highlightly::UnauthorizedError, 'Token missing' if token.blank?
+        raise Highlightly::UnauthorizedError, 'Token revoked' if TokenBlacklistService.blacklisted? token
+
+        payload = JwtService.decode(token)
+        @current_api_user = User.find(payload[:user_id])
+      rescue Highlightly::UnauthorizedError => e
+        render_error e.message, status: :unauthorized
+      rescue ActiveRecord::RecordNotFound
+        render_error 'User not found', status: :unauthorized
+      end
+
+      def current_api_user
+        @current_api_user
+      end
+
+      def extract_token
+        request.headers['Authorization']&.split(' ')&.last
+      end
+
       def render_success(data, status: :ok, meta: nil)
         response = data
         response[:meta] = meta if meta.present?
         render json: response, status: status
       end
 
-      def render_error(message, status: :unprocessable_entity)
+      def render_error(message, status: :unprocessable_content)
         render json: { error: message }, status: status
       end
 

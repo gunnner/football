@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_24_124635) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_24_203144) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -82,6 +82,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_24_124635) do
     t.datetime "updated_at", null: false
     t.index ["code"], name: "index_countries_on_code", unique: true
     t.index ["name"], name: "index_countries_on_name"
+  end
+
+  create_table "favorites", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "favoritable_id", null: false
+    t.string "favoritable_type", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["favoritable_type", "favoritable_id"], name: "index_favorites_on_favoritable"
+    t.index ["user_id", "favoritable_type", "favoritable_id"], name: "index_favorites_unique", unique: true
+    t.index ["user_id"], name: "index_favorites_on_user_id"
   end
 
   create_table "highlights", force: :cascade do |t|
@@ -374,7 +385,39 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_24_124635) do
     t.index ["name"], name: "index_teams_on_name"
   end
 
+  create_table "user_preferences", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.integer "default_league_id"
+    t.jsonb "notification_settings", default: {}, null: false
+    t.string "timezone", default: "UTC", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["notification_settings"], name: "index_user_preferences_on_notification_settings", using: :gin
+    t.index ["user_id"], name: "index_user_preferences_on_user_id"
+  end
+
+  create_table "users", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.datetime "current_sign_in_at"
+    t.string "current_sign_in_ip"
+    t.string "email", default: "", null: false
+    t.string "encrypted_password", default: "", null: false
+    t.string "first_name"
+    t.string "last_name"
+    t.datetime "last_sign_in_at"
+    t.string "last_sign_in_ip"
+    t.datetime "remember_created_at"
+    t.datetime "reset_password_sent_at"
+    t.string "reset_password_token"
+    t.integer "role", default: 0, null: false
+    t.integer "sign_in_count", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.index ["email"], name: "index_users_on_email", unique: true
+    t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
+  end
+
   add_foreign_key "box_scores", "matches"
+  add_foreign_key "favorites", "users"
   add_foreign_key "highlights", "matches"
   add_foreign_key "leagues", "countries"
   add_foreign_key "match_events", "matches"
@@ -392,4 +435,5 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_24_124635) do
   add_foreign_key "standings", "leagues"
   add_foreign_key "standings", "teams"
   add_foreign_key "team_statistics", "teams"
+  add_foreign_key "user_preferences", "users"
 end

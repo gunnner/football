@@ -1,0 +1,10 @@
+<h1>Today's Matches</h1>
+
+<% @matches.each do |match| %>
+  <div id="match_<%= match.id %>">
+    <%= match.home_team.name %> vs <%= match.away_team.name %>
+    <span><%= match.score_current || 'vs' %></span>
+    <span><%= match.status %></span>
+    <%= link_to 'Details', match_path(match) %>
+  </div>
+<% end %>

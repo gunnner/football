@@ -100,6 +100,8 @@ jobs:
       ELASTICSEARCH_URL: http://localhost:9200
       API_FOOTBALL_KEY: test_key
       ACTIVE_LEAGUE_IDS: ${{ secrets.ACTIVE_LEAGUE_IDS }}
+      SECRET_KEY_BASE: ${{ secrets.SECRET_KEY_BASE }}
+
 
     steps:
       - name: Checkout code

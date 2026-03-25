@@ -2,6 +2,7 @@ class Match < ApplicationRecord
   include MatchConstants
 
   after_commit :invalidate_cache
+  after_commit :broadcast_changes, on: :update
 
   belongs_to :league
   belongs_to :home_team, class_name: 'Team'
@@ -38,5 +39,23 @@ class Match < ApplicationRecord
     CacheService::Store.invalidate(CacheService::Keys.match_events(id))
     CacheService::Store.invalidate(CacheService::Keys.match_statistics(id))
     CacheService::Store.invalidate(CacheService::Keys.match_lineup(id))
+  end
+
+  def broadcast_changes
+    return unless saved_changes.key?(:status) || saved_changes.key?(:score_current)
+
+    MatchBroadcastService.broadcast_update(self)
+    broadcast_status_change if saved_changes.key?(:status)
+  end
+
+  def broadcast_status_change
+    old_status = saved_changes[:status]&.first
+    new_status = status
+
+    if new_status.in?(Match::LIVE_STATUSES) && !old_status.in?(Match::LIVE_STATUSES)
+      MatchBroadcastService.broadcast_match_start(self)
+    elsif new_status.in?(%w[Finished Finished\ after\ penalties Finished\ after\ extra\ time])
+      MatchBroadcastService.broadcast_match_end(self)
+    end
   end
 end

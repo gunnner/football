@@ -23,8 +23,8 @@ module Api
       def filter_by_type(results, type)
         case type.to_s
         when 'team'   then results.merge(players: [], leagues: [])
-        when 'player' then results.merge(teams: [], leagues: [])
-        when 'league' then results.merge(teams: [],   players: [])
+        when 'player' then results.merge(teams:   [], leagues: [])
+        when 'league' then results.merge(teams:   [], players: [])
         else records
         end
       end

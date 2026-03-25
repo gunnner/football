@@ -7,17 +7,17 @@ RSpec.describe 'Api::V1::Search', type: :request do
 
   describe 'GET /api/v1/search' do
     it 'returns search results' do
-      get '/api/v1/search', params: { q: 'premier' }
+      get '/api/v1/search', params: { q: 'premier' }, headers: auth_headers
       expect(response).to have_http_status(:ok)
     end
 
     it 'returns 400 without query' do
-      get '/api/v1/search'
+      get '/api/v1/search', headers: auth_headers
       expect(response).to have_http_status(:bad_request)
     end
 
     it 'filters by type' do
-      get '/api/v1/search', params: { q: 'premier', type: 'league' }
+      get '/api/v1/search', params: { q: 'premier', type: 'league' }, headers: auth_headers
       expect(response).to have_http_status(:ok)
     end
   end

@@ -1,0 +1,9 @@
+<h1><%= @league.name %></h1>
+
+<h2>Standings <%= @season %></h2>
+
+<% @standings.each do |standing| %>
+  <div>
+    <%= standing.position %>. <%= standing.team.name %> — <%= standing.points %> pts
+  </div>
+<% end %>

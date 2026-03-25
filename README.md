@@ -1,15 +1,16 @@
+# README.md
+
 # Football App
 
 A football application built with Ruby on Rails.
 
 ## Tech Stack
 
-- Ruby 4.0.2 / Rails 8.1
+- Ruby 4.0.2 / Rails 8.1.2
 - PostgreSQL, Redis, Sidekiq
 - Elasticsearch
 - Hotwire (Turbo + Stimulus) + React
-- Vite
-- Docker
+- Vite, Docker
 
 ## Data Source
 
@@ -61,56 +62,109 @@ http://localhost:3000
 Sidekiq UI: http://localhost:3000/admin/sidekiq
 ```
 
+## Authentication
+
+### Session-based (Hotwire)
+```
+POST /users/sign_in     # Sign in
+POST /users/sign_up     # Register
+DELETE /users/sign_out  # Sign out
+```
+
+### JWT (JSON API)
+```
+POST   /api/v1/auth/sign_in   # Returns JWT token
+POST   /api/v1/auth/sign_up   # Register + JWT token
+DELETE /api/v1/auth/sign_out  # Invalidate token
+GET    /api/v1/auth/me        # Current user info
+```
+
+All `/api/v1/*` endpoints require `Authorization: Bearer <token>` header.
+
 ## API Endpoints
 
 All endpoints are prefixed with `/api/v1`.
 
+### Auth
+```
+POST   /api/v1/auth/sign_in
+POST   /api/v1/auth/sign_up
+DELETE /api/v1/auth/sign_out
+GET    /api/v1/auth/me
+```
+
 ### Leagues
 ```
-GET /api/v1/leagues                          # list with pagination
-GET /api/v1/leagues/:id                      # league details
-GET /api/v1/leagues/:id/standings?season=    # league standings
-GET /api/v1/leagues/:id/top_scorers?season=  # top scorers
+GET /api/v1/leagues
+GET /api/v1/leagues/:id
+GET /api/v1/leagues/:id/standings?season=
+GET /api/v1/leagues/:id/top_scorers?season=
 ```
 
 ### Matches
 ```
-GET /api/v1/matches                          # list with filters (date, league_id, status)
-GET /api/v1/matches/live                     # live matches
-GET /api/v1/matches/h2h?team1_id=&team2_id=  # head to head
-GET /api/v1/matches/:id                      # match details
-GET /api/v1/matches/:id/events               # match events
-GET /api/v1/matches/:id/statistics           # match statistics
-GET /api/v1/matches/:id/lineups              # match lineups
-GET /api/v1/matches/:id/highlights           # match highlights
+GET /api/v1/matches
+GET /api/v1/matches/live
+GET /api/v1/matches/h2h?team1_id=&team2_id=
+GET /api/v1/matches/:id
+GET /api/v1/matches/:id/events
+GET /api/v1/matches/:id/statistics
+GET /api/v1/matches/:id/lineups
+GET /api/v1/matches/:id/highlights
 ```
 
 ### Teams
 ```
-GET /api/v1/teams                            # list with pagination
-GET /api/v1/teams/:id                        # team details
-GET /api/v1/teams/:id/statistics?season=     # team statistics
-GET /api/v1/teams/:id/matches?status=        # team matches
-GET /api/v1/teams/:id/players                # team players
-GET /api/v1/teams/:id/transfers              # team transfers
+GET /api/v1/teams
+GET /api/v1/teams/:id
+GET /api/v1/teams/:id/statistics?season=
+GET /api/v1/teams/:id/matches?status=
+GET /api/v1/teams/:id/players
+GET /api/v1/teams/:id/transfers
 ```
 
 ### Players
 ```
-GET /api/v1/players                          # list with pagination
-GET /api/v1/players/:id                      # player details
-GET /api/v1/players/:id/statistics           # player statistics
-GET /api/v1/players/:id/transfers            # player transfers
+GET /api/v1/players
+GET /api/v1/players/:id
+GET /api/v1/players/:id/statistics
+GET /api/v1/players/:id/transfers
+```
+
+### Favorites
+```
+GET    /api/v1/favorites
+GET    /api/v1/favorites/leagues
+GET    /api/v1/favorites/teams
+GET    /api/v1/favorites/players
+POST   /api/v1/favorites
+DELETE /api/v1/favorites/:id
+```
+
+### Preferences
+```
+GET   /api/v1/preference
+PATCH /api/v1/preference
 ```
 
 ### Search
 ```
-GET /api/v1/search?q=&type=                  # full-text search (type: team|player|league)
+GET /api/v1/search?q=&type=
 ```
 
-## Data Synchronization
+## Real-time Updates
 
-Data is synced automatically via Sidekiq Cron:
+Live match scores via ActionCable WebSocket.
+
+**Hotwire** — authentication throw Devise session (automatically):
+```javascript
+// consumer.js — Devise session sends automatically
+createConsumer('/cable')
+```
+
+Events: `match_update`, `goal`, `match_start`, `match_end`
+
+## Data Synchronization
 
 | Worker | Schedule | API Requests | Description |
 |---|---|---|---|
@@ -138,16 +192,9 @@ docker compose exec app bundle exec rails runner "puts RedisService.get('request
 
 ## Search
 
-Full-text search powered by Elasticsearch across Teams, Players and Leagues with fuzzy matching:
+Full-text search powered by Elasticsearch across Teams, Players and Leagues:
 ```bash
-# Reindex all data
 docker compose exec app bundle exec rails elasticsearch:reindex
-```
-```ruby
-# In Rails console
-SearchService.new('lyon').call
-SearchService.new('premier league').call
-SearchService.new('jose').call
 ```
 
 ## Running Tests
@@ -160,9 +207,7 @@ docker compose exec -e RAILS_ENV=test app bundle exec rspec spec/models/
 docker compose exec -e RAILS_ENV=test app bundle exec rspec spec/services/
 docker compose exec -e RAILS_ENV=test app bundle exec rspec spec/workers/
 docker compose exec -e RAILS_ENV=test app bundle exec rspec spec/requests/
-
-# Run specific file
-docker compose exec -e RAILS_ENV=test app bundle exec rspec spec/models/match_spec.rb
+docker compose exec -e RAILS_ENV=test app bundle exec rspec spec/channels/
 ```
 
 ## Useful Commands
@@ -212,50 +257,77 @@ docker compose build --no-cache
 | `PlayerInjury` | Injury history |
 | `PlayerRumour` | Transfer rumours |
 | `PlayerMarketValue` | Market value history |
+| `User` | Authenticated users |
+| `Favorite` | User favorites (polymorphic) |
+| `UserPreference` | User settings and preferences |
 
 ## Project Structure
 ```
 app/
+  channels/
+    application_cable/  # ActionCable connection with JWT auth
+    match_channel.rb    # Real-time match updates
   controllers/
-    api/v1/             # JSON API controllers
+    api/v1/             # JSON API controllers (JWT auth)
+      auth/             # sessions, registrations
       base_controller.rb
       leagues_controller.rb
       matches_controller.rb
       teams_controller.rb
       players_controller.rb
+      favorites_controller.rb
+      preferences_controller.rb
       search_controller.rb
-  models/               # 18 ActiveRecord models
+    users/              # Devise controllers (session auth)
+    leagues_controller.rb   # Hotwire controllers
+    matches_controller.rb
+    teams_controller.rb
+    players_controller.rb
+  models/               # 21 ActiveRecord models
     concerns/
-      searchable.rb     # Elasticsearch integration
+      searchable.rb
   serializers/          # jsonapi-serializer
   services/
     highlightly/        # API client and importers
-      client.rb
-      endpoints.rb
-      error.rb
-      importers/        # Country, League, Match, Standing, Highlight
-    interactors/        # Business logic (interactor gem)
-      match_data/       # Fetch, UpdateState, SyncEvents, SyncStatistics, SyncLineup
-      cache_warmup/     # Leagues, TodayMatches
+    interactors/        # Business logic
+      match_data/
+      cache_warmup/
     organizers/         # SyncMatchData
-    cache_service/      # Redis caching layer
-      keys.rb
-      ttl.rb
-      store.rb
+    cache_service/      # Redis caching (Keys, TTL, Store)
+    jwt_service.rb      # JWT encode/decode
+    token_blacklist_service.rb
+    match_broadcast_service.rb
+    search_service.rb
+  helpers/
   workers/              # Sidekiq background jobs
+  views/
+    layouts/
+    matches/
+    leagues/
+    teams/
+    players/
+    users/              # Devise views
+  javascript/
+    channels/
+      consumer.js
+    controllers/
+      match_controller.js  # Stimulus + ActionCable
+    services/
+      auth.js
 config/
-  sidekiq.yml           # Queue configuration
-  schedule.yml          # Cron schedule
-  initializers/         # Sentry, Lograge, Elasticsearch, FootballConfig
+  sidekiq.yml
+  schedule.yml
+  cable.yml             # ActionCable Redis adapter
+  initializers/
 lib/
-  redis_service.rb      # ConnectionPool Redis wrapper
+  redis_service.rb
   tasks/
-    elasticsearch.rake
 spec/
+  channels/
   models/
   services/
   workers/
-  requests/             # API request specs
+  requests/
   factories/
-  support/              # RSpec helpers, VCR, WebMock
+  support/
 ```
