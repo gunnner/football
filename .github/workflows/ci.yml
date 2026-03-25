@@ -102,7 +102,6 @@ jobs:
       ACTIVE_LEAGUE_IDS: ${{ secrets.ACTIVE_LEAGUE_IDS }}
       SECRET_KEY_BASE: ${{ secrets.SECRET_KEY_BASE }}
 
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
