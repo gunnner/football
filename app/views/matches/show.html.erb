@@ -1,0 +1,23 @@
+<% content_for :title, "#{@match.home_team.name} vs #{@match.away_team.name}" %>
+
+<div data-controller="match"
+     data-match-id-value="<%= @match.id %>">
+
+  <h1>
+    <%= @match.home_team.name %> vs <%= @match.away_team.name %>
+  </h1>
+
+  <div id="match_score_<%= @match.id %>">
+    <p>Score: <%= @match.score_current || 'Not started' %></p>
+    <p>Status: <%= @match.status %></p>
+    <p>Clock: <%= @match.clock %>'</p>
+  </div>
+
+  <h2>Events</h2>
+  <% @match.match_events.order(:time).each do |event| %>
+    <div>
+      <%= event.time %>' — <%= event.event_type %> —
+      <%= event.player_name %> (<%= event.team_name %>)
+    </div>
+  <% end %>
+</div>

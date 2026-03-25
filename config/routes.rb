@@ -6,6 +6,8 @@ Rails.application.routes.draw do
                        registrations: 'users/registrations'
                      }
 
+  mount ActionCable.server => '/cable'
+
   if Rails.env.development?
     mount Sidekiq::Web => '/admin/sidekiq'
   else

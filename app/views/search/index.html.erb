@@ -1,0 +1,15 @@
+<h1>Search</h1>
+
+<%= form_with url: search_path, method: :get do |f| %>
+  <%= f.text_field :q, value: params[:q] %>
+  <%= f.submit 'Search' %>
+<% end %>
+
+<% if @results %>
+  <% @results[:teams].each do |team| %>
+    <div>Team: <%= link_to team.name, team_path(team) %></div>
+  <% end %>
+  <% @results[:leagues].each do |league| %>
+    <div>League: <%= link_to league.name, league_path(league) %></div>
+  <% end %>
+<% end %>

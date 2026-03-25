@@ -1,0 +1,8 @@
+<h1>Leagues</h1>
+
+<% @leagues.each do |league| %>
+  <div>
+    <%= link_to league.name, league_path(league) %>
+    (<%= league.country&.name %>)
+  </div>
+<% end %>

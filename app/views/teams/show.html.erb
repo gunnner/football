@@ -1,0 +1,9 @@
+<h1><%= @team.name %></h1>
+
+<h2>Recent Matches</h2>
+<% @matches.each do |match| %>
+  <div>
+    <%= match.home_team.name %> vs <%= match.away_team.name %>
+    <%= match.score_current %>
+  </div>
+<% end %>
