@@ -14,37 +14,37 @@ RSpec.describe 'Api::V1::Matches', type: :request do
 
   describe 'GET /api/v1/matches' do
     it 'returns matches' do
-      get '/api/v1/matches'
+      get '/api/v1/matches', headers: auth_headers
       expect(response).to have_http_status(:ok)
       expect(json_response['data']).to be_an(Array)
     end
 
     it 'filters by date' do
-      get '/api/v1/matches', params: { date: Date.today.to_s }
+      get '/api/v1/matches', params: { date: Date.today.to_s }, headers: auth_headers
       expect(response).to have_http_status(:ok)
     end
 
     it 'filters by status' do
-      get '/api/v1/matches', params: { status: 'today' }
+      get '/api/v1/matches', params: { status: 'today' }, headers: auth_headers
       expect(response).to have_http_status(:ok)
     end
   end
 
   describe 'GET /api/v1/matches/live' do
     it 'returns live matches' do
-      get '/api/v1/matches/live'
+      get '/api/v1/matches/live', headers: auth_headers
       expect(response).to have_http_status(:ok)
     end
   end
 
   describe 'GET /api/v1/matches/:id' do
     it 'returns match' do
-      get "/api/v1/matches/#{match.id}"
+      get "/api/v1/matches/#{match.id}", headers: auth_headers
       expect(response).to have_http_status(:ok)
     end
 
     it 'returns 404 for missing match' do
-      get '/api/v1/matches/999999'
+      get '/api/v1/matches/999999', headers: auth_headers
       expect(response).to have_http_status(:not_found)
     end
   end
@@ -53,7 +53,7 @@ RSpec.describe 'Api::V1::Matches', type: :request do
     let!(:event) { create(:match_event, match: match) }
 
     it 'returns events' do
-      get "/api/v1/matches/#{match.id}/events"
+      get "/api/v1/matches/#{match.id}/events", headers: auth_headers
       expect(response).to have_http_status(:ok)
     end
   end
@@ -62,19 +62,19 @@ RSpec.describe 'Api::V1::Matches', type: :request do
     let!(:lineup) { create(:match_lineup, match: match) }
 
     it 'returns lineups' do
-      get "/api/v1/matches/#{match.id}/lineups"
+      get "/api/v1/matches/#{match.id}/lineups", headers: auth_headers
       expect(response).to have_http_status(:ok)
     end
   end
 
   describe 'GET /api/v1/matches/h2h' do
     it 'returns h2h matches' do
-      get '/api/v1/matches/h2h', params: { team1_id: home_team.id, team2_id: away_team.id }
+      get '/api/v1/matches/h2h', params: { team1_id: home_team.id, team2_id: away_team.id }, headers: auth_headers
       expect(response).to have_http_status(:ok)
     end
 
     it 'returns 400 without required params' do
-      get '/api/v1/matches/h2h'
+      get '/api/v1/matches/h2h', headers: auth_headers
       expect(response).to have_http_status(:bad_request)
     end
   end

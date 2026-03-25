@@ -11,8 +11,10 @@ class Team < ApplicationRecord
             class_name:  'Match',
             foreign_key: :away_team_id,
             dependent:   :destroy
-  has_many :standings,       dependent: :destroy
-  has_many :team_statistics, dependent: :destroy
+  has_many :standings,                   dependent: :destroy
+  has_many :team_statistics,             dependent: :destroy
+  has_many :favorites, as: :favoritable, dependent: :destroy
+
 
   validates :external_id, presence: true, uniqueness: true
   validates :name, presence: true

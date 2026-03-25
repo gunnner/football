@@ -1,6 +1,11 @@
 require 'sidekiq/web'
 
 Rails.application.routes.draw do
+  devise_for :users, controllers: {
+                       sessions:      'users/sessions',
+                       registrations: 'users/registrations'
+                     }
+
   if Rails.env.development?
     mount Sidekiq::Web => '/admin/sidekiq'
   else
@@ -11,6 +16,23 @@ Rails.application.routes.draw do
 
   namespace :api do
     namespace :v1 do
+      namespace :auth do
+        post   :sign_in,  to: 'sessions#create'
+        post   :sign_up,  to: 'registrations#create'
+        delete :sign_out, to: 'sessions#destroy'
+        get    :me,       to: 'sessions#me'
+      end
+
+      resources :favorites, only: %i[index create destroy] do
+        collection do
+          get :leagues
+          get :teams
+          get :players
+        end
+      end
+
+      resource :preference, only: %w[show update], controller: 'preferences'
+
       resources :leagues, only: %w[index show] do
         member do
           get :standings

@@ -4,31 +4,31 @@ RSpec.describe 'Api::V1::Leagues', type: :request do
 
   describe 'GET /api/v1/leagues' do
     it 'returns leagues' do
-      get '/api/v1/leagues'
+      get '/api/v1/leagues', headers: auth_headers
       expect(response).to have_http_status(:ok)
       expect(json_response['data']).to be_an(Array)
     end
 
     it 'filters by country_code' do
-      get '/api/v1/leagues', params: { country_code: country.code }
+      get '/api/v1/leagues', params: { country_code: country.code }, headers: auth_headers
       expect(response).to have_http_status(:ok)
     end
 
     it 'paginates results' do
-      get '/api/v1/leagues', params: { per_page: 1 }
+      get '/api/v1/leagues', params: { per_page: 1 }, headers: auth_headers
       expect(json_response['meta']['per_page']).to eq(1)
     end
   end
 
   describe 'GET /api/v1/leagues/:id' do
     it 'returns league' do
-      get "/api/v1/leagues/#{league.id}"
+      get "/api/v1/leagues/#{league.id}", headers: auth_headers
       expect(response).to have_http_status(:ok)
       expect(json_response['data']['id']).to eq(league.id.to_s)
     end
 
     it 'returns 404 for missing league' do
-      get '/api/v1/leagues/999999'
+      get '/api/v1/leagues/999999', headers: auth_headers
       expect(response).to have_http_status(:not_found)
     end
   end
@@ -38,7 +38,7 @@ RSpec.describe 'Api::V1::Leagues', type: :request do
     let!(:standing) { create(:standing, league: league, team: team, season: 2024) }
 
     it 'returns standings' do
-      get "/api/v1/leagues/#{league.id}/standings", params: { season: 2024 }
+      get "/api/v1/leagues/#{league.id}/standings", params: { season: 2024 }, headers: auth_headers
       expect(response).to have_http_status(:ok)
     end
   end
