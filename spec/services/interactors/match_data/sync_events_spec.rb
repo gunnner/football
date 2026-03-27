@@ -5,7 +5,7 @@ RSpec.describe Interactors::MatchData::SyncEvents do
     [
       {
         'time'              => '45',
-        'event_type'        => 'Goal',
+        'type'              => 'Goal',
         'team'              => { 'id' => 553, 'name' => 'Montpellier', 'logo' => nil },
         'playerId'          => 1234,
         'player'            => 'M. Mamdouh',

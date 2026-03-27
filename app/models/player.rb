@@ -9,8 +9,8 @@ class Player < ApplicationRecord
   has_many :player_injuries,             dependent: :destroy
   has_many :player_rumours,              dependent: :destroy
   has_many :player_market_values,        dependent: :destroy
+  has_many :box_scores,                  dependent: :destroy
   has_many :favorites, as: :favoritable, dependent: :destroy
-
 
   validates :external_id, presence: true, uniqueness: true
   validates :name,        presence: true
@@ -20,6 +20,12 @@ class Player < ApplicationRecord
 
   scope :search_by_name, ->(query) {
     where('name ILIKE ?', "%#{query}%")
+  }
+
+  scope :in_active_leagues, -> {
+    joins(box_scores: :match)
+      .where(matches: { league_id: League.where(external_id: FootballConfig.active_league_ids) })
+      .distinct
   }
 
   settings index: { number_of_shards: 1 } do

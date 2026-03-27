@@ -15,7 +15,6 @@ class Team < ApplicationRecord
   has_many :team_statistics,             dependent: :destroy
   has_many :favorites, as: :favoritable, dependent: :destroy
 
-
   validates :external_id, presence: true, uniqueness: true
   validates :name, presence: true
 
@@ -28,6 +27,13 @@ class Team < ApplicationRecord
       indexes :external_id, type: :integer
     end
   end
+
+  scope :in_active_leagues, -> {
+    joins(:standings).where(standings: {
+        league_id: League.where(external_id: FootballConfig.active_league_ids)
+      }
+    ).distinct
+  }
 
   def as_indexed_json(_ = {})
     {

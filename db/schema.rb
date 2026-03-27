@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_24_203144) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_26_175914) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -56,6 +56,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_24_203144) do
     t.integer "penalties_total", default: 0
     t.bigint "player_external_id"
     t.string "player_full_name"
+    t.integer "player_id"
     t.string "player_logo"
     t.string "player_name"
     t.string "position"
@@ -69,9 +70,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_24_203144) do
     t.string "team_logo"
     t.string "team_name"
     t.datetime "updated_at", null: false
+    t.index ["match_id", "player_external_id"], name: "index_box_scores_on_match_and_player", unique: true
     t.index ["match_id", "player_external_id"], name: "index_box_scores_on_match_id_and_player_external_id"
     t.index ["match_id", "team_external_id"], name: "index_box_scores_on_match_id_and_team_external_id"
     t.index ["match_id"], name: "index_box_scores_on_match_id"
+    t.index ["player_id", "match_id"], name: "index_box_scores_on_player_id_and_match_id", unique: true
+    t.index ["player_id"], name: "index_box_scores_on_player_id"
   end
 
   create_table "countries", force: :cascade do |t|

@@ -22,10 +22,12 @@ module Interactors
         return if data.blank?
 
         data.map do |event|
+          next if event.blank?
+
           {
             match_id:                     context.match.id,
             time:                         event['time'],
-            event_type:                   event['event_type'],
+            event_type:                   event['type'],
             team_external_id:             event['team']['id'],
             team_name:                    event['team']['name'],
             team_logo:                    event['team']['logo'],

@@ -4,7 +4,7 @@ class Match < ApplicationRecord
   after_commit :invalidate_cache
   after_commit :broadcast_changes, on: :update
 
-  belongs_to :league
+  belongs_to :league, touch: true
   belongs_to :home_team, class_name: 'Team'
   belongs_to :away_team, class_name: 'Team'
 
@@ -29,6 +29,22 @@ class Match < ApplicationRecord
       .or(where(home_team_id: team2_id, away_team_id: team1_id))
       .order(date: :desc)
   }
+
+  def live?
+    status.in?(MatchConstants::LIVE_STATUSES)
+  end
+
+  def finished?
+    status.in?(MatchConstants::FINISHED_STATUSES)
+  end
+
+  def upcoming?
+    status.in?(MatchConstants::NOT_STARTED) && date > Time.current
+  end
+
+  def teams
+    Team.where(id: [ home_team_id, away_team_id ])
+  end
 
   private
 

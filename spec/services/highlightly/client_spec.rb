@@ -1,4 +1,9 @@
 RSpec.describe Highlightly::Client do
+  before do
+    allow(RedisService).to receive(:get).with('requested_attempts').and_return('0')
+    allow(RedisService).to receive(:set)
+  end
+
   let(:client) { described_class.new }
 
   describe '#countries', vcr: { cassette_name: 'highlightly_client/countries' } do
@@ -26,11 +31,7 @@ RSpec.describe Highlightly::Client do
 
   describe 'rate limiting' do
     before do
-      RedisService.set('requested_attempts', 96)
-    end
-
-    after do
-      RedisService.del('requested_attempts')
+      allow(RedisService).to receive(:get).with('requested_attempts').and_return('96')
     end
 
     it 'raises RateLimitError when threshold reached' do

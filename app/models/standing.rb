@@ -1,7 +1,7 @@
 class Standing < ApplicationRecord
   after_commit :invalidate_cache
 
-  belongs_to :league
+  belongs_to :league, touch: true
   belongs_to :team
 
   validates :season,   presence: true

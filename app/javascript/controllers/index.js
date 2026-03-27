@@ -2,7 +2,9 @@
 // Run that command whenever you add a new controller or create them with
 // ./bin/rails generate stimulus controllerName
 
-import { application } from "./application"
+import { application } from './application'
+import MatchController from './match_controller'
+import TabsController  from './tabs_controller'
 
-import MatchController from "./match_controller"
-application.register("match", MatchController)
+application.register('match', MatchController)
+application.register('tabs',  TabsController)

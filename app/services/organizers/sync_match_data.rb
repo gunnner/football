@@ -4,6 +4,7 @@ module Organizers
              Interactors::MatchData::UpdateState,
              Interactors::MatchData::SyncEvents,
              Interactors::MatchData::SyncStatistics,
-             Interactors::MatchData::SyncLineup
+             Interactors::MatchData::SyncLineup,
+             Interactors::MatchData::SyncBoxScore
   end
 end

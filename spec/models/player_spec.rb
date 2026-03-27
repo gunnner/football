@@ -23,6 +23,10 @@ RSpec.describe Player, type: :model do
     it 'has many player_market_values' do
       is_expected.to have_many(:player_market_values).dependent(:destroy)
     end
+
+    it 'has many box_scores' do
+      is_expected.to have_many(:box_scores).dependent(:destroy)
+    end
   end
 
   describe 'validations' do
@@ -42,6 +46,34 @@ RSpec.describe Player, type: :model do
   end
 
   describe 'scopes' do
+    describe '.in_active_leagues' do
+      let(:active_league)    { create(:league, external_id: ENV['ACTIVE_LEAGUE_IDS']) }
+      let(:inactive_league)  { create(:league, external_id: 99999) }
+      let!(:active_player)   { create(:player) }
+      let!(:inactive_player) { create(:player) }
+
+      before do
+        allow(FootballConfig).to receive(:active_league_ids).and_return([ ENV['ACTIVE_LEAGUE_IDS'] ])
+
+        active_match   = create(:match, league: active_league)
+        inactive_match = create(:match, league: inactive_league)
+
+        create(:box_score, match: active_match,   player: active_player,   team_external_id: 1)
+        create(:box_score, match: inactive_match, player: inactive_player, team_external_id: 2)
+      end
+
+      it 'returns players from active leagues' do
+        expect(Player.in_active_leagues).to     include(active_player)
+        expect(Player.in_active_leagues).not_to include(inactive_player)
+      end
+
+      it 'does not return duplicates when player has multiple box scores' do
+        active_match2 = create(:match, league: active_league)
+        create(:box_score, match: active_match2, player: active_player, team_external_id: 1)
+        expect(Player.in_active_leagues.where(id: active_player.id).count).to eq(1)
+      end
+    end
+
     describe '.search_by_name' do
       let!(:perisic)  { create(:player, name: 'Ivan Perisic') }
       let!(:ronaldo)  { create(:player, name: 'Cristiano Ronaldo') }
