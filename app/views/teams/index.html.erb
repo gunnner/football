@@ -1,7 +1,25 @@
-<h1>Teams</h1>
+<% content_for :title, 'Teams' %>
 
-<% @teams.each do |team| %>
-  <div>
-    <%= link_to team.name, team_path(team) %>
-  </div>
-<% end %>
+<h1 class="text-2xl font-bold text-white mb-6">Teams</h1>
+
+<div class="bg-gray-900 rounded-xl overflow-hidden">
+  <% @teams.each do |team| %>
+    <%= link_to team_path(team), class: "block" do %>
+      <div class="flex items-center gap-4 px-4 py-3 border-b border-gray-800
+                  last:border-0 hover:bg-gray-800 transition-colors">
+        <% if team.logo.present? %>
+          <img src="<%= team.logo %>" alt="<%= team.name %>"
+               class="w-8 h-8 object-contain">
+        <% else %>
+          <div class="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center">
+            <span class="text-xs text-gray-400">⚽</span>
+          </div>
+        <% end %>
+        <span class="text-sm font-medium text-gray-100"><%= team.name %></span>
+        <svg class="w-4 h-4 text-gray-600 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+        </svg>
+      </div>
+    <% end %>
+  <% end %>
+</div>

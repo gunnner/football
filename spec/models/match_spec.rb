@@ -75,4 +75,22 @@ RSpec.describe Match, type: :model do
       end
     end
   end
+
+  describe '#teams' do
+    let(:home_team) { create(:team) }
+    let(:away_team) { create(:team) }
+    let(:match)     { create(:match, home_team: home_team, away_team: away_team) }
+
+    it 'returns both home and away teams' do
+      expect(match.teams).to include(home_team, away_team)
+    end
+
+    it 'returns exactly two teams' do
+      expect(match.teams.count).to eq(2)
+    end
+
+    it 'returns an ActiveRecord relation' do
+      expect(match.teams).to be_a(ActiveRecord::Relation)
+    end
+  end
 end

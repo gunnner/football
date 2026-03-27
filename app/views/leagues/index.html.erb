@@ -1,8 +1,37 @@
-<h1>Leagues</h1>
+<% content_for :title, 'Leagues' %>
 
-<% @leagues.each do |league| %>
-  <div>
-    <%= link_to league.name, league_path(league) %>
-    (<%= league.country&.name %>)
+<h1 class="text-2xl font-bold text-white mb-6">Leagues</h1>
+
+<% if @leagues.blank? %>
+  <div class="text-center py-16 text-gray-500">
+    <p class="text-4xl mb-4">🏆</p>
+    <p class="text-lg">No leagues found</p>
+  </div>
+<% else %>
+  <div class="space-y-2">
+    <% @leagues.group_by { it.country&.name || 'Other' }.each do |country, leagues| %>
+
+      <div class="bg-gray-800 px-4 py-2 rounded-t-lg">
+        <span class="text-sm font-semibold text-gray-300">
+          <%= country %>
+        </span>
+      </div>
+
+      <% leagues.each do |league| %>
+        <%= link_to league_path(league), class: "block" do %>
+          <div class="bg-gray-900 hover:bg-gray-800 transition-colors px-4 py-3
+                      border-b border-gray-800 last:rounded-b-lg last:border-0">
+            <div class="flex items-center justify-between">
+              <span class="text-sm font-medium text-gray-100">
+                <%= league.name %>
+              </span>
+              <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+              </svg>
+            </div>
+          </div>
+        <% end %>
+      <% end %>
+    <% end %>
   </div>
 <% end %>

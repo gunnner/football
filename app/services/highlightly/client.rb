@@ -21,6 +21,10 @@ module Highlightly
       get(Endpoints::LEAGUES, params)&.dig('data')
     end
 
+    def league(id)
+      get("#{Endpoints::LEAGUES}/#{id}")
+    end
+
     def teams(params = {})
       get(Endpoints::TEAMS, params)&.dig('data')
     end

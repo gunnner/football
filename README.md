@@ -152,6 +152,32 @@ PATCH /api/v1/preference
 GET /api/v1/search?q=&type=
 ```
 
+## Frontend
+
+Built with Hotwire (Turbo + Stimulus) and Tailwind CSS v4.
+
+### Pages
+```
+/              → Today's matches (redirects to /matches)
+/matches       → Match list with status filters (Live/Today/Finished/Upcoming)
+/matches/:id   → Match details with Events, Statistics, Lineups tabs
+/leagues       → League list grouped by country
+/leagues/:id   → League standings with season selector
+/teams/:id     → Team profile with recent matches
+/players/:id   → Player profile with statistics and transfers
+/search        → Full-text search (teams, players, leagues)
+```
+
+### Stimulus Controllers
+- `match` — ActionCable subscription for live score updates
+- `tabs`  — Tab switching for match detail page (Events/Statistics/Lineups)
+
+### View Caching
+- Match list grouped by league — outer cache per league, inner cache per match
+- League standings — outer cache per league+season, inner cache per standing row
+- Auto-invalidated when `updated_at` changes via `touch: true` associations
+- Redis namespace: `rails_cache:` to avoid conflicts with other Redis data
+
 ## Real-time Updates
 
 Live match scores via ActionCable WebSocket.
@@ -171,7 +197,7 @@ Events: `match_update`, `goal`, `match_start`, `match_end`
 | `SyncStaticDataWorker` | Weekly Monday 3:00 | ~9 | Countries and leagues |
 | `SyncMatchesWorker` | Daily 6:00 | 1/league | Today's matches |
 | `SyncLiveMatchesWorker` | Every 2 min | 1/league | Live match scores |
-| `SyncMatchDetailsWorker` | Every 30 min | 4/match | Events, stats, lineups |
+| `SyncMatchDetailsWorker` | Every 30 min | 4/match | Events, stats, lineups, box scores |
 | `SyncAllStandingsWorker` | Daily 7:00 | 1/league | League standings |
 | `SyncHighlightsWorker` | Daily 23:00 | 1/league | Match highlights |
 | `CacheWarmupWorker` | Every 5 min | 0 | Redis cache warmup |
@@ -192,7 +218,9 @@ docker compose exec app bundle exec rails runner "puts RedisService.get('request
 
 ## Search
 
-Full-text search powered by Elasticsearch across Teams, Players and Leagues:
+Full-text search powered by Elasticsearch across Teams, Players and Leagues.
+Supports exact match, fuzzy matching (AUTO), and **prefix search** — e.g. `"arse"` returns Arsenal.
+
 ```bash
 docker compose exec app bundle exec rails elasticsearch:reindex
 ```
@@ -228,6 +256,9 @@ docker compose down
 
 # Rebuild containers
 docker compose build --no-cache
+
+# Rebuild vite
+docker compose exec app bin/vite build --clear --mode=development
 ```
 
 ## CI/CD
@@ -265,11 +296,13 @@ docker compose build --no-cache
 ```
 app/
   channels/
-    application_cable/  # ActionCable connection with JWT auth
-    match_channel.rb    # Real-time match updates
+    application_cable/
+      channel.rb
+      connection.rb       # Devise session auth for WebSocket
+    match_channel.rb      # Streams match_:id for live updates
   controllers/
-    api/v1/             # JSON API controllers (JWT auth)
-      auth/             # sessions, registrations
+    api/v1/               # JSON API (JWT auth)
+      auth/               # sign_in, sign_up, sign_out, me
       base_controller.rb
       leagues_controller.rb
       matches_controller.rb
@@ -278,50 +311,58 @@ app/
       favorites_controller.rb
       preferences_controller.rb
       search_controller.rb
-    users/              # Devise controllers (session auth)
-    leagues_controller.rb   # Hotwire controllers
+    users/                # Devise session controllers
+    leagues_controller.rb # Hotwire HTML controllers
     matches_controller.rb
     teams_controller.rb
     players_controller.rb
-  models/               # 21 ActiveRecord models
-    concerns/
-      searchable.rb
-  serializers/          # jsonapi-serializer
+    search_controller.rb
+  models/                 # 21 ActiveRecord models
+  serializers/            # jsonapi-serializer
   services/
-    highlightly/        # API client and importers
-    interactors/        # Business logic
-      match_data/
+    highlightly/
+      client.rb
+      importers/
+        player_importer.rb     # Upserts players from BoxScore data
+        match_importer.rb
+        standing_importer.rb
+    interactors/
+      match_data/              # Fetch, UpdateState, SyncEvents,
+                               # SyncStatistics, SyncLineup, SyncBoxScore
       cache_warmup/
-    organizers/         # SyncMatchData
-    cache_service/      # Redis caching (Keys, TTL, Store)
-    jwt_service.rb      # JWT encode/decode
+    organizers/sync_match_data.rb
+    cache_service/             # Keys, TTL, Store
+    jwt_service.rb
     token_blacklist_service.rb
     match_broadcast_service.rb
     search_service.rb
   helpers/
-  workers/              # Sidekiq background jobs
+    application_helper.rb      # nav_link, filter_tab_class, event_icon
+  workers/
   views/
     layouts/
+      application.html.erb
+      _head.html.erb
+      _navbar.html.erb
+      _flash.html.erb
     matches/
     leagues/
     teams/
     players/
-    users/              # Devise views
+    users/sessions/ users/registrations/
   javascript/
-    channels/
-      consumer.js
+    channels/consumer.js
     controllers/
-      match_controller.js  # Stimulus + ActionCable
-    services/
-      auth.js
+      match_controller.js      # Stimulus + ActionCable live scores
+      tabs_controller.js       # Tab switching
+    services/auth.js           # TODO Epic 8: replace localStorage with httpOnly cookie
 config/
   sidekiq.yml
   schedule.yml
-  cable.yml             # ActionCable Redis adapter
+  cable.yml
   initializers/
 lib/
   redis_service.rb
-  tasks/
 spec/
   channels/
   models/
@@ -330,4 +371,9 @@ spec/
   requests/
   factories/
   support/
+```
+```bash
+git add .
+git commit -m "Update CLAUDE.md and README.md — Epic 7 complete"
+git push origin feature/epic-7-hotwire-frontend
 ```

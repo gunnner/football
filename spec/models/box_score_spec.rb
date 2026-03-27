@@ -36,4 +36,34 @@ RSpec.describe BoxScore, type: :model do
       end
     end
   end
+
+  describe '.link_players!' do
+    let!(:match)  { create(:match) }
+    let!(:player) { create(:player, external_id: 9001) }
+
+    it 'links box_scores that have no player_id to their player' do
+      box_score = create(:box_score, match: match, player_external_id: 9001, player_id: nil)
+      BoxScore.link_players!
+      expect(box_score.reload.player).to eq(player)
+    end
+
+    it 'skips box_scores that already have a player_id' do
+      other_player = create(:player, external_id: 9002)
+      box_score = create(:box_score, match: match, player_external_id: 9001, player: other_player)
+      BoxScore.link_players!
+      expect(box_score.reload.player).to eq(other_player)
+    end
+
+    it 'skips box_scores with no player_external_id' do
+      box_score = create(:box_score, match: match, player_external_id: nil, player_id: nil)
+      BoxScore.link_players!
+      expect(box_score.reload.player_id).to be_nil
+    end
+
+    it 'does not link when player does not exist' do
+      box_score = create(:box_score, match: match, player_external_id: 99999, player_id: nil)
+      BoxScore.link_players!
+      expect(box_score.reload.player_id).to be_nil
+    end
+  end
 end
