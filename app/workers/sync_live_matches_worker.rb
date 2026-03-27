@@ -2,6 +2,23 @@ class SyncLiveMatchesWorker < BaseWorker
   sidekiq_options queue: :critical, retry: 1
 
   def perform
+    today = Match.today.joins(:league)
+                 .where(leagues: { external_id: FootballConfig.active_league_ids })
+
+    if today.blank?
+      log 'No matches today — skipping live sync'
+      return
+    end
+
+    active = today.where(status: Match::LIVE_STATUSES)
+                  .or(today.where(status: Match::NOT_STARTED)
+                           .where(date: ..30.minutes.from_now))
+
+    unless active.exists?
+      log 'No live or imminent matches — skipping live sync'
+      return
+    end
+
     FootballConfig.active_league_ids.each do |league_id|
       data = client.matches(date: Date.today.to_s, leagueId: league_id, limit: 100)
       next if data.blank?

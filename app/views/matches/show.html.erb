@@ -53,10 +53,10 @@
 
     <%# Events %>
     <div data-tabs-target="panel" class="bg-gray-900 rounded-xl p-4">
-      <% if @match.match_events.blank? %>
+      <% if @match_events.blank? %>
         <p class="text-center text-gray-500 py-8">No events yet</p>
       <% else %>
-        <% @match.match_events.order(:time).each do |event| %>
+        <% @match_events.sort_by(&:time).each do |event| %>
           <%= render 'event', event: event %>
         <% end %>
       <% end %>
@@ -64,10 +64,10 @@
 
     <%# Statistics %>
     <div data-tabs-target="panel" class="hidden bg-gray-900 rounded-xl p-4">
-      <% if @match.match_statistics.blank? %>
+      <% if @match_statistics.blank? %>
         <p class="text-center text-gray-500 py-8">No statistics yet</p>
       <% else %>
-        <% stats_by_name = @match.match_statistics.group_by(&:display_name) %>
+        <% stats_by_name = @match_statistics.group_by(&:display_name) %>
         <% stats_by_name.each do |name, stats| %>
           <% home_stat = stats.find { it.team_external_id.eql?(@match.home_team.external_id) } %>
           <% away_stat = stats.find { it.team_external_id.eql?(@match.away_team.external_id) } %>
@@ -94,11 +94,11 @@
 
     <%# Lineups %>
     <div data-tabs-target="panel" class="hidden bg-gray-900 rounded-xl p-4">
-      <% if @match.match_lineups.blank? %>
+      <% if @match_lineups.blank? %>
         <p class="text-center text-gray-500 py-8">No lineups yet</p>
       <% else %>
         <div class="grid grid-cols-2 gap-4">
-          <% @match.match_lineups.each do |lineup| %>
+          <% @match_lineups.each do |lineup| %>
             <div>
               <p class="text-sm font-semibold text-gray-300 mb-2">
                 <%= lineup.team_name %>

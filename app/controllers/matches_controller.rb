@@ -19,5 +19,9 @@ class MatchesController < ApplicationController
       :home_team, :away_team, :league,
       :match_events, :match_statistics, :match_lineups
     ).find(params[:id])
+
+    @match_events     = @match.match_events
+    @match_statistics = @match.match_statistics
+    @match_lineups    = @match.match_lineups
   end
 end

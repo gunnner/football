@@ -4,23 +4,29 @@ sync_static_data:
   queue: low
   description: 'Sync countries and leagues weekly'
 
+sync_weekly_fixtures:
+  cron: '0 4 * * 1'
+  class: SyncWeeklyFixturesWorker
+  queue: low
+  description: 'Import fixtures for the next 7 days every Monday at 4am (7 API calls)'
+
 sync_matches:
   cron: '0 6 * * *'
   class: SyncMatchesWorker
   queue: default
-  description: 'Sync today matches at 6am'
+  description: 'Refresh today match statuses at 6am'
 
 sync_live_matches:
-  cron: '*/2 * * * *'
+  cron: '*/5 * * * *'
   class: SyncLiveMatchesWorker
   queue: critical
-  description: 'Sync live matches every 2 minutes'
+  description: 'Sync live matches every 5 minutes (only when matches are active)'
 
 sync_match_details:
-  cron: '*/30 * * * *'
+  cron: '0 * * * *'
   class: SyncMatchDetailsWorker
   queue: default
-  description: 'Sync live match events, stats, lineups every 30 minutes'
+  description: 'Sync live match events, stats, lineups every hour'
 
 sync_highlights:
   cron: '0 23 * * *'
