@@ -4,7 +4,7 @@ module Highlightly
       def call
         log 'Starting leagues import...'
 
-        data = fetch_all_leagues
+        data = fetch_all_active_leagues
         return if data.blank?
 
         result = upsert_leagues(data)
@@ -15,22 +15,10 @@ module Highlightly
 
       private
 
-      def fetch_all_leagues
-        all_data = []
-        offset   = 0
-        limit    = 100
-
-        loop do
-          batch = @client.leagues(limit: limit, offset: offset)
-          break if batch.blank?
-
-          all_data.concat(batch)
-          break if batch.size < limit
-
-          offset += limit
+      def fetch_all_active_leagues
+        FootballConfig.active_league_ids.flat_map do |league_id|
+          @client.leagues(leagueId: league_id) || []
         end
-
-        all_data
       end
 
       def upsert_leagues(data)

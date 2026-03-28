@@ -194,19 +194,23 @@ Events: `match_update`, `goal`, `match_start`, `match_end`
 
 | Worker | Schedule | API Requests | Description |
 |---|---|---|---|
-| `SyncStaticDataWorker` | Weekly Monday 3:00 | ~9 | Countries and leagues |
+| `SyncStaticDataWorker` | Weekly Monday 3:00 | ~2 | Countries and active leagues only |
+| `SyncWeeklyFixturesWorker` | Weekly Monday 4:00 | 7/league | Imports fixtures for next 7 days |
 | `SyncMatchesWorker` | Daily 6:00 | 1/league | Today's matches |
-| `SyncLiveMatchesWorker` | Every 2 min | 1/league | Live match scores |
-| `SyncMatchDetailsWorker` | Every 30 min | 4/match | Events, stats, lineups, box scores |
+| `SyncLiveMatchesWorker` | Every 5 min | 1/league | Live scores — skips automatically when no live/imminent matches |
+| `SyncMatchDetailsWorker` | Every hour | 5/match | Events, stats, lineups, box scores |
 | `SyncAllStandingsWorker` | Daily 7:00 | 1/league | League standings |
 | `SyncHighlightsWorker` | Daily 23:00 | 1/league | Match highlights |
 | `CacheWarmupWorker` | Every 5 min | 0 | Redis cache warmup |
 
-**API budget**: ~74 requests on match day (within 100/day free plan limit).
+**API budget**: ~3 calls/day on non-match days; ~91–103 calls/day on busy match days (within 100/day free plan limit; threshold 95/100 stops calls automatically).
+
+`SyncLiveMatchesWorker` has a guard clause — it checks the DB before making any API call and skips if there are no matches today or no live/imminent (≤30 min) matches. `SyncWeeklyFixturesWorker` ensures the DB has the week's fixtures so the guard works correctly.
 
 Run manually:
 ```bash
 docker compose exec app bundle exec rails runner "SyncStaticDataWorker.new.perform"
+docker compose exec app bundle exec rails runner "SyncWeeklyFixturesWorker.new.perform"
 docker compose exec app bundle exec rails runner "SyncMatchesWorker.new.perform"
 docker compose exec app bundle exec rails runner "SyncAllStandingsWorker.new.perform"
 docker compose exec app bundle exec rails runner "SyncHighlightsWorker.new.perform"
@@ -214,6 +218,19 @@ docker compose exec app bundle exec rails runner "CacheWarmupWorker.new.perform"
 
 # Check API usage
 docker compose exec app bundle exec rails runner "puts RedisService.get('requested_attempts')"
+```
+
+### Historical data seeding (APL)
+
+```bash
+# Import standings for all seasons
+docker compose exec app bundle exec rails highlightly:seed_standings
+
+# Import match results for a date range (resumable — progress saved in Redis)
+docker compose exec app bundle exec rails 'highlightly:seed_matches[2023-08-01,2025-05-31]'
+
+# Reset progress and start from scratch
+docker compose exec app bundle exec rails highlightly:seed_matches_reset
 ```
 
 ## Search

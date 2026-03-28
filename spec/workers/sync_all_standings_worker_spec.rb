@@ -2,6 +2,10 @@ RSpec.describe SyncAllStandingsWorker do
   let(:worker) { described_class.new }
 
   describe '#perform' do
+    before do
+      allow(RedisService).to receive(:get).with('requested_attempts').and_return('0')
+    end
+
     it 'enqueues SyncStandingsWorker for each active league' do
       FootballConfig.active_league_ids.each do |league_id|
         expect(SyncStandingsWorker).to receive(:perform_async).with(league_id, Date.today.year)
