@@ -30,7 +30,7 @@ gem 'sentry-sidekiq'
 gem 'sidekiq', '~> 8.1'
 gem 'sidekiq-cron'
 gem 'stimulus-rails'
-gem 'strong_migrations', '~> 2.5'
+gem 'strong_migrations', '~> 2.6'
 gem 'turbo-rails'
 gem 'tzinfo-data', platforms: %i[windows jruby]
 gem 'vite_rails'
