@@ -8,5 +8,6 @@ class PlayerProfileSerializer
              :height,
              :main_position,
              :current_club,
+             :joined_at,
              :contract_expiry
 end

@@ -7,11 +7,6 @@ module ApplicationHelper
     link_to text, path, class: classes
   end
 
-  def filter_tab_class(active)
-    active ? 'px-4 py-1.5 rounded-full text-sm font-medium bg-blue-600 text-white'
-           : 'px-4 py-1.5 rounded-full text-sm font-medium text-gray-400 hover:text-white bg-gray-800 transition-colors'
-  end
-
   def event_icon(event_type)
     case event_type.to_s.downcase
     when 'goal'              then '⚽'

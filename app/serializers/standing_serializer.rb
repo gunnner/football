@@ -10,7 +10,13 @@ class StandingSerializer
              :draws,
              :loses,
              :scored_goals,
-             :received_goals
+             :received_goals,
+             :home_wins,
+             :home_draws,
+             :home_loses,
+             :away_wins,
+             :away_draws,
+             :away_loses
 
   belongs_to :team, serializer: TeamSerializer
 end

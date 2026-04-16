@@ -1,23 +1,32 @@
 module Api
   module V1
     class LeaguesController < BaseController
+      skip_before_action :authenticate_api_user!, only: %i[index show standings top_scorers]
+
       def index
-        leagues = fetch_leagues
-        render_success(LeagueSerializer.new(leagues).serializable_hash, meta: pagination_meta)
+        leagues = LeagueQueries::LeaguesListQuery.new(params[:country_code], params[:name]).call
+        paginated_leagues = paginate(leagues.order(:name))
+
+        render_success(LeagueSerializer.new(paginated_leagues).serializable_hash, meta: pagination_meta)
       end
 
       def show
-        render_success LeagueSerializer.new(league).serializable_hash
+        available_seasons = Standing.where(league: league).distinct.pluck(:season).sort.reverse
+
+        render_success LeagueSerializer.new(league).serializable_hash,
+                       meta: { available_seasons: available_seasons }
       end
 
       def standings
-        standings = fetch_standings
-        render_success StandingSerializer.new(standings).serializable_hash
+        render json: fetch_standings_json
       end
 
       def top_scorers
-        players = fetch_top_scorers
-        render_success PlayerSerializer.new(players).serializable_hash
+        top_scorers = CacheService::Store.fetch(CacheService::Keys.top_scorers(league.id, season), ttl: CacheService::Ttl::MIN_30) do
+          LeagueQueries::LeaguesListQuery.new(league, season).call
+        end
+
+        render_success PlayerSerializer.new(top_scorers).serializable_hash
       end
 
       private
@@ -27,30 +36,15 @@ module Api
       end
 
       def season
-        @season ||= params.fetch(:season, Date.today.year).to_i
+        @season ||= params[:season]&.to_i
       end
 
-      def fetch_leagues
-        scope = League.includes(:country)
-        scope = scope.by_country(params[:country_code])           if params[:country_code].present?
-        scope = scope.where('name ILIKE ?', "%#{params[:name]}%") if params[:name].present?
-        paginate(scope.order(:name))
-      end
+      def fetch_standings_json
+        return { data: [] } unless season
 
-      def fetch_standings
         CacheService::Store.fetch(CacheService::Keys.league_standings(league.id, season), ttl: CacheService::Ttl::MIN_30) do
-          Standing.where(league: league, season: season)
-                  .includes(:team)
-                  .ordered
-        end
-      end
-
-      def fetch_top_scorers
-        CacheService::Store.fetch(CacheService::Keys.top_scorers(league.id, season), ttl: CacheService::Ttl::MIN_30) do
-          Player.joins(:player_statistics)
-                .where(player_statistics: { league: league.name, season: season.to_s })
-                .order('player_statistics.goals DESC')
-                .limit(20)
+          records = Standing.where(league: league, season: season).includes(:team).ordered
+          StandingSerializer.new(records, include: [ :team ]).serializable_hash
         end
       end
     end

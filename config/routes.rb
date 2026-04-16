@@ -48,6 +48,13 @@ Rails.application.routes.draw do
           get :events
           get :statistics
           get :highlights
+          get :box_scores
+          get :predictions
+          get :shots
+          get :news
+          get :last_five
+          get :injuries
+          get :bookmakers
         end
 
         collection do
@@ -78,8 +85,8 @@ Rails.application.routes.draw do
 
   resources :leagues, only: %w[index show]
   resources :matches, only: %w[index show]
-  resources :players, only: %w[index show]
-  resources :teams,   only: %w[index show]
+  resources :players, only: %w[show]
+  resources :teams,   only: %w[show]
 
   get 'search', to: 'search#index'
 

@@ -1,27 +1,9 @@
 class MatchesController < ApplicationController
-  before_action :authenticate_user!
-
   def index
-    @matches = Match.includes(:home_team, :away_team, :league)
-                    .order(date: :asc)
-
-    @matches =
-      case params[:status]
-      when 'live'     then @matches.live
-      when 'finished' then @matches.finished
-      when 'upcoming' then @matches.upcoming
-      else                 @matches.today
-      end
+    @date = params[:date] ? Date.parse(params[:date]) : Date.today
   end
 
   def show
-    @match = Match.includes(
-      :home_team, :away_team, :league,
-      :match_events, :match_statistics, :match_lineups
-    ).find(params[:id])
-
-    @match_events     = @match.match_events
-    @match_statistics = @match.match_statistics
-    @match_lineups    = @match.match_lineups
+    @match = Match.includes(:home_team, :away_team).find(params[:id])
   end
 end

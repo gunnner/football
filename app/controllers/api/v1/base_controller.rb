@@ -34,7 +34,8 @@ module Api
       end
 
       def extract_token
-        request.headers['Authorization']&.split(' ')&.last
+        request.cookies[:jwt_token].presence ||
+          request.headers['Authorization']&.split(' ')&.last
       end
 
       def render_success(data, status: :ok, meta: nil)
