@@ -1,55 +1,5 @@
-<% cache [@league, @season, @standings.map(&:cache_key_with_version).sort] do %>
-  <div class="bg-gray-900 rounded-xl overflow-hidden">
-    <div class="px-4 py-3 border-b border-gray-800">
-      <h2 class="text-sm font-semibold text-gray-300 uppercase tracking-wider">
-        Standings <%= @season %>
-      </h2>
-    </div>
+<% content_for :title, @league.name %>
 
-    <% if @standings.blank? %>
-      <p class="text-center text-gray-500 py-8">No standings available</p>
-    <% else %>
-      <div class="grid grid-cols-12 px-4 py-2 text-xs text-gray-500 uppercase border-b border-gray-800">
-        <div class="col-span-1 text-center">#</div>
-        <div class="col-span-5">Team</div>
-        <div class="col-span-1 text-center">P</div>
-        <div class="col-span-1 text-center">W</div>
-        <div class="col-span-1 text-center">D</div>
-        <div class="col-span-1 text-center">L</div>
-        <div class="col-span-1 text-center">GD</div>
-        <div class="col-span-1 text-center font-bold">Pts</div>
-      </div>
-
-      <% @standings.each do |standing| %>
-        <% cache standing do %>
-          <%= link_to team_path(standing.team), class: "block" do %>
-            <div class="grid grid-cols-12 px-4 py-3 border-b border-gray-800 last:border-0
-                        hover:bg-gray-800 transition-colors items-center">
-              <div class="col-span-1 text-center text-gray-400 text-sm">
-                <%= standing.position %>
-              </div>
-              <div class="col-span-5 flex items-center gap-2">
-                <% if standing.team.logo.present? %>
-                  <img src="<%= standing.team.logo %>" class="w-5 h-5 object-contain">
-                <% end %>
-                <span class="text-sm font-medium text-gray-100">
-                  <%= standing.team.name %>
-                </span>
-              </div>
-              <div class="col-span-1 text-center text-gray-400 text-sm"><%= standing.games_played %></div>
-              <div class="col-span-1 text-center text-gray-400 text-sm"><%= standing.wins %></div>
-              <div class="col-span-1 text-center text-gray-400 text-sm"><%= standing.draws %></div>
-              <div class="col-span-1 text-center text-gray-400 text-sm"><%= standing.loses %></div>
-              <div class="col-span-1 text-center text-gray-400 text-sm">
-                <%= standing.scored_goals.to_i - standing.received_goals.to_i %>
-              </div>
-              <div class="col-span-1 text-center text-white font-bold text-sm">
-                <%= standing.points %>
-              </div>
-            </div>
-          <% end %>
-        <% end %>
-      <% end %>
-    <% end %>
-  </div>
-<% end %>
+<div data-react-component="LeagueShow"
+     data-props="<%= { leagueId: @league.id }.to_json %>">
+</div>

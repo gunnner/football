@@ -3,8 +3,6 @@
 // ./bin/rails generate stimulus controllerName
 
 import { application } from './application'
-import MatchController from './match_controller'
-import TabsController  from './tabs_controller'
+import SearchBarController from './search_bar_controller'
 
-application.register('match', MatchController)
-application.register('tabs',  TabsController)
+application.register('search-bar', SearchBarController)
