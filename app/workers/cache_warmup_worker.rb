@@ -6,6 +6,7 @@ class CacheWarmupWorker < BaseWorker
 
     warm_leagues
     warm_today_matches
+    warm_today_match_details
 
     log 'Cache warmup completed'
   rescue StandardError => e
@@ -22,5 +23,9 @@ class CacheWarmupWorker < BaseWorker
 
   def warm_today_matches
     Interactors::CacheWarmup::TodayMatches.call
+  end
+
+  def warm_today_match_details
+    Interactors::CacheWarmup::TodayMatchDetails.call
   end
 end

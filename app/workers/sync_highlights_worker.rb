@@ -4,8 +4,19 @@ class SyncHighlightsWorker < BaseWorker
   def perform(date = Date.today.to_s)
     log "Syncing highlights for #{date}..."
 
-    FootballConfig.active_league_ids.each do |league_id|
-      Highlightly::Importers::HighlightImporter.new.(date: Date.parse(date), league_id: league_id)
+    FootballConfig::ACTIVE_LEAGUES.each do |league|
+      attr = {
+        countryCode: league[:country_code],
+        countryName: league[:country_name],
+        leagueName:  league[:name],
+        leagueId:    league[:external_id],
+        date:        date,
+        timezone:    'Etc/UTC',
+        season:      1.year.ago.year,
+        limit:       40
+      }
+
+      Highlightly::Importers::HighlightImporter.new.call(attr)
     end
 
     log 'Highlights sync completed'

@@ -4,7 +4,7 @@ class SyncStandingsWorker < BaseWorker
   def perform(league_external_id, season)
     log "Syncing standings for league #{league_external_id}, season #{season}..."
 
-    Highlightly::Importers::StandingImporter.new.(
+    Highlightly::Importers::StandingImporter.new.call(
       league_external_id: league_external_id,
       season:             season
     )
