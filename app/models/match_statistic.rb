@@ -12,4 +12,6 @@ class MatchStatistic < ApplicationRecord
   belongs_to :match
 
   validates :display_name, presence: true
+
+  after_commit -> { CacheService::Store.invalidate(CacheService::Keys.match_statistics(match_id)) }
 end

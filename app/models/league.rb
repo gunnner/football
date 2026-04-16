@@ -9,6 +9,19 @@ class League < ApplicationRecord
   has_many :standings,                   dependent: :destroy
   has_many :favorites, as: :favoritable, dependent: :destroy
 
+  def teams
+    current = matches.maximum(:season)
+    season_matches = matches.where(season: current).select(:id)
+    Team.where(id: Match.where(id: season_matches).select(:home_team_id))
+        .or(Team.where(id: Match.where(id: season_matches).select(:away_team_id)))
+  end
+
+  def players
+    Player.joins(box_scores: :match)
+          .where(matches: { league_id: id })
+          .distinct
+  end
+
 
   validates :external_id, presence: true, uniqueness: true
   validates :name, presence: true

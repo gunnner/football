@@ -13,6 +13,9 @@ class Match < ApplicationRecord
   has_many :match_lineups,    dependent: :destroy
   has_many :box_scores,       dependent: :destroy
   has_many :highlights,       dependent: :destroy
+  has_many :match_predictions, dependent: :destroy
+  has_many :match_shots,       dependent: :destroy
+  has_many :match_news_items,  dependent: :destroy, class_name: 'MatchNewsItem'
 
   validates :external_id, presence: true, uniqueness: true
   validates :date,        presence: true
@@ -24,6 +27,7 @@ class Match < ApplicationRecord
   scope :finished, -> { where(status: MatchConstants::FINISHED_STATUSES) }
   scope :upcoming, -> { where(status: MatchConstants::NOT_STARTED).where('date > ?', Time.current) }
   scope :today,    -> { where(date: Time.current.beginning_of_day..Time.current.end_of_day) }
+  scope :on_date,  ->(date) { where(date: date.beginning_of_day..date.end_of_day) }
   scope :h2h,      ->(team1_id, team2_id) {
     where(home_team_id: team1_id, away_team_id: team2_id)
       .or(where(home_team_id: team2_id, away_team_id: team1_id))
@@ -55,6 +59,7 @@ class Match < ApplicationRecord
     CacheService::Store.invalidate(CacheService::Keys.match_events(id))
     CacheService::Store.invalidate(CacheService::Keys.match_statistics(id))
     CacheService::Store.invalidate(CacheService::Keys.match_lineup(id))
+    CacheService::Store.invalidate(CacheService::Keys.match_box_scores(id))
   end
 
   def broadcast_changes
@@ -72,6 +77,7 @@ class Match < ApplicationRecord
       MatchBroadcastService.broadcast_match_start(self)
     elsif new_status.in?(%w[Finished Finished\ after\ penalties Finished\ after\ extra\ time])
       MatchBroadcastService.broadcast_match_end(self)
+      SyncAllStandingsWorker.perform_async
     end
   end
 end
