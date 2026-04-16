@@ -36,8 +36,12 @@ module Interactors
 
         return if records.blank?
 
+        # Deduplicate by [match_id, player_external_id] — keep last occurrence (most complete data)
+        # API sometimes returns same player twice (listed under both teams or duplicated within team)
+        deduped = records.reverse.uniq { [ it[:match_id], it[:player_external_id] ] }.reverse
+
         BoxScore.upsert_all(
-          records,
+          deduped,
           unique_by:   %i[match_id player_external_id],
           update_only: box_score_attributes
         )
@@ -120,11 +124,7 @@ module Interactors
       end
 
       def upsert_players
-        Highlightly::Importers::PlayerImporter.new.(box_score_data: box_score_data)
-      end
-
-      def client
-        @client ||= Highlightly::Client.new
+        Highlightly::Importers::PlayerImporter.new.call(box_score_data: box_score_data)
       end
     end
   end

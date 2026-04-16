@@ -37,10 +37,6 @@ module Interactors
         end
       end
 
-      def client
-        @client ||= Highlightly::Client.new
-      end
-
       def upsert_stats(stats_records)
         MatchStatistic.upsert_all(
           stats_records,

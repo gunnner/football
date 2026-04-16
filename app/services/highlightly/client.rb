@@ -7,14 +7,16 @@ module Highlightly
     include Endpoints
 
     BASE_URL = 'https://soccer.highlightly.net'.freeze
-    RATE_LIMIT_THRESHOLD = 95
+    RATE_LIMIT_THRESHOLD = 7000
 
     def initialize
       @connection = build_connection
     end
 
-    def countries(params = {})
-      get(Endpoints::COUNTRIES, params)
+    def countries(country_code = nil)
+      path = country_code.present? ? "#{Endpoints::COUNTRIES}/#{country_code}" 
+                                   : Endpoints::COUNTRIES
+      get(path)
     end
 
     def leagues(params = {})
@@ -29,6 +31,14 @@ module Highlightly
       get(Endpoints::TEAMS, params)&.dig('data')
     end
 
+    def team(id)
+      get("#{Endpoints::TEAMS}/#{id}")
+    end
+
+    def team_statistics(id, params = {})
+      get("#{Endpoints::TEAMS}/statistics/#{id}", params)
+    end
+
     def matches(params = {})
       get(Endpoints::MATCHES, params)&.dig('data')
     end
@@ -40,9 +50,15 @@ module Highlightly
     def standings(params = {})
       get(Endpoints::STANDINGS, params)
     end
-
+    # https://sports.highlightly.net/football/highlights?countryCode=GB-ENG&countryName=Englans&leagueName=S%C3%BCper+Lig&leagueId=173537&date=2023-08-11&timezone=Europe%2FLondon&season=2023&matchId=914490490&homeTeamId=850082&awayTeamId=856039&homeTeamName=Trabzonspor&awayTeamName=Antalyaspor&limit=40&offset=0
     def highlights(params = {})
       get(Endpoints::HIGHLIGHTS, params)&.dig('data')
+    end
+
+    def highlight_geo_restrictions(highlight_id)
+      get("highlights/geo-restrictions/#{highlight_id}")
+    rescue Highlightly::NotFoundError
+      nil
     end
 
     def lineups(match_id)
@@ -66,11 +82,19 @@ module Highlightly
     end
 
     def player_statistics(id)
-      get("#{Endpoints::PLAYERS}/#{id}/statistics").first
+      get("#{Endpoints::PLAYERS}/#{id}/statistics")&.first
     end
 
     def box_score(match_id)
       get("#{Endpoints::BOX_SCORE}/#{match_id}")
+    end
+
+    def bookmakers(params = {})
+      get(Endpoints::BOOKMAKERS, params)
+    end
+
+    def odds(params = {})
+      get(Endpoints::ODDS, params)
     end
 
     def last_five_games(team_id)

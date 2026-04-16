@@ -28,6 +28,40 @@ class MatchBroadcastService
       )
     end
 
+    def broadcast_event(match, event)
+      notify_stream(
+        stream_name(match),
+        {
+          type:  'match_event',
+          match: match_data(match),
+          event: {
+            id:                    event.id,
+            time:                  event.time,
+            event_type:            event.event_type,
+            team_name:             event.team_name,
+            team_external_id:      event.team_external_id,
+            player_name:           event.player_name,
+            assisting_player_name: event.assisting_player_name,
+            substituted_player:    event.substituted_player,
+          }
+        }
+      )
+    end
+
+    def broadcast_statistics_updated(match)
+      notify_stream(
+        stream_name(match),
+        { type: 'statistics_updated', match_id: match.id }
+      )
+    end
+
+    def broadcast_lineups_updated(match)
+      notify_stream(
+        stream_name(match),
+        { type: 'lineups_updated', match_id: match.id }
+      )
+    end
+
     private
 
     def notify_stream(stream_name, data)

@@ -24,10 +24,6 @@ module Interactors
 
         context.match_data = data.first
       end
-
-      def client
-        @client ||= Highlightly::Client.new
-      end
     end
   end
 end

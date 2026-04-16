@@ -41,10 +41,6 @@ module Interactors
           update_only: %i[formation initial_lineup substitutes]
         )
       end
-
-      def client
-        @client ||= Highlightly::Client.new
-      end
     end
   end
 end

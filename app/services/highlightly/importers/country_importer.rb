@@ -4,21 +4,26 @@ module Highlightly
       def call
         log 'Starting countries import...'
 
-        data = @client.countries
-        # debugger
-        return if data.blank?
+        active_countries_codes = FootballConfig::ACTIVE_LEAGUES.map { _1[:country_code] }
+        total_imported = 0
 
-        results = upsert_countries(data)
+        active_countries_codes.each do |country_code|
+          data = @client.countries(country_code)
+          next if data.blank?
 
-        log "Done. Imported: #{results[:imported]}, Skipped: #{results[:skipped]}"
-        results
+          results = upsert_countries(data)
+          total_imported += results[:imported].to_i
+          log "Imported #{results[:imported]} for #{country_code}"
+        end
+
+        log "Done. Total imported: #{total_imported}"
+        { imported: total_imported }
       end
 
       private
 
       def upsert_countries(data)
-        imported = 0
-        skipped  = 0
+        imported, skipped = 0, 0
 
         records = data.map do |country|
           {
