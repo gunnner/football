@@ -2,6 +2,10 @@
 
 # If running the rails server then create or migrate existing database
 if [ "${@: -2:1}" == "./bin/rails" ] && [ "${@: -1:1}" == "server" ]; then
+  if [ -z "${DB_NAME}" ]; then
+    echo "FATAL: DB_NAME is not set. Refusing to run db:prepare to prevent creating a wrong database." >&2
+    exit 1
+  fi
   ./bin/rails db:prepare
 fi
 

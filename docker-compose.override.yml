@@ -8,6 +8,8 @@ services:
       RAILS_ENV: development
       DB_NAME: ${DB_NAME}
       DB_HOST: postgres
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
       REDIS_URL: redis://redis:6379/0
       ELASTICSEARCH_URL: http://elasticsearch:9200
     volumes:

@@ -1,3 +1,11 @@
+<%
+  db_name = ENV['DB_NAME']
+  if db_name.nil? || db_name.strip.empty?
+    raise "FATAL: DB_NAME environment variable is not set. " \
+          "Set it in your .env file before starting the application. " \
+          "Refusing to start to prevent connecting to wrong database."
+  end
+%>
 default: &default
   adapter: postgresql
   encoding: unicode
@@ -8,15 +16,13 @@ default: &default
 
 development:
   <<: *default
-  database: <%= "#{ENV['DB_NAME']}_development" %>
+  database: <%= "#{db_name}_development" %>
 
 test:
   <<: *default
-  database: <%= "#{ENV['DB_NAME']}_test" %>
+  database: <%= "#{db_name}_test" %>
 
 production:
   <<: *default
-  database: <%= "#{ENV['DB_NAME']}_production" %>
+  database: <%= "#{db_name}_production" %>
   pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 10 } %>
-
-  
