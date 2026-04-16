@@ -68,9 +68,22 @@ RSpec.describe 'Api::V1::Matches', type: :request do
   end
 
   describe 'GET /api/v1/matches/h2h' do
-    it 'returns h2h matches' do
+    let!(:past_match) do
+      create(:match,
+        league:        league,
+        home_team:     home_team,
+        away_team:     away_team,
+        status:        'Finished',
+        score_current: '2 - 1',
+        date:          1.week.ago
+      )
+    end
+
+    it 'returns h2h matches from DB' do
       get '/api/v1/matches/h2h', params: { team1_id: home_team.id, team2_id: away_team.id }, headers: auth_headers
       expect(response).to have_http_status(:ok)
+      expect(json_response['data']).to be_an(Array)
+      expect(json_response['data'].first).to include('score_current', 'home_team', 'away_team')
     end
 
     it 'returns 400 without required params' do

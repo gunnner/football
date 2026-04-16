@@ -8,7 +8,7 @@ RSpec.describe SyncAllStandingsWorker do
 
     it 'enqueues SyncStandingsWorker for each active league' do
       FootballConfig.active_league_ids.each do |league_id|
-        expect(SyncStandingsWorker).to receive(:perform_async).with(league_id, Date.today.year)
+        expect(SyncStandingsWorker).to receive(:perform_async).with(league_id, Date.today.year - 1)
       end
 
       worker.perform

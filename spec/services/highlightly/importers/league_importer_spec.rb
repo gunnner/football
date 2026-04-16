@@ -15,17 +15,17 @@ RSpec.describe Highlightly::Importers::LeagueImporter do
 
   before do
     allow_any_instance_of(Highlightly::Client)
-      .to receive(:leagues)
-      .with(leagueId: active_league_id)
-      .and_return([ league_data ])
+      .to receive(:league)
+      .with(active_league_id)
+      .and_return(league_data)
   end
 
   describe '#call' do
     it 'fetches only active leagues by ID (no global pagination)' do
       expect_any_instance_of(Highlightly::Client)
-        .to receive(:leagues)
-        .with(leagueId: active_league_id)
-        .and_return([ league_data ])
+        .to receive(:league)
+        .with(active_league_id)
+        .and_return(league_data)
 
       importer.call
     end
@@ -33,7 +33,6 @@ RSpec.describe Highlightly::Importers::LeagueImporter do
     it 'does not call the leagues endpoint with pagination params' do
       expect_any_instance_of(Highlightly::Client)
         .not_to receive(:leagues)
-        .with(hash_including(:limit, :offset))
 
       importer.call
     end
@@ -60,9 +59,9 @@ RSpec.describe Highlightly::Importers::LeagueImporter do
 
     it 'skips league when country is not found in DB' do
       allow_any_instance_of(Highlightly::Client)
-        .to receive(:leagues)
-        .with(leagueId: active_league_id)
-        .and_return([ league_data.merge('country' => { 'code' => 'XX' }) ])
+        .to receive(:league)
+        .with(active_league_id)
+        .and_return(league_data.merge('country' => { 'code' => 'XX' }))
 
       expect { importer.call }.not_to change(League, :count)
     end
@@ -73,14 +72,14 @@ RSpec.describe Highlightly::Importers::LeagueImporter do
       before do
         allow(FootballConfig).to receive(:active_league_ids).and_return([ active_league_id, second_id ])
         allow_any_instance_of(Highlightly::Client)
-          .to receive(:leagues)
-          .with(leagueId: second_id)
-          .and_return([])
+          .to receive(:league)
+          .with(second_id)
+          .and_return(nil)
       end
 
       it 'fetches each active league separately' do
-        expect_any_instance_of(Highlightly::Client).to receive(:leagues).with(leagueId: active_league_id).and_return([ league_data ])
-        expect_any_instance_of(Highlightly::Client).to receive(:leagues).with(leagueId: second_id).and_return([])
+        expect_any_instance_of(Highlightly::Client).to receive(:league).with(active_league_id).and_return(league_data)
+        expect_any_instance_of(Highlightly::Client).to receive(:league).with(second_id).and_return(nil)
         importer.call
       end
     end
@@ -88,8 +87,8 @@ RSpec.describe Highlightly::Importers::LeagueImporter do
     context 'when API returns nil' do
       before do
         allow_any_instance_of(Highlightly::Client)
-          .to receive(:leagues)
-          .with(leagueId: active_league_id)
+          .to receive(:league)
+          .with(active_league_id)
           .and_return(nil)
       end
 
