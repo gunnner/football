@@ -9,10 +9,8 @@ module Api
 
           if user.save
             token = JwtService.encode(user_id: user.id)
-            render json: {
-              data:  UserSerializer.new(user).serializable_hash,
-              token: token
-            }, status: :created
+            set_jwt_cookie(token)
+            render json: { data: UserSerializer.new(user).serializable_hash }, status: :created
           else
             render_error user.errors.full_messages.join(', '), status: :unprocessable_content
           end
@@ -28,6 +26,16 @@ module Api
             :first_name,
             :last_name
           )
+        end
+
+        def set_jwt_cookie(token)
+          cookies[:jwt_token] = {
+            value:     token,
+            httponly:  true,
+            secure:    Rails.env.production?,
+            same_site: :lax,
+            expires:   JwtService::EXPIRATION.from_now
+          }
         end
       end
     end

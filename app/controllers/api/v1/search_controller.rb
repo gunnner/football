@@ -2,11 +2,9 @@ module Api
   module V1
     class SearchController < BaseController
       def index
-        # debugger
         query   = params.require(:q)
         type    = params[:type]
         results = SearchService.new(query).call
-
         results = filter_by_type(results, type) if type.present?
 
         render json: {
@@ -25,7 +23,7 @@ module Api
         when 'team'   then results.merge(players: [], leagues: [])
         when 'player' then results.merge(teams:   [], leagues: [])
         when 'league' then results.merge(teams:   [], players: [])
-        else records
+        else results
         end
       end
     end

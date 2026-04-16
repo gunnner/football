@@ -3,6 +3,10 @@ require 'active_support/core_ext/integer/time'
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
 
+  # Log to stdout so docker compose logs show worker output.
+  config.logger = ActiveSupport::Logger.new($stdout)
+  config.log_level = :info
+
   # Make code changes take effect immediately without server restart.
   config.enable_reloading = true
 
@@ -28,7 +32,6 @@ Rails.application.configure do
   # Change to :null_store to avoid any caching.
   config.cache_store = :redis_cache_store, {
     url: ENV['REDIS_URL'],
-    expires_in: 1.hour,
     namespace: 'rails_cache'
   }
 

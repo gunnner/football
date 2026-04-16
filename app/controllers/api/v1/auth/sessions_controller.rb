@@ -9,10 +9,8 @@ module Api
 
           if user&.valid_password?(sign_in_params[:password])
             token = JwtService.encode(user_id: user.id)
-            render json: {
-              data:  UserSerializer.new(user).serializable_hash,
-              token: token
-            }
+            set_jwt_cookie(token)
+            render json: { data: UserSerializer.new(user).serializable_hash }
           else
             render_error 'Invalid email or password', status: :unauthorized
           end
@@ -21,6 +19,7 @@ module Api
         def destroy
           token = extract_token
           TokenBlacklistService.add(token) if token
+          clear_jwt_cookie
           render json: { message: 'Signed out successfully' }
         end
 
@@ -32,6 +31,20 @@ module Api
 
         def sign_in_params
           params.require(:user).permit(:email, :password)
+        end
+
+        def set_jwt_cookie(token)
+          cookies[:jwt_token] = {
+            value:     token,
+            httponly:  true,
+            secure:    Rails.env.production?,
+            same_site: :lax,
+            expires:   JwtService::EXPIRATION.from_now
+          }
+        end
+
+        def clear_jwt_cookie
+          cookies.delete(:jwt_token, same_site: :lax)
         end
       end
     end
