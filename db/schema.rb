@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_26_175914) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_13_094142) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -100,11 +100,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_26_175914) do
   end
 
   create_table "highlights", force: :cascade do |t|
+    t.jsonb "allowed_countries"
+    t.jsonb "blocked_countries"
     t.string "channel"
     t.datetime "created_at", null: false
     t.text "description"
     t.string "embed_url"
+    t.boolean "embeddable"
     t.bigint "external_id", null: false
+    t.string "geo_state"
     t.string "highlight_type", null: false
     t.string "img_url"
     t.bigint "match_id", null: false
@@ -167,6 +171,43 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_26_175914) do
     t.index ["substitutes"], name: "index_match_lineups_on_substitutes", using: :gin
   end
 
+  create_table "match_news", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "image_url"
+    t.bigint "match_id", null: false
+    t.datetime "published_at"
+    t.string "title", null: false
+    t.datetime "updated_at", null: false
+    t.string "url", null: false
+    t.index ["match_id", "url"], name: "index_match_news_on_match_id_and_url", unique: true
+    t.index ["match_id"], name: "index_match_news_on_match_id"
+  end
+
+  create_table "match_predictions", force: :cascade do |t|
+    t.decimal "away_pct", precision: 5, scale: 2
+    t.datetime "created_at", null: false
+    t.decimal "draw_pct", precision: 5, scale: 2
+    t.datetime "generated_at", null: false
+    t.decimal "home_pct", precision: 5, scale: 2
+    t.bigint "match_id", null: false
+    t.string "prediction_type", null: false
+    t.datetime "updated_at", null: false
+    t.index ["match_id", "prediction_type", "generated_at"], name: "idx_match_predictions_unique", unique: true
+    t.index ["match_id"], name: "index_match_predictions_on_match_id"
+  end
+
+  create_table "match_shots", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "goal_target"
+    t.bigint "match_id", null: false
+    t.string "outcome"
+    t.string "player_name"
+    t.bigint "team_external_id", null: false
+    t.string "time"
+    t.datetime "updated_at", null: false
+    t.index ["match_id"], name: "index_match_shots_on_match_id"
+  end
+
   create_table "match_statistics", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "display_name", null: false
@@ -196,6 +237,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_26_175914) do
     t.string "round"
     t.string "score_current"
     t.string "score_penalties"
+    t.integer "season"
     t.string "status", default: "Not started", null: false
     t.datetime "updated_at", null: false
     t.integer "venue_capacity"
@@ -208,8 +250,32 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_26_175914) do
     t.index ["home_team_id", "away_team_id"], name: "index_matches_on_home_team_id_and_away_team_id"
     t.index ["home_team_id"], name: "index_matches_on_home_team_id"
     t.index ["league_id", "date"], name: "index_matches_on_league_id_and_date"
+    t.index ["league_id", "season"], name: "index_matches_on_league_id_and_season"
     t.index ["league_id"], name: "index_matches_on_league_id"
+    t.index ["season"], name: "index_matches_on_season"
     t.index ["status"], name: "index_matches_on_status"
+  end
+
+  create_table "player_club_statistics", force: :cascade do |t|
+    t.integer "assists", default: 0
+    t.integer "clean_sheets", default: 0
+    t.string "club", null: false
+    t.datetime "created_at", null: false
+    t.integer "games_played", default: 0
+    t.integer "goals", default: 0
+    t.integer "goals_conceded", default: 0
+    t.integer "minutes_played", default: 0
+    t.integer "own_goals", default: 0
+    t.integer "penalties_scored", default: 0
+    t.bigint "player_id", null: false
+    t.integer "red_cards", default: 0
+    t.integer "second_yellow_cards", default: 0
+    t.integer "substituted_in", default: 0
+    t.integer "substituted_out", default: 0
+    t.datetime "updated_at", null: false
+    t.integer "yellow_cards", default: 0
+    t.index ["player_id", "club"], name: "index_player_club_statistics_on_player_id_and_club", unique: true
+    t.index ["player_id"], name: "index_player_club_statistics_on_player_id"
   end
 
   create_table "player_injuries", force: :cascade do |t|
@@ -235,7 +301,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_26_175914) do
     t.date "recorded_date", null: false
     t.datetime "updated_at", null: false
     t.bigint "value", null: false
-    t.index ["player_id", "recorded_date"], name: "index_player_market_values_on_player_id_and_recorded_date"
+    t.index ["player_id", "recorded_date"], name: "index_player_market_values_on_player_id_and_recorded_date", unique: true
     t.index ["player_id"], name: "index_player_market_values_on_player_id"
   end
 
@@ -253,7 +319,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_26_175914) do
     t.bigint "player_id", null: false
     t.string "secondary_positions"
     t.datetime "updated_at", null: false
-    t.index ["player_id"], name: "index_player_profiles_on_player_id"
+    t.index ["player_id"], name: "index_player_profiles_on_player_id", unique: true
   end
 
   create_table "player_rumours", force: :cascade do |t|
@@ -380,11 +446,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_26_175914) do
   end
 
   create_table "teams", force: :cascade do |t|
+    t.string "coach_name"
+    t.string "country"
     t.datetime "created_at", null: false
     t.bigint "external_id", null: false
+    t.integer "founded"
     t.string "logo"
     t.string "name", null: false
     t.datetime "updated_at", null: false
+    t.integer "venue_capacity"
+    t.string "venue_city"
+    t.string "venue_name"
     t.index ["external_id"], name: "index_teams_on_external_id", unique: true
     t.index ["name"], name: "index_teams_on_name"
   end
@@ -426,10 +498,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_26_175914) do
   add_foreign_key "leagues", "countries"
   add_foreign_key "match_events", "matches"
   add_foreign_key "match_lineups", "matches"
+  add_foreign_key "match_news", "matches"
+  add_foreign_key "match_predictions", "matches"
+  add_foreign_key "match_shots", "matches"
   add_foreign_key "match_statistics", "matches"
   add_foreign_key "matches", "leagues"
   add_foreign_key "matches", "teams", column: "away_team_id"
   add_foreign_key "matches", "teams", column: "home_team_id"
+  add_foreign_key "player_club_statistics", "players"
   add_foreign_key "player_injuries", "players"
   add_foreign_key "player_market_values", "players"
   add_foreign_key "player_profiles", "players"
