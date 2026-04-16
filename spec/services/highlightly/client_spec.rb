@@ -31,7 +31,7 @@ RSpec.describe Highlightly::Client do
 
   describe 'rate limiting' do
     before do
-      allow(RedisService).to receive(:get).with('requested_attempts').and_return('96')
+      allow(RedisService).to receive(:get).with('requested_attempts').and_return('101')
     end
 
     it 'raises RateLimitError when threshold reached' do
