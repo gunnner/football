@@ -22,5 +22,9 @@ module Interactors
     def full_message(message)
       "[#{self.class.name}] #{message}"
     end
+
+    def client
+      @client ||= Highlightly::Client.new
+    end
   end
 end

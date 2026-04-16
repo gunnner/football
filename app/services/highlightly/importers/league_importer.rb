@@ -17,8 +17,17 @@ module Highlightly
 
       def fetch_all_active_leagues
         FootballConfig.active_league_ids.flat_map do |league_id|
-          @client.leagues(leagueId: league_id) || []
+          normalize_league_response(@client.league(league_id))
         end
+      end
+
+      def normalize_league_response(payload)
+        return [] if payload.blank?
+
+        return Array(payload['data']).compact if payload.is_a?(Hash) && payload.key?('data')
+        return [ payload ] if payload.is_a?(Hash)
+
+        Array(payload).compact
       end
 
       def upsert_leagues(data)

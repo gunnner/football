@@ -14,5 +14,6 @@ module Highlightly
     LAST_FIVE  = '/last-five-games'.freeze
     H2H        = '/head-2-head'.freeze
     BOOKMAKERS = '/bookmakers'.freeze
+    ODDS       = '/odds'.freeze
   end
 end

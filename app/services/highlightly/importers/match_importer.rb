@@ -1,19 +1,22 @@
 module Highlightly
   module Importers
     class MatchImporter < BaseImporter
+      def import_raw(data)
+        upsert_matches(data)
+      end
+
       def call(date: Date.today, limit: 100, league_id: nil)
         log "Starting matches import for #{date}..."
 
-        params = { date: date.to_s, limit: limit }
-        params[:leagueId] = league_id if league_id.present?
+          params = { date: date.to_s, limit: limit }
+          params[:leagueId] = league_id if league_id.present?
+          data = @client.matches(params)
+          return if data.blank?
 
-        data = @client.matches(params)
-        return if data.blank?
+          result = upsert_matches(data)
 
-        result = upsert_matches(data)
-
-        log "Done. Imported: #{result[:imported]}"
-        result
+          log "Done. Imported: #{result[:imported]}"
+          result
       end
 
       private
@@ -45,6 +48,7 @@ module Highlightly
             clock:           match['state']['clock'],
             score_current:   match['state']['score']['current'],
             score_penalties: match['state']['score']['penalties'],
+            season:          match['league']['season'],
             created_at:      Time.current,
             updated_at:      Time.current
           }
@@ -53,7 +57,7 @@ module Highlightly
         Match.upsert_all(
           records,
           unique_by: :external_id,
-          update_only: %i[status clock score_current score_penalties]
+          update_only: %i[status clock score_current score_penalties season]
         )
 
         { imported: records.size }

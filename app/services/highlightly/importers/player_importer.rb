@@ -17,7 +17,7 @@ module Highlightly
               logo:        player['logo'],
               created_at:  Time.current,
               updated_at:  Time.current
-            }
+          }.compact
           end
         end
 
@@ -42,13 +42,19 @@ module Highlightly
 
       def link_box_scores_to_players(external_ids)
         players = Player.where(external_id: external_ids)
-                        .pluck(:external_id, :id)
-                        .to_h
+                        .pluck(:external_id, :id, :logo)
+                        .each_with_object({}) { |(ext_id, id, logo), h| h[ext_id] = { id: id, logo: logo } }
 
-        BoxScore.where(player_external_id: external_ids, player_id: nil)
+        BoxScore.where(player_external_id: external_ids)
+                .where('player_id IS NULL OR player_logo IS NULL')
                 .find_each do |box_score|
-                  player_id = players[box_score.player_external_id]
-                  box_score.update_column(:player_id, player_id) if player_id
+                  player = players[box_score.player_external_id]
+                  next unless player
+
+                  updates = {}
+                  updates[:player_id]   = player[:id]   if box_score.player_id.nil? && player[:id]
+                  updates[:player_logo] = player[:logo] if box_score.player_logo.nil? && player[:logo].present?
+                  box_score.update_columns(updates)     if updates.any?
                 end
       end
     end

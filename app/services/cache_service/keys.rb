@@ -24,6 +24,10 @@ module CacheService
       "match:#{id}:lineup"
     end
 
+    def self.match_box_scores(id)
+      "match:#{id}:box_scores"
+    end
+
     def self.league(id)
       "league:#{id}"
     end
@@ -37,11 +41,11 @@ module CacheService
     end
 
     def self.team(id)
-      "team:#{id}"
+      "team:#{id}:show"
     end
 
     def self.team_statistics(team_id, season)
-      "team:#{team_id}"
+      "team:#{team_id}:statistics:#{season}"
     end
 
     def self.team_matches(team_id)

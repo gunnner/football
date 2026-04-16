@@ -1,11 +1,9 @@
 module Highlightly
   module Importers
     class HighlightImporter < BaseImporter
-      def call(date: Date.today, limit: 40, league_id: nil)
-        log "Starting highlights import for #{date}..."
-
-        params = { date: date.to_s, limit: limit }
-        params[:leagueId] = league_id if league_id.present?
+      def call(args = {})
+        params = args.compact
+        log "Starting highlights import for #{params[:date]}..."
 
         data   = @client.highlights(params)
         result = upsert_highlights(data)
@@ -17,6 +15,9 @@ module Highlightly
       private
 
       def upsert_highlights(data)
+        return { imported: 0 } if data.blank?
+
+        data = data.select { |h| h['type'] == 'VERIFIED' }
         return { imported: 0 } if data.blank?
 
         ensure_matches_exist(data)
@@ -54,11 +55,29 @@ module Highlightly
           update_only: %i[title description url embed_url img_url]
         )
 
+        fetch_geo_restrictions(records)
+
         { imported: records.size }
       rescue StandardError => e
         log_error "Failed to upsert highlights: #{e.message}"
         Sentry.capture_exception(e)
         { imported: 0, error: e.message }
+      end
+
+      def fetch_geo_restrictions(records)
+        records.each do |r|
+          geo = @client.highlight_geo_restrictions(r[:external_id])
+          next if geo.blank?
+
+          Highlight.where(external_id: r[:external_id]).update_all(
+            geo_state:         geo['state'],
+            allowed_countries: geo['allowedCountries'] || [],
+            blocked_countries: geo['blockedCountries']  || [],
+            embeddable:        geo['embeddable'] != false
+          )
+        rescue StandardError => e
+          log_error "Geo restrictions fetch failed for #{r[:external_id]}: #{e.message}"
+        end
       end
 
       def ensure_matches_exist(data)
