@@ -8,7 +8,7 @@ class SyncWeeklyFixturesWorker < BaseWorker
       date = Date.today + days_ahead
 
       FootballConfig.active_league_ids.each do |league_id|
-        Highlightly::Importers::MatchImporter.new.(date: date, league_id: league_id)
+        Highlightly::Importers::MatchImporter.new.call(date: date, league_id: league_id)
       end
     end
 

@@ -1,5 +1,9 @@
-:concurrency: 5
+# critical — live match sync (every 5 min, latency-sensitive)
+# default  — match details, events, lineups, h2h, standings sync
+# low      — player profiles/stats, team stats, highlights, ES indexing, cache warmup
+
+:concurrency: 10
 :queues:
-  - [critical, 3]
-  - [default, 2]
+  - [critical, 6]
+  - [default, 3]
   - [low, 1]

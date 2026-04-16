@@ -4,7 +4,7 @@ class SyncAllStandingsWorker < BaseWorker
   def perform
     log 'Starting standings sync...'
 
-    current_year = Date.today.year
+    current_year = Date.today.year - 1
 
     FootballConfig.active_league_ids.each do |external_id|
       remaining = RedisService.get('requested_attempts').to_i

@@ -6,6 +6,7 @@ class SyncStaticDataWorker < BaseWorker
 
     Highlightly::Importers::CountryImporter.new.call
     Highlightly::Importers::LeagueImporter.new.call
+    Highlightly::Importers::TeamDetailImporter.new.call
 
     log 'Static data sync completed'
   rescue Highlightly::RateLimitError => e

@@ -2,10 +2,15 @@ class SyncMatchesWorker < BaseWorker
   sidekiq_options queue: :default, retry: 3
 
   def perform(date = Date.today.to_s)
-    log "Starting matches sync for #{date}..."
+    # Also sync yesterday to catch matches that crossed midnight without a final status update
+    dates = [ Date.yesterday.to_s, date ].uniq
 
-    FootballConfig.active_league_ids.each do |league_id|
-      Highlightly::Importers::MatchImporter.new.(date: Date.parse(date), league_id: league_id)
+    log "Starting matches sync for #{dates.join(', ')}..."
+
+    dates.each do |d|
+      FootballConfig.active_league_ids.each do |league_id|
+        Highlightly::Importers::MatchImporter.new.call(date: d, league_id: league_id)
+      end
     end
 
     log 'Matches sync completed'
