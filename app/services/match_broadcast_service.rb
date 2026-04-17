@@ -42,7 +42,7 @@ class MatchBroadcastService
             team_external_id:      event.team_external_id,
             player_name:           event.player_name,
             assisting_player_name: event.assisting_player_name,
-            substituted_player:    event.substituted_player,
+            substituted_player:    event.substituted_player
           }
         }
       )

@@ -17,7 +17,7 @@ RSpec.describe PlayerStatistic, type: :model do
   describe 'scopes' do
     let!(:player) { create(:player) }
     let!(:stat1)  { create(:player_statistic, player: player, season: '2024', club: 'PSV', competition_type: 'national_league') }
-    let!(:stat2)  { create(:player_statistic, player: player, season: '2023', club: 'Inter', competition_type: 'international_cup') }
+    let!(:stat2)  { create(:player_statistic, player: player, season: '2023', club: 'Inter', competition_type: 'international_competition') }
 
     describe '.for_season' do
       it 'returns statistics for given season' do

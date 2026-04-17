@@ -4,11 +4,12 @@ class SyncLiveMatchesWorker < BaseWorker
   DONE_STATUSES = [ 'Finished', 'Finished after penalties', 'Finished after extra time', 'Cancelled', 'Postponed' ].freeze
 
   def perform
-    # Include matches from the last 36 hours that aren't definitively done,
-    # so yesterday's matches that crossed midnight get their final status synced.
+    # Include matches from the last 36 hours + next 30 minutes:
+    # - last 36h: catch yesterday's matches that crossed midnight without a final status
+    # - next 30m: imminent NOT_STARTED matches that need to be picked up as soon as they kick off
     recent = Match.joins(:league)
                   .where(leagues: { external_id: FootballConfig.active_league_ids })
-                  .where(date: 36.hours.ago..Time.current)
+                  .where(date: 36.hours.ago..30.minutes.from_now)
                   .where.not(status: DONE_STATUSES)
 
     if recent.blank?

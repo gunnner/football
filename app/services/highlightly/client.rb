@@ -14,7 +14,7 @@ module Highlightly
     end
 
     def countries(country_code = nil)
-      path = country_code.present? ? "#{Endpoints::COUNTRIES}/#{country_code}" 
+      path = country_code.present? ? "#{Endpoints::COUNTRIES}/#{country_code}"
                                    : Endpoints::COUNTRIES
       get(path)
     end

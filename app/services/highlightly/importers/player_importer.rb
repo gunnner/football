@@ -17,7 +17,7 @@ module Highlightly
               logo:        player['logo'],
               created_at:  Time.current,
               updated_at:  Time.current
-          }.compact
+            }
           end
         end
 

@@ -70,8 +70,8 @@ RSpec.describe 'Api::V1::Auth', type: :request do
   describe 'GET /api/v1/auth/me' do
     it 'returns current user when authenticated via cookie' do
       post '/api/v1/auth/sign_in', params: { user: { email: 'test@example.com', password: 'password123' } }, as: :json
-
-      get '/api/v1/auth/me', as: :json
+      token = response.cookies['jwt_token']
+      get '/api/v1/auth/me', as: :json, headers: { 'COOKIE' => "jwt_token=#{token}" }
 
       expect(response).to have_http_status(:ok)
       expect(json_response['data']['attributes']['email']).to eq(user.email)
