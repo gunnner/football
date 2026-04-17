@@ -34,7 +34,7 @@ module Api
       end
 
       def extract_token
-        request.cookies[:jwt_token].presence ||
+        request.cookies['jwt_token'].presence ||
           request.headers['Authorization']&.split(' ')&.last
       end
 

@@ -41,7 +41,7 @@ module CacheService
     end
 
     def self.team(id)
-      "team:#{id}:show"
+      "team:#{id}"
     end
 
     def self.team_statistics(team_id, season)

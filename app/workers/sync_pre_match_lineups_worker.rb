@@ -16,7 +16,7 @@ class SyncPreMatchLineupsWorker < BaseWorker
     # Exclude matches that already have at least one lineup with actual players.
     # Lineups with empty initial_lineup (e.g. API returned "Unknown" formation)
     # are not considered confirmed — keep retrying for those.
-    matches_with_real_lineups = MatchLineup.where("jsonb_array_length(initial_lineup) > 0")
+    matches_with_real_lineups = MatchLineup.where('jsonb_array_length(initial_lineup) > 0')
                                            .select(:match_id)
 
     candidates = Match

@@ -18,7 +18,7 @@ class PlayerTransfer < ApplicationRecord
   def fee_value
     return 0 if fee.blank?
 
-    m = fee.gsub(/[€£$\s,]/, '') #clear string from currencies, spaces and commas
+    m = fee.gsub(/[€£$\s,]/, '') # clear string from currencies, spaces and commas
 
     case m
     when /M$/i then (m.to_f * 1_000_000).to_i

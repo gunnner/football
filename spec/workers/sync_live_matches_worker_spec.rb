@@ -27,7 +27,8 @@ RSpec.describe SyncLiveMatchesWorker do
 
     context 'when a not-started match begins within 30 minutes' do
       before do
-        create(:match, league: active_league, date: 20.minutes.from_now, status: Match::NOT_STARTED)
+        create(:match, league: active_league, date: 20.minutes.from_now, status: Match::NOT_STARTED,
+               home_team: create(:team), away_team: create(:team))
         allow(client).to receive(:matches).and_return([])
       end
 
@@ -88,7 +89,8 @@ RSpec.describe SyncLiveMatchesWorker do
 
     context 'when an unexpected error occurs' do
       before do
-        create(:match, league: active_league, date: 10.minutes.from_now, status: Match::NOT_STARTED)
+        create(:match, league: active_league, date: 10.minutes.from_now, status: Match::NOT_STARTED,
+               home_team: create(:team), away_team: create(:team))
         allow(client).to receive(:matches).and_raise(StandardError, 'boom')
         allow(Sentry).to receive(:capture_exception)
       end

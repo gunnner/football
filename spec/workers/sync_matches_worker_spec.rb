@@ -1,19 +1,23 @@
 RSpec.describe SyncMatchesWorker do
-  let(:worker) { described_class.new }
+  let(:worker)      { described_class.new }
+  let(:league_id)   { ENV.fetch('ACTIVE_LEAGUE_IDS').to_i }
+  let(:importer)    { instance_double(Highlightly::Importers::MatchImporter) }
+
+  before do
+    allow(Highlightly::Importers::MatchImporter).to receive(:new).and_return(importer)
+    allow(importer).to receive(:call)
+  end
 
   describe '#perform' do
-    it 'calls MatchImporter with today date' do
-      expect_any_instance_of(Highlightly::Importers::MatchImporter)
-        .to receive(:call)
-        .with(date: Date.today, league_id: ENV.fetch('ACTIVE_LEAGUE_IDS').to_i)
+    it 'calls MatchImporter with today and yesterday dates' do
       worker.perform
+      expect(importer).to have_received(:call).with(date: Date.today.to_s, league_id: league_id)
+      expect(importer).to have_received(:call).with(date: Date.yesterday.to_s, league_id: league_id)
     end
 
-    it 'calls MatchImporter with given date' do
-      expect_any_instance_of(Highlightly::Importers::MatchImporter)
-        .to receive(:call)
-        .with(date: Date.parse('2024-03-20'), league_id: ENV.fetch('ACTIVE_LEAGUE_IDS').to_i)
+    it 'calls MatchImporter with given date and yesterday' do
       worker.perform('2024-03-20')
+      expect(importer).to have_received(:call).with(date: '2024-03-20', league_id: league_id)
     end
 
     context 'when rate limit reached' do
