@@ -1,6 +1,9 @@
 <%
-  db_name = ENV['DB_NAME']
-  if db_name.nil? || db_name.strip.empty?
+  db_name    = ENV['DB_NAME']
+  db_url     = ENV['DATABASE_URL']
+  using_url  = db_url && !db_url.strip.empty?
+
+  unless using_url || (db_name && !db_name.strip.empty?)
     raise "FATAL: DB_NAME environment variable is not set. " \
           "Set it in your .env file before starting the application. " \
           "Refusing to start to prevent connecting to wrong database."
