@@ -33,6 +33,7 @@ module Interactors
           forecast_status:      data.dig('forecast', 'status'),
           forecast_temperature: data.dig('forecast', 'temperature')
         )
+        CacheService::Store.invalidate(CacheService::Keys.match(context.match.id))
       end
 
       def sync_predictions(data)

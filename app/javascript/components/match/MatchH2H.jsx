@@ -123,39 +123,46 @@ export default function MatchH2H({ matches, homeTeam }) {
           const awayName = m.away_team?.name ?? '?'
           const homeLogo = m.home_team?.logo
           const awayLogo = m.away_team?.logo
+          const homePath = m.home_team?.id ? `/teams/${m.home_team.id}` : null
+          const awayPath = m.away_team?.id ? `/teams/${m.away_team.id}` : null
           const score    = m.score_current ?? '—'
           const date     = formatDate(m.date)
-          const href     = m.match_path ?? null
-          const Row      = href ? 'a' : 'div'
+          const league   = m.league
 
           return (
-            <Row
-              key={m.match_path ?? i}
-              {...(href ? { href } : {})}
-              className="grid grid-cols-[1fr_auto_1fr] items-center px-3 py-2.5 gap-2 hover:bg-gray-800/40 transition-colors"
-            >
-              {/* Home side */}
-              <div className="flex items-center gap-1.5 min-w-0">
-                {homeLogo && (
-                  <img src={homeLogo} alt={homeName} className="w-4 h-4 object-contain shrink-0" />
-                )}
-                <span className="text-sm text-gray-300 truncate">{homeName}</span>
-              </div>
+            <div key={m.match_path ?? i} className="px-3 py-1.5 hover:bg-gray-800/40 transition-colors">
+              {/* League row */}
+              {league && (
+                <div className="flex items-center gap-1 mb-1">
+                  {league.logo && <img src={league.logo} alt="" className="w-3 h-3 object-contain opacity-60" />}
+                  <a href={`/leagues/${league.id}`} className="text-[10px] text-gray-600 hover:text-gray-400 transition-colors truncate">
+                    {league.name}
+                  </a>
+                  {date && <span className="text-[10px] text-gray-700 ml-auto shrink-0">{date}</span>}
+                </div>
+              )}
 
-              {/* Score + date */}
-              <div className="flex flex-col items-center gap-0.5 min-w-[70px]">
-                <span className="font-mono text-sm font-semibold text-white">{score}</span>
-                {date && <span className="text-[10px] text-gray-600">{date}</span>}
-              </div>
+              {/* Match row */}
+              <a href={m.match_path ?? '#'} className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
+                <div className="flex items-center gap-1.5 min-w-0">
+                  {homeLogo && <img src={homeLogo} alt={homeName} className="w-4 h-4 object-contain shrink-0" />}
+                  {homePath
+                    ? <a href={homePath} onClick={e => e.stopPropagation()} className="text-xs text-gray-300 hover:text-white truncate">{homeName}</a>
+                    : <span className="text-xs text-gray-300 truncate">{homeName}</span>
+                  }
+                </div>
 
-              {/* Away side */}
-              <div className="flex items-center justify-end gap-1.5 min-w-0">
-                <span className="text-sm text-gray-300 truncate">{awayName}</span>
-                {awayLogo && (
-                  <img src={awayLogo} alt={awayName} className="w-4 h-4 object-contain shrink-0" />
-                )}
-              </div>
-            </Row>
+                <span className="font-mono text-xs font-semibold text-white tabular-nums">{score}</span>
+
+                <div className="flex items-center justify-end gap-1.5 min-w-0">
+                  {awayPath
+                    ? <a href={awayPath} onClick={e => e.stopPropagation()} className="text-xs text-gray-300 hover:text-white truncate">{awayName}</a>
+                    : <span className="text-xs text-gray-300 truncate">{awayName}</span>
+                  }
+                  {awayLogo && <img src={awayLogo} alt={awayName} className="w-4 h-4 object-contain shrink-0" />}
+                </div>
+              </a>
+            </div>
           )
         })}
       </div>

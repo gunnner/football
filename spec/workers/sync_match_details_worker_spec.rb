@@ -9,7 +9,7 @@ RSpec.describe SyncMatchDetailsWorker do
       end
 
       it 'logs skipping message' do
-        expect(worker).to receive(:log).with('No live matches — skipping')
+        expect(worker).to receive(:log).with('No matches to sync — skipping')
         worker.perform
       end
     end
