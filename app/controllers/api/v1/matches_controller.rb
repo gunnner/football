@@ -6,7 +6,7 @@ module Api
       def index
         matches = MatchQueries::MatchesListQuery.new(params[:league_id], params[:date]).call
         matches = apply_status_scope(matches) if valid_status_scope?
-        paginate(matches.order(date: :asc))
+        matches = paginate(matches.order(date: :asc))
 
         render_success(MatchSerializer.new(matches, include: [ :home_team, :away_team, :league ]).serializable_hash, meta: pagination_meta)
       end

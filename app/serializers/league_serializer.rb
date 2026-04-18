@@ -7,5 +7,13 @@ class LeagueSerializer
     league.country&.name
   end
 
+  attribute :country_code do |league|
+    league.country&.code
+  end
+
+  attribute :country_logo do |league|
+    league.country&.logo
+  end
+
   belongs_to :country, serializer: CountrySerializer
 end
