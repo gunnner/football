@@ -30,43 +30,6 @@ function Coaches({ homeTeam, awayTeam, homeCoach, awayCoach }) {
   )
 }
 
-// ── Venue & Weather ───────────────────────────────────────────────────────────
-
-function VenueWeather({ venueName, venueCity, venueCapacity, forecastStatus, forecastTemperature }) {
-  if (!venueName && !forecastStatus) return null
-  return (
-    <div className="bg-gray-900 rounded-xl overflow-hidden">
-      <div className="px-4 py-2.5 border-b border-gray-800">
-        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider text-center">Venue & Weather</p>
-      </div>
-      <div className="px-4 py-2.5 space-y-1.5">
-        {venueName && (
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-gray-500 shrink-0">Stadium</span>
-            <span className="text-gray-200 text-right ml-3">
-              {venueName}{venueCity ? `, ${venueCity}` : ''}
-            </span>
-          </div>
-        )}
-        {venueCapacity > 0 && (
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-gray-500">Capacity</span>
-            <span className="text-gray-200">{Number(venueCapacity).toLocaleString()}</span>
-          </div>
-        )}
-        {forecastStatus && (
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-gray-500">Weather</span>
-            <span className="text-gray-200">
-              {forecastStatus}{forecastTemperature ? ` · ${forecastTemperature}°` : ''}
-            </span>
-          </div>
-        )}
-      </div>
-    </div>
-  )
-}
-
 // ── Win Probability ───────────────────────────────────────────────────────────
 
 function WinProbability({ homeTeam, awayTeam, prediction }) {
@@ -109,11 +72,6 @@ export default function MatchOverview({
   awayTeam,
   homeCoach,
   awayCoach,
-  venueName,
-  venueCity,
-  venueCapacity,
-  forecastStatus,
-  forecastTemperature,
   predictions,
   lastFive,
   h2h,
@@ -126,14 +84,6 @@ export default function MatchOverview({
         awayTeam={awayTeam}
         homeCoach={homeCoach}
         awayCoach={awayCoach}
-      />
-
-      <VenueWeather
-        venueName={venueName}
-        venueCity={venueCity}
-        venueCapacity={venueCapacity}
-        forecastStatus={isPreMatch ? forecastStatus : null}
-        forecastTemperature={isPreMatch ? forecastTemperature : null}
       />
 
       {isPreMatch && (

@@ -80,6 +80,7 @@ export default function MatchShow({ matchId }) {
   const [lineupsKey,   setLineupsKey]   = useState(0)
   const [standingsKey, setStandingsKey] = useState(0)
   const [richKey,      setRichKey]      = useState(0)
+  const [tabsReady,    setTabsReady]    = useState(false)
 
   useEffect(() => {
     const base = `/api/v1/matches/${matchId}`
@@ -165,7 +166,8 @@ export default function MatchShow({ matchId }) {
       setInjuries(injRes.data ?? { home: [], away: [] })
       setBookmakers(bmRes.data ?? [])
       setH2h(h2hRes.data ?? [])
-    }).catch(() => {})
+      setTabsReady(true)
+    }).catch(() => setTabsReady(true))
   }, [matchId, !!match])
 
   useMatchChannel(matchId, (data) => {
@@ -177,8 +179,8 @@ export default function MatchShow({ matchId }) {
     }
   })
 
-  if (loading) return <LoadingSkeleton />
-  if (!match)  return <div className="text-center py-16 text-gray-500">Match not found</div>
+  if (loading || !tabsReady) return <LoadingSkeleton />
+  if (!match)               return <div className="text-center py-16 text-gray-500">Match not found</div>
 
   const a = match.attributes
 
@@ -289,8 +291,6 @@ export default function MatchShow({ matchId }) {
         <MatchOverview
           homeTeam={homeTeam} awayTeam={awayTeam}
           homeCoach={homeAttr.coach_name} awayCoach={awayAttr.coach_name}
-          venueName={a.venue_name} venueCity={a.venue_city} venueCapacity={a.venue_capacity}
-          forecastStatus={a.forecast_status} forecastTemperature={a.forecast_temperature}
           predictions={predictions} lastFive={lastFive} h2h={h2h} isPreMatch={isPreMatch}
         />
       )}
