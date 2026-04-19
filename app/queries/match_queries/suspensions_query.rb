@@ -26,7 +26,7 @@ module MatchQueries
       return [] unless prev_match
 
       MatchEvent
-        .where(match_id: prev_match.id, team_external_id: team.external_id, event_type: ['Red Card', 'Yellow Red Card'])
+        .where(match_id: prev_match.id, team_external_id: team.external_id, event_type: [ 'Red Card', 'Yellow Red Card' ])
         .map do |e|
           player = Player.find_by(external_id: e.player_external_id)
           {

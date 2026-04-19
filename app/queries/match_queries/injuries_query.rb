@@ -70,7 +70,7 @@ module MatchQueries
         player_path: "/players/#{injury.player_id}",
         reason:      humanize_reason(injury.reason),
         from_date:   format_date(injury.from_date),
-        to_date:     format_date(injury.to_date),
+        to_date:     format_date(injury.to_date)
       }
     end
   end
