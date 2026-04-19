@@ -63,7 +63,7 @@ function PlayerAvatar({ logo, name }) {
     return (
       <div className="w-20 h-20 rounded-full overflow-hidden flex-shrink-0 bg-gray-700">
         <img src={logo} alt={name} onError={() => setFailed(true)}
-             style={{ width: '100%', height: 'auto' }} />
+             className="w-full" style={{ height: '200%', objectFit: 'cover', objectPosition: '50% 0%' }} />
       </div>
     )
   }

@@ -148,8 +148,12 @@ export default function PlayerTable({ tab, players }) {
               const content = (
                 <div className="flex items-center gap-2 min-w-0 pl-4">
                   {p.player_logo
-                    ? <img src={p.player_logo} alt="" className="w-5 h-5 rounded-full object-cover flex-shrink-0" />
-                    : <div className="w-5 h-5 rounded-full bg-gray-700 flex-shrink-0" />
+                    ? (
+                      <div className="w-5 h-5 rounded-full flex-shrink-0 bg-gray-700 overflow-hidden">
+                        <img src={p.player_logo} alt="" className="w-full" style={{ height: '200%', objectFit: 'cover', objectPosition: '50% 0%' }} />
+                      </div>
+                    )
+                    : <div className="w-5 h-5 rounded-full bg-gray-700 flex-shrink-0 flex items-center justify-center text-[10px]">👤</div>
                   }
                   <span className="text-sm text-gray-200 truncate">
                     {p.is_captain ? <span className="text-yellow-400 mr-0.5 text-xs">©</span> : null}

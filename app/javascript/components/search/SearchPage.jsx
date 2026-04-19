@@ -13,7 +13,10 @@ function ResultItem({ logo, name, url, rounded }) {
       <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-800
                       last:border-0 hover:bg-gray-800 transition-colors">
         {logo
-          ? <img src={logo} alt="" className={`w-8 h-8 object-contain ${rounded ? 'rounded-full' : ''}`} />
+          ? (rounded
+              ? <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 bg-gray-700"><img src={logo} alt="" className="w-full" style={{ height: '200%', objectFit: 'cover', objectPosition: '50% 0%' }} /></div>
+              : <img src={logo} alt="" className="w-8 h-8 object-contain" />
+            )
           : <div className={`w-8 h-8 bg-gray-700 flex-shrink-0 ${rounded ? 'rounded-full flex items-center justify-center' : 'rounded'}`}>
               {rounded && <span className="text-xs text-gray-400">👤</span>}
             </div>

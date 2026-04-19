@@ -125,8 +125,12 @@ function AvgRatingBadge({ avgPlayerRate }) {
           <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${posColor}`}>{posShort}</span>
         )}
         {logo
-          ? <img src={logo} alt={name} className="w-4 h-4 object-contain flex-shrink-0"
-                 onError={e => e.target.replaceWith(Object.assign(document.createElement('span'), { textContent: '👤', className: 'text-xs' }))} />
+          ? (
+            <div className="w-5 h-5 rounded-full overflow-hidden flex-shrink-0 bg-gray-700">
+              <img src={logo} alt={name} className="w-full" style={{ height: '200%', objectFit: 'cover', objectPosition: '50% 0%' }}
+                   onError={e => { e.target.closest('div').replaceWith(Object.assign(document.createElement('span'), { textContent: '👤', className: 'text-xs' })) }} />
+            </div>
+          )
           : <span className="text-xs">👤</span>
         }
         {name && (

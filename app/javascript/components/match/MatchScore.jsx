@@ -159,7 +159,11 @@ export default function MatchScore({
             <span className="text-xs text-gray-500 uppercase tracking-wide whitespace-nowrap">Player of the Match</span>
             <div className="flex items-center gap-2">
               {playerOfMatch.player_logo
-                ? <img src={playerOfMatch.player_logo} alt="" className="w-8 h-8 rounded-full object-cover bg-gray-800 flex-shrink-0" />
+                ? (
+                  <div className="w-8 h-8 rounded-full bg-gray-800 flex-shrink-0 overflow-hidden">
+                    <img src={playerOfMatch.player_logo} alt="" className="w-full" style={{ height: '200%', objectFit: 'cover', objectPosition: '50% 0%' }} />
+                  </div>
+                )
                 : <span className="w-8 h-8 flex items-center justify-center text-lg bg-gray-800 rounded-full flex-shrink-0">👤</span>
               }
               <div>

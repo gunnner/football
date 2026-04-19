@@ -1,148 +1,119 @@
-import { EVENT_ICONS, EVENT_DOT_COLORS, SHORT_LABELS } from '../../../constants/matchEvents'
-import { getHalf, getTimelinePosition, labelTransform } from '../../../utils/eventTime'
+import { useState, useEffect, useRef } from 'react'
+import { buildGroups, currentMinutePos, FINISHED_STATUSES } from './eventTimelineUtils'
+import { EventGroup } from './EventTimelineItems'
 
-const TIMELINE_H = 120
-const FH_END     = 47
-const SH_START   = 53
+const TIMELINE_H = 140
+const LEFT_COL   = 36  // team logo column + gap
 
-function getAbsPos(event, hasSecondHalf) {
-  const half = getHalf(event.time)
-  const rel  = getTimelinePosition(event.time, half) / 100
-  if (!hasSecondHalf) return rel * 100
-  return half === 1
-    ? rel * FH_END
-    : SH_START + rel * (100 - SH_START)
-}
+export default function EventTimeline({ events, homeTeamExternalId, homeTeam, awayTeam, isLive, matchStatus, clock }) {
+  const [tickClock, setTickClock] = useState(clock)
+  const tickRef = useRef(null)
 
-function buildGroups(evts, hasSecondHalf) {
-  const sorted = evts
-    .map(e => ({ event: e, pos: getAbsPos(e, hasSecondHalf) }))
-    .sort((a, b) => a.pos - b.pos)
-  const groups = []
-  for (const item of sorted) {
-    const last = groups[groups.length - 1]
-    if (last && item.pos - last.pos < 3) {
-      last.events.push(item.event)
-    } else {
-      groups.push({ pos: item.pos, events: [item.event] })
-    }
-  }
-  return groups
-}
+  useEffect(() => { setTickClock(clock) }, [clock])
 
-function EventGroup({ group, side }) {
-  const { pos, events: evts } = group
-  const isAbove   = side === 'home'
-  const dotColor  = EVENT_DOT_COLORS[evts[0].event_type] || '#6b7280'
-  const key       = `${side}-${pos.toFixed(1)}`
-  const transform = labelTransform(pos)
-  const lastName  = (e) => e.player_name ? e.player_name.split(' ').pop() : null
+  const clockStr0   = String(clock ?? '')
+  const isOvertime0 = clockStr0.includes('+')
+  const isHalfTime0 = ['Half time', 'Break time'].includes(matchStatus)
+  const isTicking   = isLive && !isHalfTime0 && !isOvertime0 && !FINISHED_STATUSES.has(matchStatus)
 
-  const dot = (
-    <div style={{
-      position: 'absolute',
-      ...(isAbove
-        ? { top: '100%', left: '50%', transform: 'translateX(-50%)' }
-        : { bottom: '100%', left: '50%', transform: 'translateX(-50%)' }),
-      width: '8px', height: '8px', borderRadius: '50%',
-      background: dotColor, border: '2px solid #111827', zIndex: 2,
-    }} />
-  )
+  useEffect(() => {
+    if (!isTicking) { clearInterval(tickRef.current); return }
+    tickRef.current = setInterval(() => {
+      setTickClock(prev => {
+        const n = parseInt(prev)
+        return isNaN(n) ? prev : String(n + 1)
+      })
+    }, 60000)
+    return () => clearInterval(tickRef.current)
+  }, [isTicking])
 
-  if (isAbove) {
-    return (
-      <div key={key} style={{ position: 'absolute', left: `${pos}%`, bottom: 'calc(50% + 4px)', transform }}
-           className="relative flex flex-col items-center text-center">
-        {dot}
-        {evts.length === 1 && (
-          <span className="text-[9px] text-gray-500 leading-none">{SHORT_LABELS[evts[0].event_type] || evts[0].event_type}</span>
-        )}
-        {evts.map((e, i) => (
-          <div key={i} className="flex items-center gap-0.5 flex-row-reverse">
-            <span className="text-[10px] leading-none">{(EVENT_ICONS[e.event_type] || { emoji: '•' }).emoji}</span>
-            {lastName(e) && <span className="text-[9px] text-gray-300 max-w-[48px] truncate leading-snug">{lastName(e)}</span>}
-          </div>
-        ))}
-        <span className="text-[9px] text-gray-400 leading-none">{evts[0].time}'</span>
-      </div>
-    )
-  }
+  const clockStr  = String(tickClock ?? '')
+  const clockMin  = parseInt(clockStr) || 0
+  const isOvertime = clockStr.includes('+')
+  const effectiveStatus = (!isOvertime && matchStatus === 'First half' && clockMin >= 45) ? 'Half time'
+                        : matchStatus
 
-  return (
-    <div key={key} style={{ position: 'absolute', left: `${pos}%`, top: 'calc(50% + 4px)', transform }}
-         className="relative flex flex-col items-center text-center">
-      {dot}
-      <span className="text-[9px] text-gray-400 leading-none">{evts[0].time}'</span>
-      {evts.map((e, i) => (
-        <div key={i} className="flex items-center gap-0.5">
-          <span className="text-[10px] leading-none">{(EVENT_ICONS[e.event_type] || { emoji: '•' }).emoji}</span>
-          {lastName(e) && <span className="text-[9px] text-gray-300 max-w-[48px] truncate leading-snug">{lastName(e)}</span>}
-        </div>
-      ))}
-      {evts.length === 1 && (
-        <span className="text-[9px] text-gray-500 leading-none">{SHORT_LABELS[evts[0].event_type] || evts[0].event_type}</span>
-      )}
-    </div>
-  )
-}
+  const isHalfTime     = ['Half time', 'Break time'].includes(effectiveStatus)
+  const firstHalfLive  = isLive && effectiveStatus === 'First half'
+  const halfTimeLive   = isLive && isHalfTime
+  const secondHalfLive = isLive && ['Second half', 'Extra time'].includes(effectiveStatus)
+  const matchStarted   = isLive || FINISHED_STATUSES.has(effectiveStatus) || events.length > 0
+  const matchFinished  = FINISHED_STATUSES.has(effectiveStatus)
 
-export default function EventTimeline({ events, homeTeamExternalId, homeTeam, awayTeam, isLive, matchStatus }) {
-  const hasSecondHalf  = events.some(e => getHalf(e.time) === 2)
-  const firstHalfLive  = isLive && ['First half', 'Half time'].includes(matchStatus)
-  const secondHalfLive = isLive && !firstHalfLive
+  const homeGroups = buildGroups(events.filter(e => e.team_external_id === homeTeamExternalId))
+  const awayGroups = buildGroups(events.filter(e => e.team_external_id !== homeTeamExternalId))
 
-  const homeGroups = buildGroups(events.filter(e => e.team_external_id === homeTeamExternalId), hasSecondHalf)
-  const awayGroups = buildGroups(events.filter(e => e.team_external_id !== homeTeamExternalId), hasSecondHalf)
+  const livePos = isLive ? currentMinutePos(effectiveStatus, tickClock) : null
 
   return (
     <div>
-      <div className="flex text-[10px] text-gray-600 mb-0.5" style={{ paddingLeft: '74px' }}>
-        {hasSecondHalf ? (
-          <>
-            <div className="flex items-center gap-1 justify-center" style={{ width: `${FH_END}%` }}>
-              First Half
-              {firstHalfLive && <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse inline-block" />}
-            </div>
-            <div style={{ width: `${SH_START - FH_END}%` }} />
-            <div className="flex items-center gap-1 justify-center" style={{ width: `${100 - SH_START}%` }}>
-              Second Half
-              {secondHalfLive && <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse inline-block" />}
-            </div>
-          </>
-        ) : (
-          <div className="flex-1 flex items-center gap-1 justify-center">
+      <div className="flex text-[10px] text-gray-600 mb-0.5">
+        <div style={{ width: `${LEFT_COL}px`, flexShrink: 0 }} />
+        <div className="flex flex-1">
+          <div className="flex items-center gap-1 justify-center w-1/2">
             First Half
             {firstHalfLive && <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse inline-block" />}
           </div>
-        )}
+          <div className="flex items-center gap-1 justify-center w-1/2">
+            {halfTimeLive && <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse inline-block" />}
+            Second Half
+            {secondHalfLive && <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse inline-block" />}
+          </div>
+        </div>
       </div>
 
-      <div className="flex gap-2">
-        <div className="flex flex-col flex-shrink-0" style={{ width: '70px', height: `${TIMELINE_H}px` }}>
-          <div className="flex-1 flex items-center gap-1.5 overflow-hidden min-w-0">
-            {homeTeam?.logo && <img src={homeTeam.logo} className="w-4 h-4 object-contain flex-shrink-0" alt="" />}
-            <a href={homeTeam?.path} className="text-[9px] text-gray-400 hover:text-gray-200 truncate transition-colors leading-tight">{homeTeam?.name}</a>
+      <div className="relative" style={{ height: `${TIMELINE_H}px` }}>
+        <div className="absolute left-0 top-0 bottom-0 flex flex-col z-10" style={{ width: `${LEFT_COL}px` }}>
+          <div className="flex-1 flex items-center justify-center">
+            {homeTeam?.logo
+              ? <a href={homeTeam?.path}><img src={homeTeam.logo} className="w-5 h-5 object-contain" alt={homeTeam?.name} /></a>
+              : <span className="text-[9px] text-gray-500">{homeTeam?.name}</span>
+            }
           </div>
-          <div className="h-px bg-gray-700 flex-shrink-0" />
-          <div className="flex-1 flex items-center gap-1.5 overflow-hidden min-w-0">
-            {awayTeam?.logo && <img src={awayTeam.logo} className="w-4 h-4 object-contain flex-shrink-0" alt="" />}
-            <a href={awayTeam?.path} className="text-[9px] text-gray-400 hover:text-gray-200 truncate transition-colors leading-tight">{awayTeam?.name}</a>
+          <div className="flex-1 flex items-center justify-center">
+            {awayTeam?.logo
+              ? <a href={awayTeam?.path}><img src={awayTeam.logo} className="w-5 h-5 object-contain" alt={awayTeam?.name} /></a>
+              : <span className="text-[9px] text-gray-500">{awayTeam?.name}</span>
+            }
           </div>
         </div>
 
-        <div className="flex-1 relative overflow-visible" style={{ height: `${TIMELINE_H}px` }}>
+        <div style={{ position: 'absolute', left: `${LEFT_COL}px`, right: 0, top: 0, bottom: 0, overflow: 'visible' }}>
           <div className="absolute inset-x-0 bg-gray-700"
-               style={{ top: '50%', height: '2px', transform: 'translateY(-50%)' }} />
-          {hasSecondHalf && (
-            <>
-              <div className="absolute inset-y-0 w-px bg-gray-600/50"
-                   style={{ left: '50%', transform: 'translateX(-50%)' }} />
-              <div className="absolute bg-gray-900 px-0.5 z-10"
-                   style={{ left: '50%', top: '50%', transform: 'translate(-50%, -50%)' }}>
-                <span className="text-[8px] text-gray-500">HT</span>
-              </div>
-            </>
+               style={{ top: '50%', height: '2px', transform: 'translateY(-50%)', zIndex: 0 }} />
+
+          {matchStarted && (
+            <div style={{ position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)', zIndex: 5 }}>
+              <div className="w-2 h-2 rounded-full bg-gray-500 border border-gray-700" />
+              <span className="absolute bottom-full mb-0.5 left-0 text-[8px] text-gray-500 whitespace-nowrap">Kick Off</span>
+            </div>
           )}
+
+          <div style={{ position: 'absolute', left: '50%', top: 0, bottom: 0, width: '1px', background: 'rgba(75,85,99,0.5)', zIndex: 1 }} />
+          <div style={{ position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%, -50%)', zIndex: 5, background: '#111827', padding: '0 2px' }}>
+            <span className="text-[8px] text-gray-500">HT</span>
+          </div>
+
+          {matchFinished && (
+            <div style={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)', zIndex: 5 }}>
+              <div className="w-2 h-2 rounded-full bg-gray-500 border border-gray-700" />
+              <span className="absolute bottom-full mb-0.5 right-0 text-[8px] text-gray-500 whitespace-nowrap">Full Time</span>
+            </div>
+          )}
+
+          {livePos !== null && (() => {
+            const allGroups = [...homeGroups, ...awayGroups]
+            const tooClose = allGroups.some(g => Math.abs(g.pos - livePos) < 0.5)
+            return !tooClose && (
+              <div className="group/live" style={{ position: 'absolute', left: `${livePos}%`, top: '50%', transform: 'translate(-50%, -50%)', zIndex: 4 }}>
+                <div className="w-3 h-3 rounded-full bg-red-500 animate-pulse border-2 border-gray-900" />
+                <div className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 hidden group-hover/live:block bg-gray-800 border border-gray-700 rounded px-1.5 py-0.5 text-[9px] text-red-400 whitespace-nowrap shadow-lg z-20">
+                  {clockMin}'
+                </div>
+              </div>
+            )
+          })()}
+
           {homeGroups.map((g, i) => <EventGroup key={i} group={g} side="home" />)}
           {awayGroups.map((g, i) => <EventGroup key={i} group={g} side="away" />)}
         </div>

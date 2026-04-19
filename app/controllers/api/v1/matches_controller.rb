@@ -60,10 +60,18 @@ module Api
       end
 
       def injuries
-        home_injuries = MatchQueries::InjuriesQuery.new(match.home_team).call
-        away_injuries = MatchQueries::InjuriesQuery.new(match.away_team).call
+        match_date       = match.date.to_date
+        home_injuries    = MatchQueries::InjuriesQuery.new(match.home_team, match_date: match_date).call
+        away_injuries    = MatchQueries::InjuriesQuery.new(match.away_team, match_date: match_date).call
+        home_suspensions = MatchQueries::SuspensionsQuery.new(match, match.home_team).call
+        away_suspensions = MatchQueries::SuspensionsQuery.new(match, match.away_team).call
 
-        render json: { data: { home: home_injuries, away: away_injuries } }
+        render json: {
+          data: {
+            home: { injuries: home_injuries, suspensions: home_suspensions },
+            away: { injuries: away_injuries, suspensions: away_suspensions }
+          }
+        }
       end
 
       def bookmakers

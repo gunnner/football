@@ -1,4 +1,4 @@
-import { POSITION_COLORS, POSITION_ORDER } from '../../../constants/positions'
+import { POSITION_ORDER } from '../../../constants/positions'
 import { BADGE_SVG, SUB_ON_SVG, badgeForEvent } from './badges'
 
 function SubBadge({ type, isSubOn }) {
@@ -23,8 +23,14 @@ export default function SubstitutesList({ lineup, eventMap }) {
         const otherEvents = allEvents.filter(e => !e._assist && !e._sub_on && e.type !== 'Substitution')
         return (
           <div key={player.id ?? player.name} className="flex items-center gap-2 py-0.5">
-            <div className="w-2 h-2 rounded-full flex-shrink-0"
-                 style={{ background: POSITION_COLORS[player.position] || '#6b7280' }} />
+            {player.logo
+              ? (
+                <div className="w-6 h-6 rounded-full flex-shrink-0 bg-gray-800 overflow-hidden">
+                  <img src={player.logo} alt={player.name} className="w-full" style={{ height: '200%', objectFit: 'cover', objectPosition: '50% 0%' }} />
+                </div>
+              )
+              : <div className="w-6 h-6 rounded-full bg-gray-800 flex-shrink-0 flex items-center justify-center text-xs">👤</div>
+            }
             {player.path
               ? <a href={player.path} className="text-gray-300 truncate hover:text-blue-400 transition-colors" style={{ fontSize: '13px' }}>{player.number}. {player.name}</a>
               : <span className="text-gray-300 truncate" style={{ fontSize: '13px' }}>{player.number}. {player.name}</span>

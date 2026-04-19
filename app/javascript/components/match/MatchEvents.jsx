@@ -1,31 +1,22 @@
-import { useState }        from 'react'
-import { useMatchChannel } from '../../hooks/useMatchChannel'
-import { parseMinute, getHalf } from '../../utils/eventTime'
-import EventTimeline       from './events/EventTimeline'
-import EventRow            from './events/EventRow'
+import { useState }                  from 'react'
+import { useMatchChannel }           from '../../hooks/useMatchChannel'
+import { parseMinute, getHalf }      from '../../utils/eventTime'
+import EventTimeline                 from './events/EventTimeline'
+import EventRow                      from './events/EventRow'
+import { SystemRow, SectionDivider } from './events/EventDividers'
 
-function SectionDivider({ title, isLive }) {
-  return (
-    <div className="flex items-center gap-2 -mx-4 px-4 py-1.5 bg-gray-800/60 border-y border-gray-800/80">
-      <span className="text-xs text-gray-400 font-semibold">{title}</span>
-      {isLive && (
-        <span className="flex items-center gap-1">
-          <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse inline-block" />
-          <span className="text-[10px] text-red-400 font-semibold">LIVE</span>
-        </span>
-      )}
-    </div>
-  )
-}
+const SYSTEM_STATUSES = new Set(['Half time', 'Break time', 'Full time', 'Finished', 'Finished AET', 'Finished AP'])
 
 const sortEvents = evts => [...evts].sort((a, b) => parseMinute(a.time) - parseMinute(b.time))
 
 export default function MatchEvents({
   matchId, homeTeamExternalId, homeTeam, awayTeam,
-  isLive, matchStatus, initialEvents,
+  isLive, matchStatus, initialEvents, clock,
 }) {
   const [events, setEvents]         = useState(() => sortEvents(initialEvents || []))
   const [newEventId, setNewEventId] = useState(null)
+  const [liveStatus, setLiveStatus] = useState(matchStatus)
+  const [liveClock,  setLiveClock]  = useState(clock)
 
   useMatchChannel(matchId, (data) => {
     if ((data.type === 'match_event' || data.type === 'goal') && data.event) {
@@ -41,24 +32,47 @@ export default function MatchEvents({
         assisting_player_path: null,
         substituted_player:    data.event.substituted_player,
       }
-      setEvents(prev => sortEvents([...prev, newEvent]))
+      setEvents(prev => {
+        const isDup = prev.some(e =>
+          e.time === newEvent.time &&
+          e.event_type === newEvent.event_type &&
+          e.player_name === newEvent.player_name
+        )
+        return isDup ? prev : sortEvents([...prev, newEvent])
+      })
       setNewEventId(newEvent.id)
       setTimeout(() => setNewEventId(null), 3000)
     }
+    if (data.match?.status) setLiveStatus(data.match.status)
+    if (data.match?.clock)  setLiveClock(data.match.clock)
   })
 
-  if (events.length === 0) {
+  const rawStatus    = liveStatus || matchStatus
+  const clockStr     = String(liveClock || clock || '')
+  const clockMin     = parseInt(clockStr) || 0
+  const isOvertime   = clockStr.includes('+')
+  const currentStatus = (!isOvertime && rawStatus === 'First half' && clockMin >= 45) ? 'Half time'
+                      : rawStatus
+
+  const firstHalfEvents  = events.filter(e => getHalf(e.time) === 1)
+  const secondHalfEvents = events.filter(e => getHalf(e.time) === 2)
+  const hasFirstHalf     = firstHalfEvents.length > 0
+  const hasSecondHalf    = secondHalfEvents.length > 0
+
+  const firstHalfLive    = isLive && currentStatus === 'First half'
+  const secondHalfLive   = isLive && ['Second half', 'Extra time'].includes(currentStatus)
+  const isHalfTime       = ['Half time', 'Break time'].includes(currentStatus)
+  const isFinished       = SYSTEM_STATUSES.has(currentStatus) && !isHalfTime
+
+  const matchStarted = events.length > 0 || isLive || SYSTEM_STATUSES.has(currentStatus)
+
+  if (events.length === 0 && !matchStarted) {
     return (
       <div className="bg-gray-900 rounded-xl p-4">
         <p className="text-center text-gray-500 py-8">No events yet</p>
       </div>
     )
   }
-
-  const firstHalfEvents  = events.filter(e => getHalf(e.time) === 1)
-  const secondHalfEvents = events.filter(e => getHalf(e.time) === 2)
-  const firstHalfLive    = isLive && ['First half', 'Half time'].includes(matchStatus)
-  const secondHalfLive   = isLive && !firstHalfLive
 
   return (
     <div className="space-y-3">
@@ -69,7 +83,8 @@ export default function MatchEvents({
           homeTeam={homeTeam}
           awayTeam={awayTeam}
           isLive={isLive}
-          matchStatus={matchStatus}
+          matchStatus={currentStatus}
+          clock={liveClock || clock}
         />
       </div>
 
@@ -87,30 +102,75 @@ export default function MatchEvents({
         </div>
 
         <div className="px-4">
-          {firstHalfEvents.length > 0 && (
+          {isLive ? (
             <>
-              <SectionDivider title="First Half" isLive={firstHalfLive} />
-              {firstHalfEvents.map(event => (
-                <EventRow
-                  key={event.id || `${event.time}-${event.player_name}`}
-                  event={event}
-                  isHome={event.team_external_id === homeTeamExternalId}
-                  isNew={event.id === newEventId}
-                />
-              ))}
+              {(secondHalfLive || hasSecondHalf) && (
+                <>
+                  <SectionDivider title="Second Half" isLive={secondHalfLive} />
+                  {[...secondHalfEvents].reverse().map(event => (
+                    <EventRow
+                      key={event.id || `${event.time}-${event.player_name}`}
+                      event={event}
+                      isHome={event.team_external_id === homeTeamExternalId}
+                      isNew={event.id === newEventId}
+                    />
+                  ))}
+                </>
+              )}
+
+              {(isHalfTime || hasSecondHalf || secondHalfLive) && <SystemRow label="Half Time" />}
+
+              {(firstHalfLive || hasFirstHalf) && (
+                <>
+                  <SectionDivider title="First Half" isLive={firstHalfLive} />
+                  {[...firstHalfEvents].reverse().map(event => (
+                    <EventRow
+                      key={event.id || `${event.time}-${event.player_name}`}
+                      event={event}
+                      isHome={event.team_external_id === homeTeamExternalId}
+                      isNew={event.id === newEventId}
+                    />
+                  ))}
+                </>
+              )}
+
+              {matchStarted && <SystemRow label="Kick Off" />}
             </>
-          )}
-          {secondHalfEvents.length > 0 && (
+          ) : (
             <>
-              <SectionDivider title="Second Half" isLive={secondHalfLive} />
-              {secondHalfEvents.map(event => (
-                <EventRow
-                  key={event.id || `${event.time}-${event.player_name}`}
-                  event={event}
-                  isHome={event.team_external_id === homeTeamExternalId}
-                  isNew={event.id === newEventId}
-                />
-              ))}
+              {matchStarted && <SystemRow label="Kick Off" />}
+
+              {hasFirstHalf && (
+                <>
+                  <SectionDivider title="First Half" isLive={false} />
+                  {firstHalfEvents.map(event => (
+                    <EventRow
+                      key={event.id || `${event.time}-${event.player_name}`}
+                      event={event}
+                      isHome={event.team_external_id === homeTeamExternalId}
+                      isNew={false}
+                    />
+                  ))}
+                </>
+              )}
+
+              {(hasSecondHalf || isHalfTime) && <SystemRow label="Half Time" />}
+
+              {hasSecondHalf && (
+                <>
+                  <SectionDivider title="Second Half" isLive={false} />
+                  {secondHalfEvents.map(event => (
+                    <EventRow
+                      key={event.id || `${event.time}-${event.player_name}`}
+                      event={event}
+                      isHome={event.team_external_id === homeTeamExternalId}
+                      isNew={false}
+                    />
+                  ))}
+                </>
+              )}
+
+              {isFinished && <SystemRow label="Full Time" />}
             </>
           )}
         </div>

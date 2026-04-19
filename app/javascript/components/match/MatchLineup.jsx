@@ -2,6 +2,7 @@ import { POSITION_COLORS } from '../../constants/positions'
 import { BADGE_SVG, SUB_ON_SVG } from './lineup/badges'
 import PitchSVG        from './lineup/PitchSVG'
 import SubstitutesList from './lineup/SubstitutesList'
+import MatchInjuries   from './MatchInjuries'
 
 function buildEventMap(events) {
   const map = {}
@@ -19,17 +20,16 @@ function buildEventMap(events) {
 
 function LastKnownBanner({ homeLineup, awayLineup }) {
   const src = homeLineup?.source_match ?? awayLineup?.source_match
+  const tooltip = src
+    ? `Starting lineups from ${src.home_team} vs ${src.away_team} (${src.date}). Official lineups will appear closer to kick-off.`
+    : 'Starting lineups from the last known match. Official lineups will appear closer to kick-off.'
+
   return (
-    <div className="flex items-start gap-2 bg-yellow-900/20 border border-yellow-800/40 rounded-lg px-3 py-2.5">
-      <span className="text-yellow-500 text-sm shrink-0">⚠</span>
-      <div className="text-xs text-yellow-400/90">
-        <span className="font-semibold">Last known lineup</span>
-        {src && (
-          <span className="text-yellow-500/70 ml-1">
-            — from {src.home_team} vs {src.away_team} ({src.date})
-          </span>
-        )}
-        <p className="text-yellow-600/80 mt-0.5">Official lineup has not been announced yet.</p>
+    <div className="flex items-center justify-center gap-1 group relative cursor-default">
+      <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Last known lineup</span>
+      <span className="text-gray-600 text-xs leading-none" title={tooltip}>ⓘ</span>
+      <div className="absolute top-full mt-1 left-1/2 -translate-x-1/2 z-10 hidden group-hover:block w-72 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-xs text-gray-300 shadow-xl">
+        {tooltip}
       </div>
     </div>
   )
@@ -44,16 +44,24 @@ const EVENT_LEGEND = [
   { svgKey: 'sub',     label: 'Substituted' },
 ]
 
-export default function MatchLineup({ homeTeam, awayTeam, lineups, events = [], lastKnown = false }) {
+export default function MatchLineup({ homeTeam, awayTeam, lineups, events = [], lastKnown = false, injuries = null, boxScores = [] }) {
   if (!lineups || lineups.length === 0) {
     return (
-      <div className="bg-gray-900 rounded-xl p-4">
-        <p className="text-center text-gray-500 py-8">No lineups yet</p>
+      <div className="space-y-3">
+        <div className="bg-gray-900 rounded-xl p-4">
+          <p className="text-center text-gray-500 py-8">No lineups yet</p>
+        </div>
+        <MatchInjuries homeTeam={homeTeam} awayTeam={awayTeam} injuries={injuries} />
       </div>
     )
   }
 
   const eventMap   = buildEventMap(events)
+  const ratingMap  = Object.fromEntries(
+    boxScores
+      .filter(b => b.player_external_id && b.match_rating && parseFloat(b.match_rating) > 0)
+      .map(b => [String(b.player_external_id), parseFloat(b.match_rating).toFixed(1)])
+  )
   const homeLineup = lineups.find(l => l.team_external_id === homeTeam.external_id)
   const awayLineup = lineups.find(l => l.team_external_id === awayTeam.external_id)
   const homeRows   = homeLineup?.initial_lineup || []
@@ -114,7 +122,7 @@ export default function MatchLineup({ homeTeam, awayTeam, lineups, events = [], 
         </div>
       )}
 
-      <PitchSVG homeRows={homeRows} awayRows={awayRows} eventMap={eventMap} />
+      <PitchSVG homeRows={homeRows} awayRows={awayRows} eventMap={eventMap} ratingMap={ratingMap} />
 
       {hasSubs && (
         <div className="border-t border-gray-800 pt-3">
@@ -126,6 +134,8 @@ export default function MatchLineup({ homeTeam, awayTeam, lineups, events = [], 
           </div>
         </div>
       )}
+
+      <MatchInjuries homeTeam={homeTeam} awayTeam={awayTeam} injuries={injuries} />
     </div>
   )
 }

@@ -7,11 +7,12 @@ module MatchQueries
     def call
       shots = match.match_shots.order(:time)
       names = shots.map(&:player_name).compact_blank.uniq
-      player_paths = Player.where(name: names)
-                           .pluck(:name, :id)
-                           .each_with_object({}) { |(name, id), h| h[name] = "/players/#{id}" }
+      player_info = Player.where(name: names)
+                          .pluck(:name, :id, :logo)
+                          .each_with_object({}) { |(name, id, logo), h| h[name] = { path: "/players/#{id}", logo: logo } }
       shots.map do |shot|
-        shot.as_json.merge('player_path' => player_paths[shot.player_name])
+        info = player_info[shot.player_name]
+        shot.as_json.merge('player_path' => info&.dig(:path), 'player_logo' => info&.dig(:logo))
       end
     end
 

@@ -59,24 +59,39 @@ module Highlightly
       }.freeze
 
       def call
-        players = active_league_players
-        total   = players.count
+        # Priority 1: players without any profile yet
+        batch = players_without_profile.limit(BATCH_SIZE).to_a
 
-        return { imported: 0 } if total.zero?
+        # Priority 2: refresh pass for players that already have a profile
+        if batch.blank?
+          total = active_league_players.count
+          return { imported: 0 } if total.zero?
 
-        offset = RedisService.get(REDIS_OFFSET_KEY).to_i
-        offset = 0 if offset >= total
+          offset     = RedisService.get(REDIS_OFFSET_KEY).to_i
+          offset     = 0 if offset >= total
+          batch      = active_league_players.offset(offset).limit(BATCH_SIZE).to_a
+          new_offset = offset + batch.size
+          new_offset = 0 if new_offset >= total
+          RedisService.set(REDIS_OFFSET_KEY, new_offset)
+        end
 
-        batch = players.offset(offset).limit(BATCH_SIZE)
+        return { imported: 0 } if batch.empty?
+
+        remaining = players_without_profile.count
+        log "Syncing player profiles: #{batch.size} players (#{remaining} still without profile)..."
+
         imported = 0
-
-        log "Syncing player profiles: #{batch.size} players (offset #{offset}/#{total})..."
-
         batch.each do |player|
           break if near_rate_limit?
 
           data = @client.player(player.external_id)
-          next if data.blank?
+
+          # Create an empty profile so the player is not retried on every run
+          if data.blank? || data['profile'].blank?
+            PlayerProfile.find_or_create_by!(player_id: player.id)
+            imported += 1
+            next
+          end
 
           upsert_profile(player, data)
           upsert_transfers(player, data)
@@ -94,11 +109,7 @@ module Highlightly
           Sentry.capture_exception(e)
         end
 
-        new_offset = offset + batch.size
-        new_offset = 0 if new_offset >= total
-        RedisService.set(REDIS_OFFSET_KEY, new_offset)
-
-        log "Player profiles synced: #{imported} players, next offset: #{new_offset}"
+        log "Player profiles synced: #{imported} players"
         { imported: imported }
       rescue StandardError => e
         log_error "PlayerProfileImporter failed: #{e.message}"
@@ -109,7 +120,13 @@ module Highlightly
       private
 
       def active_league_players
-        Player.in_active_leagues.order(:id)
+        Player.in_active_leagues
+              .joins(:player_profile)
+              .order('player_profiles.updated_at ASC')
+      end
+
+      def players_without_profile
+        active_league_players.where.missing(:player_profile)
       end
 
       def near_rate_limit?
