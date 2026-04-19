@@ -31,12 +31,20 @@ function EventBadges({ events }) {
   ))
 }
 
-function PlayerDot({ player, x, y, eventMap }) {
+function ratingColor(r) {
+  if (r >= 8)   return '#22c55e'
+  if (r >= 7)   return '#86efac'
+  if (r >= 6.5) return '#fbbf24'
+  return '#f87171'
+}
+
+function PlayerDot({ player, x, y, eventMap, ratingMap }) {
   const color        = POSITION_COLORS[player.position] || '#6b7280'
   const lastName     = player.name.split(' ').pop()
   const label        = `${player.number}. ${lastName.length > 12 ? lastName.slice(0, 9) + '…' : lastName}`
   const playerEvents = eventMap[player.id] || []
   const clipId       = `clip-${player.id ?? `${x}-${y}`}`
+  const rating       = ratingMap?.[String(player.id)]
 
   const inner = (
     <>
@@ -48,6 +56,13 @@ function PlayerDot({ player, x, y, eventMap }) {
       }
       <text textAnchor="middle" y={R + 7} fontSize="5.5" fill="rgba(255,255,255,0.82)">{label}</text>
       {playerEvents.length > 0 && <EventBadges events={playerEvents} />}
+      {rating && (
+        <g transform={`translate(${-R - 1}, ${R - 5})`}>
+          <rect x="-5" y="-3.5" width="10" height="7" rx="1.5" fill="#111827" opacity="0.85" />
+          <text textAnchor="middle" dominantBaseline="central" fontSize="4.5" fontWeight="bold"
+                fill={ratingColor(parseFloat(rating))}>{rating}</text>
+        </g>
+      )}
     </>
   )
 
@@ -64,7 +79,7 @@ function PlayerDot({ player, x, y, eventMap }) {
   )
 }
 
-function TeamPlayers({ rows, isHome, eventMap }) {
+function TeamPlayers({ rows, isHome, eventMap, ratingMap }) {
   const halfUsable = W / 2 - GK_OFFSET - CTR_MARGIN
   const innerH     = (H - PAD_V * 2) * 0.88
 
@@ -85,14 +100,14 @@ function TeamPlayers({ rows, isHome, eventMap }) {
       return (
         <PlayerDot
           key={player.id ?? `${rowIndex}-${colIndex}`}
-          player={player} x={x} y={y} eventMap={eventMap}
+          player={player} x={x} y={y} eventMap={eventMap} ratingMap={ratingMap}
         />
       )
     })
   })
 }
 
-export default function PitchSVG({ homeRows, awayRows, eventMap }) {
+export default function PitchSVG({ homeRows, awayRows, eventMap, ratingMap = {} }) {
   const cx = W / 2
   const cy = H / 2
   const paW = 62, paH = 108, paY = (H - paH) / 2
@@ -119,8 +134,8 @@ export default function PitchSVG({ homeRows, awayRows, eventMap }) {
       <rect x={W - 8 - paW} y={paY} width={paW} height={paH} fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="0.8" />
       <rect x={W - 8 - gaW} y={gaY} width={gaW} height={gaH} fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="0.8" />
       <g clipPath="url(#pitch-clip)">
-        <TeamPlayers rows={homeRows} isHome={true}  eventMap={eventMap} />
-        <TeamPlayers rows={awayRows} isHome={false} eventMap={eventMap} />
+        <TeamPlayers rows={homeRows} isHome={true}  eventMap={eventMap} ratingMap={ratingMap} />
+        <TeamPlayers rows={awayRows} isHome={false} eventMap={eventMap} ratingMap={ratingMap} />
       </g>
     </svg>
   )

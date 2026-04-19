@@ -11,9 +11,7 @@ import MatchStatistics           from './MatchStatistics'
 import MatchStandings            from './MatchStandings'
 import MatchEvents               from './MatchEvents'
 import ShotMap                   from './ShotMap'
-import MatchNews                 from './MatchNews'
 import MatchHighlights           from './MatchHighlights'
-import MatchInjuries             from './MatchInjuries'
 import MatchOdds                 from './MatchOdds'
 
 function formatRound(round) {
@@ -58,8 +56,9 @@ export default function MatchShow({ matchId }) {
   const [included,   setIncluded]   = useState([])
   const [loading,    setLoading]    = useState(true)
 
-  const [events,       setEvents]       = useState([])
-  const [currentScore, setCurrentScore] = useState(null)
+  const [events,        setEvents]        = useState([])
+  const [currentScore,  setCurrentScore]  = useState(null)
+  const [currentStatus, setCurrentStatus] = useState(null)
 
   const [lineups,           setLineups]           = useState([])
   const [lineupsLastKnown,  setLineupsLastKnown]  = useState(false)
@@ -68,14 +67,13 @@ export default function MatchShow({ matchId }) {
   const [standings,         setStandings]         = useState(null)
   const [predictions,       setPredictions]       = useState(null)
   const [shots,             setShots]             = useState([])
-  const [news,              setNews]              = useState([])
   const [highlights,        setHighlights]        = useState(null)
   const [lastFive,          setLastFive]          = useState(null)
   const [injuries,          setInjuries]          = useState(null)
   const [bookmakers,        setBookmakers]        = useState(null)
   const [h2h,               setH2h]              = useState(null)
 
-  const [tab,          setTab]          = useState(null)
+  const [tab,          setTab]          = useState(() => new URLSearchParams(window.location.search).get('tab'))
   const [statsKey,     setStatsKey]     = useState(0)
   const [lineupsKey,   setLineupsKey]   = useState(0)
   const [standingsKey, setStandingsKey] = useState(0)
@@ -92,13 +90,14 @@ export default function MatchShow({ matchId }) {
       setIncluded(showRes.data?.included ?? [])
       setStandings(showRes.meta?.standings ?? [])
       setCurrentScore(showRes.data?.data?.attributes?.score_current ?? null)
+      setCurrentStatus(showRes.data?.data?.attributes?.status ?? null)
       setEvents(eventsRes.data ?? [])
       setLoading(false)
     }).catch(() => setLoading(false))
   }, [matchId])
 
   useEffect(() => {
-    if (!match) return
+    if (!match || tab) return
     const status = match.attributes?.status
     setTab(matchPhase(status) !== 'upcoming' ? 'Events' : 'Overview')
   }, [!!match])
@@ -139,12 +138,10 @@ export default function MatchShow({ matchId }) {
     Promise.all([
       fetch(`${base}/predictions`).then(r => r.json()),
       fetch(`${base}/shots`).then(r => r.json()),
-      fetch(`${base}/news`).then(r => r.json()),
       fetch(hlUrl).then(r => r.json()),
-    ]).then(([predRes, shotsRes, newsRes, hlRes]) => {
+    ]).then(([predRes, shotsRes, hlRes]) => {
       setPredictions(predRes.data ?? null)
       setShots(shotsRes.data ?? [])
-      setNews(newsRes.data ?? [])
       setHighlights(hlRes.data ?? [])
     }).catch(() => {})
   }, [matchId, richKey])
@@ -174,8 +171,30 @@ export default function MatchShow({ matchId }) {
     if (data.type === 'statistics_updated') { setStatsKey(k => k + 1); setRichKey(k => k + 1) }
     if (data.type === 'lineups_updated')    setLineupsKey(k => k + 1)
     if (data.type === 'match_end')          setStandingsKey(k => k + 1)
-    if ((data.type === 'match_update' || data.type === 'goal' || data.type === 'match_event') && data.match?.score_current) {
-      setCurrentScore(data.match.score_current)
+    if (data.type === 'match_update' || data.type === 'goal' || data.type === 'match_event') {
+      if (data.match?.score_current) setCurrentScore(data.match.score_current)
+      if (data.match?.status)        setCurrentStatus(data.match.status)
+    }
+    if ((data.type === 'match_event' || data.type === 'goal') && data.event) {
+      const e = data.event
+      setEvents(prev => {
+        const isDup = prev.some(x =>
+          x.time === e.time && x.event_type === e.event_type && x.player_name === e.player_name
+        )
+        if (isDup) return prev
+        return [...prev, {
+          id:                           Date.now(),
+          time:                         e.time,
+          event_type:                   e.event_type,
+          player_name:                  e.player_name,
+          player_external_id:           e.player_external_id ?? null,
+          team_name:                    e.team_name,
+          team_external_id:             e.team_external_id,
+          assisting_player_name:        e.assisting_player_name ?? null,
+          assisting_player_external_id: e.assisting_player_external_id ?? null,
+          substituted_player:           e.substituted_player ?? null,
+        }]
+      })
     }
   })
 
@@ -197,7 +216,8 @@ export default function MatchShow({ matchId }) {
   const homeTeam = { name: homeAttr.name, logo: homeAttr.logo, path: `/teams/${homeId}`, external_id: homeAttr.external_id }
   const awayTeam = { name: awayAttr.name, logo: awayAttr.logo, path: `/teams/${awayId}`, external_id: awayAttr.external_id }
 
-  const phase      = matchPhase(a.status)
+  const liveStatus = currentStatus ?? a.status
+  const phase      = matchPhase(liveStatus)
   const isPreMatch = phase === 'upcoming'
   const isLive     = phase === 'live'
   const isFinished = phase === 'finished'
@@ -209,7 +229,6 @@ export default function MatchShow({ matchId }) {
       .sort((a, b) => parseFloat(b.match_rating) - parseFloat(a.match_rating))[0] ?? null
   })()
 
-  const hasInjuries = injuries && ((injuries.home?.length ?? 0) + (injuries.away?.length ?? 0)) > 0
 
   const goalEvents = events
     .filter(e => GOAL_TYPES.has(e.event_type))
@@ -227,9 +246,7 @@ export default function MatchShow({ matchId }) {
     if (isPreMatch) return [
       'Overview', 'Lineups',
       standings?.length > 0  && 'Standings',
-      hasInjuries            && 'Injuries',
       bookmakers?.length > 0 && 'Odds',
-      news.length > 0        && 'News',
     ].filter(Boolean)
 
     if (isLive) return [
@@ -239,18 +256,16 @@ export default function MatchShow({ matchId }) {
       shots.length > 0      && 'Shots',
       standings?.length > 0 && 'Standings',
       'Overview',
-      news.length > 0       && 'News',
     ].filter(Boolean)
 
     return [
       'Events',
-      lineups.length > 0    && 'Lineups',
-      statistics.length > 0 && 'Statistics',
-      shots.length > 0      && 'Shots',
-      standings?.length > 0 && 'Standings',
+      lineups.length > 0     && 'Lineups',
+      statistics.length > 0  && 'Statistics',
+      shots.length > 0       && 'Shots',
+      standings?.length > 0  && 'Standings',
       highlights?.length > 0 && 'Highlights',
       'Overview',
-      news.length > 0       && 'News',
     ].filter(Boolean)
   })()
 
@@ -285,7 +300,12 @@ export default function MatchShow({ matchId }) {
         forecastTemperature={a.forecast_temperature}
       />
 
-      <MatchTabs tabs={tabs} activeTab={activeTab} onSelect={setTab} />
+      <MatchTabs tabs={tabs} activeTab={activeTab} onSelect={t => {
+        setTab(t)
+        const url = new URL(window.location)
+        url.searchParams.set('tab', t)
+        window.history.replaceState({}, '', url)
+      }} />
 
       {activeTab === 'Overview' && (
         <MatchOverview
@@ -296,7 +316,7 @@ export default function MatchShow({ matchId }) {
       )}
 
       {activeTab === 'Lineups' && (
-        <MatchLineup homeTeam={homeTeam} awayTeam={awayTeam} lineups={lineups} events={lineupEvents} lastKnown={lineupsLastKnown} />
+        <MatchLineup homeTeam={homeTeam} awayTeam={awayTeam} lineups={lineups} events={lineupEvents} lastKnown={lineupsLastKnown} injuries={injuries} boxScores={boxScores} />
       )}
 
       {activeTab === 'Statistics' && (
@@ -319,7 +339,7 @@ export default function MatchShow({ matchId }) {
           matchId={matchId}
           homeTeamExternalId={homeAttr.external_id}
           homeTeam={homeTeam} awayTeam={awayTeam}
-          isLive={isLive} matchStatus={a.status} initialEvents={events}
+          isLive={isLive} matchStatus={liveStatus} initialEvents={events} clock={a.clock}
         />
       )}
 
@@ -331,15 +351,10 @@ export default function MatchShow({ matchId }) {
         />
       )}
 
-      {activeTab === 'Injuries' && (
-        <MatchInjuries homeTeam={homeTeam} awayTeam={awayTeam} injuries={injuries} />
-      )}
-
       {activeTab === 'Odds' && (
         <MatchOdds bookmakers={bookmakers} homeTeam={homeTeam} awayTeam={awayTeam} />
       )}
 
-      {activeTab === 'News' && <MatchNews news={news} />}
 
       {activeTab === 'Highlights' && (
         <MatchHighlights matchId={matchId} isLive={isLive} highlights={highlights} />

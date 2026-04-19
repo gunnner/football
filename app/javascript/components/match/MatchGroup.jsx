@@ -33,6 +33,7 @@ function LiveMatchRow({ match, included }) {
 
   const [score,        setScore]        = useState(a.score_current)
   const [clock,        setClock]        = useState(a.clock)
+  const [status,       setStatus]       = useState(a.status)
   const [isDone,       setIsDone]       = useState(false)
   const [recentEvents, setRecentEvents] = useState([])
 
@@ -52,6 +53,7 @@ function LiveMatchRow({ match, included }) {
     if (data.type === 'match_update' || data.type === 'match_event' || data.type === 'goal') {
       if (data.match?.score_current !== undefined) setScore(data.match.score_current)
       if (data.match?.clock !== undefined)         setClock(data.match.clock)
+      if (data.match?.status !== undefined)        setStatus(data.match.status)
     }
     if (data.type === 'match_end') {
       if (data.match?.score_current !== undefined) setScore(data.match.score_current)
@@ -61,6 +63,14 @@ function LiveMatchRow({ match, included }) {
       setRecentEvents(prev => [data.event, ...prev].slice(0, 3))
     }
   })
+
+  const clockStr      = String(clock ?? '')
+  const clockMin      = parseInt(clockStr) || 0
+  const isOvertime    = clockStr.includes('+')
+  // Only normalise HT — end of match is determined solely by API status, never by clock
+  const effectiveStatus = (!isOvertime && status === 'First half' && clockMin >= 45) ? 'Half time'
+                        : status
+  const isHalfTime    = effectiveStatus === 'Half time' || effectiveStatus === 'Break time'
 
   return (
     <a href={`/matches/${match.id}`} className="block">
@@ -74,7 +84,9 @@ function LiveMatchRow({ match, included }) {
             <span className="text-white font-bold text-sm">{score || '0 - 0'}</span>
             {isDone
               ? <span className="text-gray-500 text-xs block font-medium">FT</span>
-              : <span className="text-red-400 text-xs block animate-pulse">{formatClock(clock, a.status)}</span>
+              : isHalfTime
+              ? <span className="text-yellow-500 text-xs block font-medium">HT</span>
+              : <span className="text-red-400 text-xs block animate-pulse">{formatClock(clock, effectiveStatus)}</span>
             }
           </div>
           <div className="flex-1 flex items-center justify-start gap-2">

@@ -52,8 +52,9 @@ function GoalFace({ shots }) {
   onGoal.forEach(s => {
     const zone = normalizeZone(s.goal_target)
     if (!zone) return
-    if (!byZone[zone]) byZone[zone] = {}
-    byZone[zone][s.outcome] = (byZone[zone][s.outcome] || 0) + 1
+    if (!byZone[zone]) byZone[zone] = { counts: {}, shots: [] }
+    byZone[zone].counts[s.outcome] = (byZone[zone].counts[s.outcome] || 0) + 1
+    byZone[zone].shots.push(s)
   })
 
   return (
@@ -64,8 +65,9 @@ function GoalFace({ shots }) {
 
         {/* 3×3 zone cells */}
         {ZONE_GRID.map(({ zone, col, row }) => {
-          const counts = byZone[zone] || {}
-          const total  = ON_GOAL_OUTCOMES.reduce((s, o) => s + (counts[o] || 0), 0)
+          const zoneData = byZone[zone] || { counts: {}, shots: [] }
+          const counts   = zoneData.counts
+          const total    = ON_GOAL_OUTCOMES.reduce((s, o) => s + (counts[o] || 0), 0)
           const cx = 5 + col * CELL_W
           const cy = 5 + row * CELL_H
 
@@ -76,7 +78,18 @@ function GoalFace({ shots }) {
           let xOffset = BAR_X
 
           const tooltipLines = total > 0
-            ? ON_GOAL_OUTCOMES.filter(o => counts[o]).map(o => `${counts[o]} ${o}`)
+            ? ON_GOAL_OUTCOMES.filter(o => counts[o]).flatMap(o => {
+                if (o === 'Goal') {
+                  return zoneData.shots
+                    .filter(s => s.outcome === 'Goal')
+                    .map(s => {
+                      const name = s.player_name ? s.player_name.split(' ').pop() : null
+                      const detail = [name, s.time ? `${s.time}'` : null].filter(Boolean).join(' ')
+                      return { outcome: o, label: detail ? `Goal — ${detail}` : 'Goal' }
+                    })
+                }
+                return [{ outcome: o, label: `${counts[o]} ${o}` }]
+              })
             : []
 
           return (
@@ -119,10 +132,28 @@ function GoalFace({ shots }) {
         <div className="fixed z-50 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-xs shadow-lg pointer-events-none"
           style={{ left: tooltip.x + 10, top: tooltip.y - 10 }}>
           <p className="text-gray-400 font-semibold mb-1">{tooltip.zone}</p>
-          {tooltip.lines.map(l => <p key={l} className="text-gray-200">{l}</p>)}
+          {tooltip.lines.map((l, i) => (
+            <p key={i} style={{ color: OUTCOME_STYLE[l.outcome]?.fill ?? '#e5e7eb' }}>{l.label}</p>
+          ))}
         </div>
       )}
     </div>
+  )
+}
+
+function PlayerAvatar({ logo, name, size = 5 }) {
+  const [failed, setFailed] = useState(false)
+  const cls = `w-${size} h-${size} rounded-full flex-shrink-0`
+  if (logo && !failed) {
+    return (
+      <div className={`${cls} bg-gray-700 overflow-hidden`}>
+        <img src={logo} alt={name} onError={() => setFailed(true)}
+             className="w-full" style={{ height: '200%', objectFit: 'cover', objectPosition: '50% 0%' }} />
+      </div>
+    )
+  }
+  return (
+    <div className={`${cls} bg-gray-700 flex items-center justify-center text-[9px]`}>👤</div>
   )
 }
 
@@ -135,29 +166,37 @@ function MissedList({ shots, isHome }) {
       <span className="font-medium text-gray-400">{missed.length} missed</span>
       {' — '}
       {missed.map((s, i) => (
-        <span key={i}>{s.player_name}{s.time ? ` ${s.time}` : ''}{i < missed.length - 1 ? ', ' : ''}</span>
+        <span key={i}>{s.player_name}{s.time ? ` ${s.time}'` : ''}{i < missed.length - 1 ? ', ' : ''}</span>
       ))}
     </div>
   )
 }
 
-function ShotList({ shots, isHome }) {
-  const onGoal = shots.filter(s => ON_GOAL_OUTCOMES.includes(s.outcome))
-  if (onGoal.length === 0) return <p className="text-xs text-gray-600 text-center py-4">No shots on target</p>
+function CombinedShotList({ homeShots, awayShots, homeExternalId }) {
+  const parseTime = t => {
+    if (!t) return 0
+    const m = String(t).match(/(\d+)\s*\+\s*(\d+)/)
+    return m ? parseInt(m[1]) * 100 + parseInt(m[2]) : parseInt(t) * 100
+  }
+  const onGoal = [...homeShots, ...awayShots]
+    .sort((a, b) => parseTime(a.time) - parseTime(b.time))
+
+  if (onGoal.length === 0) return <p className="text-xs text-gray-600 text-center py-4">No shot data</p>
 
   return (
-    <div className="space-y-1">
+    <div className="space-y-0.5">
       {onGoal.map((s, i) => {
-        const style = OUTCOME_STYLE[s.outcome] ?? { fill: '#6b7280' }
+        const isHome = String(s.team_external_id) === String(homeExternalId)
+        const style  = OUTCOME_STYLE[s.outcome] ?? { fill: '#6b7280' }
+        const nameEl = s.player_path
+          ? <a href={s.player_path} className="text-gray-200 truncate hover:text-white transition-colors">{s.player_name}</a>
+          : <span className="text-gray-200 truncate">{s.player_name}</span>
         return (
-          <div key={i} className={`flex items-center gap-2 text-xs px-2 py-1 rounded ${isHome ? '' : 'flex-row-reverse text-right'}`}>
-            <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: style.fill }} />
-            <span className="text-gray-400 flex-shrink-0">{s.time}</span>
-            {s.player_path
-              ? <a href={s.player_path} className="text-gray-200 truncate hover:text-white hover:underline">{s.player_name}</a>
-              : <span className="text-gray-200 truncate">{s.player_name}</span>
-            }
-            <span className="text-gray-500 flex-shrink-0">{s.outcome}</span>
+          <div key={i} className={`flex items-center gap-1.5 text-xs px-2 py-1 rounded hover:bg-gray-800/50 transition-colors ${isHome ? '' : 'flex-row-reverse'}`}>
+            <PlayerAvatar logo={s.player_logo} name={s.player_name} size={5} />
+            <span className="text-gray-500 flex-shrink-0 w-7 tabular-nums">{s.time}'</span>
+            {nameEl}
+            <span className="flex-shrink-0 text-[10px] font-medium" style={{ color: style.fill }}>{s.outcome}</span>
           </div>
         )
       })}
@@ -171,9 +210,9 @@ function ProbabilityBars({ predictions, homeTeam, awayTeam, isLive }) {
   if (!pred) return null
 
   const rows = [
-    { label: homeTeam.name, pct: parseFloat(pred.home_pct), color: 'bg-blue-500' },
-    { label: 'Draw',        pct: parseFloat(pred.draw_pct), color: 'bg-gray-500' },
-    { label: awayTeam.name, pct: parseFloat(pred.away_pct), color: 'bg-red-500'  },
+    { logo: homeTeam.logo, path: homeTeam.path, pct: parseFloat(pred.home_pct), color: 'bg-blue-500' },
+    { label: 'Draw',                                pct: parseFloat(pred.draw_pct), color: 'bg-gray-500' },
+    { logo: awayTeam.logo, path: awayTeam.path, pct: parseFloat(pred.away_pct), color: 'bg-red-500'  },
   ]
 
   return (
@@ -182,9 +221,14 @@ function ProbabilityBars({ predictions, homeTeam, awayTeam, isLive }) {
         Win Probability {predictions.live ? '· Live' : '· Pre-match'}
       </p>
       <div className="space-y-2">
-        {rows.map(row => (
-          <div key={row.label} className="flex items-center gap-2">
-            <span className="text-xs text-gray-400 w-24 truncate text-right">{row.label}</span>
+        {rows.map((row, i) => (
+          <div key={i} className="flex items-center gap-2">
+            <div className="w-8 flex justify-center items-center flex-shrink-0">
+              {row.logo
+                ? <a href={row.path}><img src={row.logo} className="w-5 h-5 object-contain" alt="" /></a>
+                : <span className="text-xs text-gray-400">{row.label}</span>
+              }
+            </div>
             <div className="flex-1 bg-gray-800 rounded-full h-2 overflow-hidden">
               <div className={`h-full rounded-full ${row.color} transition-all duration-500`}
                 style={{ width: `${row.pct ?? 0}%` }} />
@@ -240,7 +284,6 @@ export default function ShotMap({ shots, homeTeam, awayTeam, homeExternalId, awa
               </a>
               <GoalFace shots={homeShots} />
               <p className="text-xs text-gray-500 text-center mt-1">{homeShots.filter(s => ON_GOAL_OUTCOMES.includes(s.outcome)).length} on target</p>
-              <MissedList shots={homeShots} isHome />
             </div>
             <div>
               <a href={awayTeam.path} className="flex items-center justify-center gap-2 mb-2 hover:opacity-80 transition-opacity">
@@ -249,14 +292,12 @@ export default function ShotMap({ shots, homeTeam, awayTeam, homeExternalId, awa
               </a>
               <GoalFace shots={awayShots} />
               <p className="text-xs text-gray-500 text-center mt-1">{awayShots.filter(s => ON_GOAL_OUTCOMES.includes(s.outcome)).length} on target</p>
-              <MissedList shots={awayShots} isHome={false} />
             </div>
           </div>
 
-          {/* Shot lists — only on target */}
-          <div className="grid grid-cols-2 gap-4 px-4 pb-4 border-t border-gray-800 pt-3">
-            <ShotList shots={homeShots} isHome />
-            <ShotList shots={awayShots} isHome={false} />
+          {/* Shot list — chronological, home left / away right */}
+          <div className="px-4 pb-4 border-t border-gray-800 pt-3">
+            <CombinedShotList homeShots={homeShots} awayShots={awayShots} homeExternalId={homeExternalId} />
           </div>
         </div>
       )}

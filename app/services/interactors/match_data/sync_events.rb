@@ -44,7 +44,6 @@ module Interactors
 
       def upsert_events(event_records)
         # Deduplicate by [match_id, time, event_type, player_external_id] — keep last occurrence
-        # API sometimes returns duplicate events within the same fetch
         deduped = event_records.uniq { [ it[:match_id], it[:time], it[:event_type], it[:player_external_id] ] }
 
         MatchEvent.upsert_all(
@@ -52,21 +51,15 @@ module Interactors
           unique_by: %i[match_id time event_type player_external_id],
         )
 
-        # Remove null-player ghost records superseded by events with full player data.
-        # During live matches the API initially returns events without player IDs, then
-        # fills them in on the next sync — resulting in two DB rows for the same event.
-        MatchEvent
-          .where(match_id: context.match.id, player_external_id: nil)
-          .where(
-            "EXISTS (
-              SELECT 1 FROM match_events me2
-              WHERE me2.match_id    = match_events.match_id
-                AND me2.time        = match_events.time
-                AND me2.event_type  = match_events.event_type
-                AND me2.player_external_id IS NOT NULL
-            )"
-          )
-          .delete_all
+        # Hard sync: remove any DB events not present in the current API response.
+        # This cleans up ghost rows that appeared when the API changed event times or
+        # player IDs between fetches (e.g. 19' → 18' after player_id was resolved).
+        api_fingerprints = deduped.map { [ it[:time], it[:event_type], it[:player_external_id] ] }.to_set
+
+        MatchEvent.where(match_id: context.match.id).find_each do |evt|
+          fingerprint = [ evt.time, evt.event_type, evt.player_external_id ]
+          evt.destroy unless api_fingerprints.include?(fingerprint)
+        end
       end
     end
   end
