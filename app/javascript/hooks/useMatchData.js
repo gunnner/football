@@ -3,6 +3,24 @@ import { GOAL_TYPES }          from '../constants/matchEvents'
 import { matchPhase }          from '../constants/matchStatus'
 import { getCountryCode }      from '../utils/country'
 import { useMatchChannel }     from './useMatchChannel'
+import { parseMinute }         from '../utils/eventTime'
+
+// Remove duplicate events: same event_type + player_external_id within ±1 minute.
+// Keeps the first occurrence (earlier in the array).
+function dedupeEvents(evts) {
+  const seen = []
+  return evts.filter(evt => {
+    const evtMin = Math.floor(parseMinute(evt.time) / 100)
+    const dup = seen.some(s =>
+      s.event_type         === evt.event_type &&
+      s.player_external_id != null &&
+      s.player_external_id === evt.player_external_id &&
+      Math.abs(Math.floor(parseMinute(s.time) / 100) - evtMin) <= 1
+    )
+    if (!dup) seen.push(evt)
+    return !dup
+  })
+}
 
 export function useMatchData(matchId) {
   const [match,    setMatch]    = useState(null)
@@ -43,7 +61,7 @@ export function useMatchData(matchId) {
       setStandings(showRes.meta?.standings ?? [])
       setCurrentScore(showRes.data?.data?.attributes?.score_current ?? null)
       setCurrentStatus(showRes.data?.data?.attributes?.status ?? null)
-      setEvents(eventsRes.data ?? [])
+      setEvents(dedupeEvents(eventsRes.data ?? []))
       setLoading(false)
     }).catch(() => setLoading(false))
   }, [matchId])
@@ -123,24 +141,18 @@ export function useMatchData(matchId) {
     }
     if ((data.type === 'match_event' || data.type === 'goal') && data.event) {
       const e = data.event
-      setEvents(prev => {
-        const isDup = prev.some(x =>
-          x.time === e.time && x.event_type === e.event_type && x.player_name === e.player_name
-        )
-        if (isDup) return prev
-        return [...prev, {
-          id:                           Date.now(),
-          time:                         e.time,
-          event_type:                   e.event_type,
-          player_name:                  e.player_name,
-          player_external_id:           e.player_external_id ?? null,
-          team_name:                    e.team_name,
-          team_external_id:             e.team_external_id,
-          assisting_player_name:        e.assisting_player_name ?? null,
-          assisting_player_external_id: e.assisting_player_external_id ?? null,
-          substituted_player:           e.substituted_player ?? null,
-        }]
-      })
+      setEvents(prev => dedupeEvents([...prev, {
+        id:                           Date.now(),
+        time:                         e.time,
+        event_type:                   e.event_type,
+        player_name:                  e.player_name,
+        player_external_id:           e.player_external_id ?? null,
+        team_name:                    e.team_name,
+        team_external_id:             e.team_external_id,
+        assisting_player_name:        e.assisting_player_name ?? null,
+        assisting_player_external_id: e.assisting_player_external_id ?? null,
+        substituted_player:           e.substituted_player ?? null,
+      }]))
     }
   })
 

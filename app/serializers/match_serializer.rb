@@ -6,6 +6,7 @@ class MatchSerializer
              :status,
              :round,
              :clock,
+             :updated_at,
              :score_current,
              :score_penalties,
              :venue_name,

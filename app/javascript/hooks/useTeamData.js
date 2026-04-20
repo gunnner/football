@@ -4,6 +4,7 @@ export function useTeamData(teamId) {
   const [team,          setTeam]          = useState(null)
   const [form,          setForm]          = useState([])
   const [avgPlayerRate, setAvgPlayerRate] = useState(null)
+  const [leagues,       setLeagues]       = useState([])
   const [stats,         setStats]         = useState([])
   const [matches,       setMatches]       = useState([])
   const [included,      setIncluded]      = useState([])
@@ -20,6 +21,7 @@ export function useTeamData(teamId) {
         setTeam(teamRes.data?.data)
         setForm(teamRes.meta?.form ?? [])
         setAvgPlayerRate(teamRes.meta?.avg_player_rate ?? null)
+        setLeagues(teamRes.meta?.leagues ?? [])
         setStats(statsRes.data ?? [])
         setMatches(matchesRes.data ?? [])
         setIncluded(matchesRes.included ?? [])
@@ -32,5 +34,5 @@ export function useTeamData(teamId) {
       })
   }, [teamId])
 
-  return { team, form, avgPlayerRate, stats, matches, included, loading, error }
+  return { team, form, avgPlayerRate, leagues, stats, matches, included, loading, error }
 }

@@ -188,7 +188,7 @@ export default function PlayerTable({ tab, players }) {
 
             if (col.key === 'match_rating') {
               if (val == null) return <div key={col.key} className="flex items-center justify-center text-gray-600 text-sm">-</div>
-              const r = parseFloat(val)
+              const r = Math.min(parseFloat(val), 10)
               const color = r >= 8 ? 'text-green-400' : r >= 7 ? 'text-blue-400' : r >= 6 ? 'text-gray-200' : 'text-red-400'
               return <div key={col.key} className={`flex items-center justify-center text-sm font-bold ${color}`}>{r.toFixed(2)}</div>
             }

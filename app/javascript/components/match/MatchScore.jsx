@@ -179,7 +179,7 @@ export default function MatchScore({
                   </a>
                 </div>
               </div>
-              <span className="text-xl font-bold text-yellow-400 ml-1">{playerOfMatch.match_rating}</span>
+              <span className="text-xl font-bold text-yellow-400 ml-1">{Math.min(parseFloat(playerOfMatch.match_rating), 10).toFixed(2)}</span>
             </div>
           </div>
           <MatchMeta {...metaProps} />

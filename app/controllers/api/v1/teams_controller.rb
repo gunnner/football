@@ -14,7 +14,8 @@ module Api
             data: TeamSerializer.new(team).serializable_hash,
             meta: {
               form:            TeamPresenters::FormPresenter.new(team).call,
-              avg_player_rate: team.max_player_avg_rating_by_team
+              avg_player_rate: team.max_player_avg_rating_by_team,
+              leagues:         team.leagues.map { { id: it.id, name: it.name, logo: it.logo } }
             }
           }
         end

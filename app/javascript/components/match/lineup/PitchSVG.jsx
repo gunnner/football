@@ -10,19 +10,22 @@ const PAD_V      = 36
 const MAX_PLAYER_GAP = 44
 
 function EventBadges({ events }) {
+  // Deduplicate only non-goal events by type (cards, subs shown once).
+  // Goals/assists each get their own badge since a player can score multiple.
+  const MULTI_ALLOWED = new Set(['goal', 'ownGoal', 'assist'])
   const seen   = new Set()
   const badges = []
   for (const e of events) {
     const b = badgeForEvent(e)
     if (!b) continue
-    const dedupeKey = b.key.replace(/-\d+$/, '')
+    const dedupeKey = MULTI_ALLOWED.has(b.svgKey) ? b.key : b.svgKey
     if (seen.has(dedupeKey)) continue
     seen.add(dedupeKey)
     badges.push(b)
-    if (badges.length === 3) break
+    if (badges.length === 4) break
   }
   return badges.map((b, i) => (
-    <g key={b.key} transform={`translate(${R - 3 + i * 8}, ${-(R + 2)})`}>
+    <g key={b.key} transform={`translate(${(-(badges.length - 1) * 4) + i * 8}, ${-(R + 2)})`}>
       {BADGE_SVG[b.svgKey]}
       {b.time != null && (
         <text textAnchor="middle" y="-6" fontSize="4" fill="rgba(255,255,255,0.7)">{b.time}'</text>

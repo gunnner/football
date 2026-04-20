@@ -18,16 +18,13 @@ function buildEventMap(events) {
   return map
 }
 
-function LastKnownBanner({ homeLineup, awayLineup }) {
-  const src = homeLineup?.source_match ?? awayLineup?.source_match
-  const tooltip = src
-    ? `Starting lineups from ${src.home_team} vs ${src.away_team} (${src.date}). Official lineups will appear closer to kick-off.`
-    : 'Starting lineups from the last known match. Official lineups will appear closer to kick-off.'
+function LastKnownBanner() {
+  const tooltip = 'Starting lineups from the last known match. Official lineups will appear closer to kick-off.'
 
   return (
     <div className="flex items-center justify-center gap-1 group relative cursor-default">
       <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Last known lineup</span>
-      <span className="text-gray-600 text-xs leading-none" title={tooltip}>ⓘ</span>
+      <span className="text-gray-600 text-xs leading-none">ⓘ</span>
       <div className="absolute top-full mt-1 left-1/2 -translate-x-1/2 z-10 hidden group-hover:block w-72 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-xs text-gray-300 shadow-xl">
         {tooltip}
       </div>
@@ -60,7 +57,7 @@ export default function MatchLineup({ homeTeam, awayTeam, lineups, events = [], 
   const ratingMap  = Object.fromEntries(
     boxScores
       .filter(b => b.player_external_id && b.match_rating && parseFloat(b.match_rating) > 0)
-      .map(b => [String(b.player_external_id), parseFloat(b.match_rating).toFixed(1)])
+      .map(b => [String(b.player_external_id), Math.min(parseFloat(b.match_rating), 10).toFixed(1)])
   )
   const homeLineup = lineups.find(l => l.team_external_id === homeTeam.external_id)
   const awayLineup = lineups.find(l => l.team_external_id === awayTeam.external_id)
@@ -71,7 +68,7 @@ export default function MatchLineup({ homeTeam, awayTeam, lineups, events = [], 
 
   return (
     <div className="bg-gray-900 rounded-xl p-4 space-y-3">
-      {lastKnown && <LastKnownBanner homeLineup={homeLineup} awayLineup={awayLineup} />}
+      {lastKnown && <LastKnownBanner />}
 
       <div className="flex justify-between items-center text-xs">
         <span className="font-semibold text-gray-200">

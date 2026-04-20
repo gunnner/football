@@ -9,7 +9,8 @@ module Highlightly
         updated = 0
 
         teams.each do |team|
-          data = @client.team(team.external_id)
+          raw  = @client.team(team.external_id)
+          data = raw.is_a?(Array) ? raw.first : raw
           next if data.blank?
 
           team.update_columns(build_attrs(data))
