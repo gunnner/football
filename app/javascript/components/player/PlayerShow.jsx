@@ -35,8 +35,9 @@ function RatingBadge({ rating }) {
   const [show, setShow] = useState(false)
   if (!rating) return null
 
-  const score = parseFloat(rating).toFixed(2)
-  const color = rating >= 8 ? 'text-green-400' : rating >= 7 ? 'text-yellow-400' : 'text-gray-300'
+  const r     = Math.min(parseFloat(rating), 10)
+  const score = r.toFixed(2)
+  const color = r >= 8 ? 'text-green-400' : r >= 7 ? 'text-yellow-400' : 'text-gray-300'
 
   return (
     <div className="absolute flex flex-col items-center bg-gray-800 rounded-xl px-3 py-2 cursor-default"

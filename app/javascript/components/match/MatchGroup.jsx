@@ -37,23 +37,43 @@ function LiveMatchRow({ match, included }) {
   const [isDone,       setIsDone]       = useState(false)
   const [recentEvents, setRecentEvents] = useState([])
 
+  // Ref stores the authoritative clock value + timestamp when it was received from the API.
+  // Using updated_at (when DB was last written) as the base timestamp means elapsed time
+  // is calculated correctly even if the page was loaded long after the last sync.
+  const clockBaseRef = useRef({
+    raw: a.clock ?? '0',
+    ts:  a.updated_at ? new Date(a.updated_at).getTime() : Date.now(),
+  })
+
   const tickRef = useRef(null)
   useEffect(() => {
     if (isDone) { clearInterval(tickRef.current); return }
     tickRef.current = setInterval(() => {
-      setClock(prev => {
-        const n = parseInt(prev)
-        return isNaN(n) ? prev : String(n + 1)
-      })
-    }, 60000)
+      const { raw, ts } = clockBaseRef.current
+      const elapsed = Math.floor((Date.now() - ts) / 60000)
+      if (elapsed === 0) return
+
+      const str = String(raw)
+      if (str.includes('+')) {
+        // Overtime: increment the extra minutes part
+        const [base, extra] = str.split('+').map(Number)
+        setClock(`${base}+${(extra || 0) + elapsed}`)
+      } else {
+        const base = parseInt(str) || 0
+        setClock(String(base + elapsed))
+      }
+    }, 15000)
     return () => clearInterval(tickRef.current)
   }, [isDone])
 
   useMatchChannel(match.id, (data) => {
     if (data.type === 'match_update' || data.type === 'match_event' || data.type === 'goal') {
       if (data.match?.score_current !== undefined) setScore(data.match.score_current)
-      if (data.match?.clock !== undefined)         setClock(data.match.clock)
       if (data.match?.status !== undefined)        setStatus(data.match.status)
+      if (data.match?.clock !== undefined) {
+        clockBaseRef.current = { raw: data.match.clock, ts: Date.now() }
+        setClock(data.match.clock)
+      }
     }
     if (data.type === 'match_end') {
       if (data.match?.score_current !== undefined) setScore(data.match.score_current)
@@ -64,13 +84,16 @@ function LiveMatchRow({ match, included }) {
     }
   })
 
-  const clockStr      = String(clock ?? '')
-  const clockMin      = parseInt(clockStr) || 0
-  const isOvertime    = clockStr.includes('+')
-  // Only normalise HT — end of match is determined solely by API status, never by clock
-  const effectiveStatus = (!isOvertime && status === 'First half' && clockMin >= 45) ? 'Half time'
+  const clockStr   = String(clock ?? '')
+  const clockMin   = parseInt(clockStr) || 0
+  const isOvertime = clockStr.includes('+')
+  // Infer status from clock when the API lags behind (e.g. worker paused for 40 min):
+  //   clock ≥ 46 while still "First half" → must be Second half
+  //   clock ≥ 45 exactly → could be HT injury time or HT, show Half time
+  const effectiveStatus = (!isOvertime && status === 'First half' && clockMin >= 46) ? 'Second half'
+                        : (!isOvertime && status === 'First half' && clockMin === 45) ? 'Half time'
                         : status
-  const isHalfTime    = effectiveStatus === 'Half time' || effectiveStatus === 'Break time'
+  const isHalfTime = effectiveStatus === 'Half time' || effectiveStatus === 'Break time'
 
   return (
     <a href={`/matches/${match.id}`} className="block">

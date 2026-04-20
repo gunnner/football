@@ -15,6 +15,33 @@ function seasonLabel(season) {
   return `${season}/${String(season + 1).slice(-2)}`
 }
 
+// ── Stadium row with capacity tooltip ────────────────────────────────────────
+
+function StadiumRow({ name, capacity }) {
+  const [hovered, setHovered] = useState(false)
+  return (
+    <div className="flex items-center gap-1.5">
+      <span className="text-gray-500 w-14 flex-shrink-0">Stadium</span>
+      <div className="relative flex items-center gap-1 cursor-default"
+           onMouseEnter={() => setHovered(true)}
+           onMouseLeave={() => setHovered(false)}>
+        <span className="text-gray-200">{name}</span>
+        {capacity && (
+          <>
+            <span className="text-gray-600 text-[10px] leading-none">ⓘ</span>
+            {hovered && (
+              <div className="absolute bottom-full mb-1.5 left-0 z-10 bg-gray-800 border border-gray-700
+                              rounded-lg px-2.5 py-1.5 text-xs text-gray-300 shadow-xl whitespace-nowrap pointer-events-none">
+                Capacity: {formatNumber(capacity)}
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    </div>
+  )
+}
+
 // ── Loading skeleton ──────────────────────────────────────────────────────────
 
 function LoadingSkeleton() {
@@ -84,6 +111,55 @@ function FormBadge({ match }) {
   )
 }
 
+// ── Small team logo (used in NextMatchCard) ───────────────────────────────────
+
+function SmallTeamLogo({ logo, name }) {
+  const [failed, setFailed] = useState(false)
+  if (logo && !failed) {
+    return (
+      <img src={logo} alt={name} className="w-9 h-9 object-contain flex-shrink-0"
+           onError={() => setFailed(true)} />
+    )
+  }
+  return <div className="w-9 h-9 bg-gray-700 rounded-lg flex-shrink-0" />
+}
+
+// ── Next Match ────────────────────────────────────────────────────────────────
+
+function NextMatchCard({ nextMatch }) {
+  if (!nextMatch) return null
+
+  const { match, homeTeam, awayTeam, league } = nextMatch
+  const matchDate = new Date(match.attributes.date)
+  const isValid   = !isNaN(matchDate.getTime())
+  const dateStr   = isValid ? matchDate.toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', month: 'short' }) : '—'
+  const timeStr   = isValid ? matchDate.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : '—'
+
+  return (
+    <div className="flex flex-col gap-2 items-start">
+      <span className="text-xs text-gray-500">Next match</span>
+      <a href={`/matches/${match.id}`} className="flex items-center gap-3 group">
+        <SmallTeamLogo logo={homeTeam.logo} name={homeTeam.name} />
+        <div className="flex flex-col items-center text-center flex-shrink-0 min-w-[4.5rem]">
+          {league?.id && league?.name ? (
+            <a href={`/leagues/${league.id}`}
+               className="flex items-center gap-1 text-[10px] text-gray-500 hover:text-gray-300 transition-colors leading-tight mb-0.5"
+               onClick={e => e.stopPropagation()}>
+              {league.logo && <img src={league.logo} alt={league.name} className="w-3 h-3 object-contain" />}
+              <span>{league.name}</span>
+            </a>
+          ) : (
+            <span className="text-[10px] text-gray-500 leading-tight">{dateStr}</span>
+          )}
+          <span className="text-xs font-bold text-blue-400 group-hover:text-blue-300 transition-colors leading-tight">{timeStr}</span>
+          {league?.id && <span className="text-[10px] text-gray-500 leading-tight mt-0.5">{dateStr}</span>}
+        </div>
+        <SmallTeamLogo logo={awayTeam.logo} name={awayTeam.name} />
+      </a>
+    </div>
+  )
+}
+
 // ── Position meta ─────────────────────────────────────────────────────────────
 
 const POSITION_META = {
@@ -108,38 +184,44 @@ function AvgRatingBadge({ avgPlayerRate }) {
   if (!avgPlayerRate?.rating) return null
 
   const { id, name, logo, position, rating } = avgPlayerRate
-  const score      = parseFloat(rating).toFixed(2)
+  const score      = Math.min(parseFloat(rating), 10).toFixed(2)
   const posMeta    = POSITION_META[position]
   const posShort   = posMeta?.short ?? position ?? null
   const posColor   = posMeta?.color ?? 'text-gray-400 bg-gray-400/10'
   const ratingColor = rating >= 8 ? 'text-green-400' : rating >= 7 ? 'text-yellow-400' : 'text-gray-300'
 
   return (
-    <div className="relative flex-shrink-0 flex flex-col items-center bg-gray-800 rounded-xl px-3 py-2 cursor-default"
+    <div className="relative flex-shrink-0 flex flex-col gap-2 bg-gray-800 rounded-xl px-3 py-2 cursor-default min-w-[10rem]"
          onMouseEnter={() => setHovered(true)}
          onMouseLeave={() => setHovered(false)}>
-      <span className={`text-2xl font-bold ${ratingColor}`}>{score}</span>
-      <span className="text-[10px] text-gray-500 mt-0.5 mb-1.5">Top rated player</span>
-      <div className="flex items-center gap-1.5">
-        {posShort && (
-          <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${posColor}`}>{posShort}</span>
-        )}
+      {/* Label + rating in top row */}
+      <div className="flex items-center justify-between gap-4">
+        <span className="text-xs text-gray-500">Top rated player</span>
+        <span className={`text-lg font-bold ${ratingColor}`}>{score}</span>
+      </div>
+      {/* Player row */}
+      <div className="flex items-center gap-2">
         {logo
           ? (
-            <div className="w-5 h-5 rounded-full overflow-hidden flex-shrink-0 bg-gray-700">
+            <div className="w-9 h-9 rounded-full overflow-hidden flex-shrink-0 bg-gray-700">
               <img src={logo} alt={name} className="w-full" style={{ height: '200%', objectFit: 'cover', objectPosition: '50% 0%' }}
-                   onError={e => { e.target.closest('div').replaceWith(Object.assign(document.createElement('span'), { textContent: '👤', className: 'text-xs' })) }} />
+                   onError={e => { e.target.closest('div').replaceWith(Object.assign(document.createElement('span'), { textContent: '👤', className: 'text-sm' })) }} />
             </div>
           )
-          : <span className="text-xs">👤</span>
+          : <span className="text-sm">👤</span>
         }
-        {name && (
-          <a href={id ? `/players/${id}` : undefined}
-             className="text-xs text-gray-300 hover:text-white transition-colors truncate max-w-[7rem]"
-             onClick={e => e.stopPropagation()}>
-            {name}
-          </a>
-        )}
+        <div className="flex flex-col gap-0.5 min-w-0">
+          {posShort && (
+            <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded self-start ${posColor}`}>{posShort}</span>
+          )}
+          {name && (
+            <a href={id ? `/players/${id}` : undefined}
+               className="text-xs text-gray-300 hover:text-white transition-colors truncate max-w-[8rem]"
+               onClick={e => e.stopPropagation()}>
+              {name}
+            </a>
+          )}
+        </div>
       </div>
       {hovered && (
         <div className="absolute right-0 top-full mt-2 w-64 bg-gray-800 border border-gray-700
@@ -153,37 +235,101 @@ function AvgRatingBadge({ avgPlayerRate }) {
 
 // ── Team Header ───────────────────────────────────────────────────────────────
 
-function TeamHeader({ attrs, form, avgPlayerRate }) {
+function TeamHeader({ attrs, form, avgPlayerRate, nextMatch, leagues }) {
   return (
-    <div className="bg-gray-900 rounded-xl p-6 mb-4">
-      <div className="flex items-start gap-5">
+    <div className="bg-gray-900 rounded-xl p-4 md:p-6 mb-4">
+      {/* Logo + name — always on top on mobile */}
+      <div className="flex items-center gap-4 mb-4 xl:hidden">
         <TeamLogo logo={attrs.logo} name={attrs.name} />
-        <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between gap-4">
-            <h1 className="text-2xl font-bold text-white mb-1">{attrs.name}</h1>
-            <AvgRatingBadge avgPlayerRate={avgPlayerRate} />
-          </div>
-          <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-400">
-            {attrs.country    && <span>{attrs.country}</span>}
-            {attrs.founded    && <span>Est. {attrs.founded}</span>}
-            {attrs.coach_name && <span>Coach: <span className="text-gray-200">{attrs.coach_name}</span></span>}
-            {attrs.venue_name && (
-              <span>
-                {attrs.venue_name}
-                {attrs.venue_city     && `, ${attrs.venue_city}`}
-                {attrs.venue_capacity && <span className="text-gray-500"> · {formatNumber(attrs.venue_capacity)}</span>}
-              </span>
-            )}
-          </div>
-          {form?.length > 0 && (
-            <div className="mt-3">
-              <span className="text-xs text-gray-500 block mb-2">Last 5 matches</span>
-              <div className="flex items-end gap-2">
-                {form.map(m => <FormBadge key={m.id} match={m} />)}
+        <h1 className="text-xl font-bold text-white">{attrs.name}</h1>
+      </div>
+
+      <div className="flex flex-wrap xl:flex-nowrap items-start xl:items-center gap-4 xl:gap-6">
+
+        {/* Logo + name — desktop only inline */}
+        <div className="hidden xl:flex items-center gap-4 flex-shrink-0">
+          <TeamLogo logo={attrs.logo} name={attrs.name} />
+          <h1 className="text-2xl font-bold text-white">{attrs.name}</h1>
+        </div>
+
+        {/* Divider */}
+        <div className="hidden xl:block w-px self-stretch bg-gray-800 flex-shrink-0" />
+
+        {/* Team info */}
+        <div className="flex flex-col gap-1 flex-shrink-0 text-xs">
+          {attrs.country && (
+            <div className="flex items-center gap-1.5">
+              <span className="text-gray-500 w-14 flex-shrink-0">Country</span>
+              <div className="flex items-center gap-1">
+                {attrs.country_logo && <img src={attrs.country_logo} alt={attrs.country} className="w-4 h-3 object-cover flex-shrink-0" />}
+                <span className="text-gray-200">{attrs.country}</span>
               </div>
             </div>
           )}
+          {leagues?.length > 0 && (
+            <div className="flex items-center gap-1.5">
+              <span className="text-gray-500 w-14 flex-shrink-0">League</span>
+              <div className="flex items-center gap-2">
+                {leagues.map(l => (
+                  <a key={l.id} href={`/leagues/${l.id}`}
+                     className="flex items-center gap-1 hover:text-white transition-colors text-gray-200">
+                    {l.logo && <img src={l.logo} alt={l.name} className="w-3.5 h-3.5 object-contain" />}
+                    <span>{l.name}</span>
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
+          {attrs.venue_city && (
+            <div className="flex items-center gap-1.5">
+              <span className="text-gray-500 w-14 flex-shrink-0">City</span>
+              <span className="text-gray-200">{attrs.venue_city}</span>
+            </div>
+          )}
+          {attrs.founded && (
+            <div className="flex items-center gap-1.5">
+              <span className="text-gray-500 w-14 flex-shrink-0">Founded</span>
+              <span className="text-gray-200">{attrs.founded}</span>
+            </div>
+          )}
+          {attrs.venue_name && (
+            <StadiumRow name={attrs.venue_name} capacity={attrs.venue_capacity} />
+          )}
+          {attrs.coach_name && (
+            <div className="flex items-center gap-1.5">
+              <span className="text-gray-500 w-14 flex-shrink-0">Coach</span>
+              <span className="text-gray-200">{attrs.coach_name}</span>
+            </div>
+          )}
         </div>
+
+        {/* Divider */}
+        <div className="hidden xl:block w-px self-stretch bg-gray-800 flex-shrink-0" />
+
+        {/* Last 5 */}
+        {form?.length > 0 && (
+          <div className="flex flex-col gap-2 flex-shrink-0">
+            <span className="text-xs text-gray-500">Last 5 matches</span>
+            <div className="flex items-center gap-2">
+              {form.map(m => <FormBadge key={m.id} match={m} />)}
+            </div>
+          </div>
+        )}
+
+        {/* Divider */}
+        {nextMatch && form?.length > 0 && (
+          <div className="hidden xl:block w-px self-stretch bg-gray-800 flex-shrink-0" />
+        )}
+
+        {/* Next match */}
+        {nextMatch && <NextMatchCard nextMatch={nextMatch} />}
+
+        {/* Spacer — pushes rating to the right on desktop */}
+        <div className="hidden xl:block flex-1" />
+
+        {/* Top rated player */}
+        <AvgRatingBadge avgPlayerRate={avgPlayerRate} />
+
       </div>
     </div>
   )
@@ -284,19 +430,48 @@ function TeamRecentMatches({ matches, included, teamId }) {
   )
 }
 
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+function computeNextMatch(matches, included) {
+  if (!matches?.length || !included?.length) return null
+
+  const teamsById   = {}
+  const leaguesById = {}
+  included.forEach(item => {
+    if (item.type === 'team')   teamsById[item.id]   = item.attributes
+    if (item.type === 'league') leaguesById[item.id] = { id: item.id, ...item.attributes }
+  })
+
+  const upcoming = matches.filter(m => matchPhase(m.attributes.status) === 'upcoming')
+  if (!upcoming.length) return null
+
+  const next     = [...upcoming].sort((a, b) => new Date(a.attributes.date) - new Date(b.attributes.date))[0]
+  const homeId   = next.relationships?.home_team?.data?.id
+  const awayId   = next.relationships?.away_team?.data?.id
+  const leagueId = next.relationships?.league?.data?.id
+
+  return {
+    match:    next,
+    homeTeam: teamsById[homeId]   ?? {},
+    awayTeam: teamsById[awayId]   ?? {},
+    league:   leagueId ? leaguesById[leagueId] : null,
+  }
+}
+
 // ── Root ──────────────────────────────────────────────────────────────────────
 
 export default function TeamShow({ teamId }) {
-  const { team, form, avgPlayerRate, stats, matches, included, loading, error } = useTeamData(teamId)
+  const { team, form, avgPlayerRate, leagues, stats, matches, included, loading, error } = useTeamData(teamId)
 
   if (loading) return <LoadingSkeleton />
   if (error)   return <p className="text-red-400 p-4">{error}</p>
 
-  const attrs = team?.attributes ?? {}
+  const attrs     = team?.attributes ?? {}
+  const nextMatch = computeNextMatch(matches, included)
 
   return (
     <>
-      <TeamHeader attrs={attrs} form={form} avgPlayerRate={avgPlayerRate} />
+      <TeamHeader attrs={attrs} form={form} avgPlayerRate={avgPlayerRate} nextMatch={nextMatch} leagues={leagues} />
       <TeamStatistics stat={stats[0]} />
       <TeamRecentMatches matches={matches} included={included} teamId={teamId} />
     </>
