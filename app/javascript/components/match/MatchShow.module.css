@@ -1,0 +1,79 @@
+.loadingStack > * + * {
+  margin-top: var(--space-4);
+}
+
+.skeletonScore {
+  background: var(--color-surface);
+  animation: pulse 1.5s infinite;
+  border-radius: var(--radius-xl);
+  height: 11rem;
+}
+
+.skeletonTabsRow {
+  display: flex;
+  gap: var(--space-1);
+}
+
+.skeletonTab {
+  flex: 1;
+  height: 2.5rem;
+  background: var(--color-surface);
+  animation: pulse 1.5s infinite;
+  border-radius: var(--radius-md);
+}
+
+.skeletonContent {
+  background: var(--color-surface);
+  animation: pulse 1.5s infinite;
+  border-radius: var(--radius-xl);
+  height: 16rem;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.5; }
+}
+
+.notFound {
+  text-align: center;
+  padding: 4rem 0;
+  color: var(--color-subtle);
+}
+
+/* Tabs */
+.tabsBar {
+  display: flex;
+  gap: var(--space-1);
+  margin-bottom: var(--space-4);
+  background: var(--color-bg);
+  padding: var(--space-1);
+  border-radius: var(--radius-lg);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.tabsBar::-webkit-scrollbar { display: none; }
+
+.tab {
+  flex: 1;
+  min-width: max-content;
+  padding: var(--space-2);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  border-radius: var(--radius-md);
+  transition: color 0.15s, background 0.15s;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.tabActive {
+  background: var(--color-border);
+  color: var(--color-text);
+}
+
+.tabInactive {
+  color: #9ca3af;
+}
+
+.tabInactive:hover { color: #e5e7eb; }

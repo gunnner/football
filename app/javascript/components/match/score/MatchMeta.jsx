@@ -1,5 +1,6 @@
 import Tooltip from '../../ui/Tooltip'
 import { FORECAST_ICONS, FORECAST_LABELS } from '../../../constants/weather'
+import styles from './MatchMeta.module.css'
 
 export default function MatchMeta({ venueName, venueCity, venueCapacity, refereeName, refereeNationality, refereeCountryLogo, forecastStatus, forecastTemperature }) {
   const forecastIcon  = FORECAST_ICONS[forecastStatus] ?? '🌡️'
@@ -8,10 +9,10 @@ export default function MatchMeta({ venueName, venueCity, venueCapacity, referee
   const temp = forecastTemperature ? forecastTemperature.replace('°C', '') + '°C' : null
 
   return (
-    <div className="flex items-center justify-center gap-4 flex-wrap">
+    <div className={styles.row}>
       {venueName && (
         <Tooltip text={venueCapacity ? `Capacity: ${Number(venueCapacity).toLocaleString()}` : null}>
-          <span className="flex items-center gap-1 text-xs text-gray-500 cursor-default">
+          <span className={styles.metaItem}>
             <span>📍</span>
             <span>{venueName}{venueCity ? `, ${venueCity}` : ''}</span>
           </span>
@@ -19,7 +20,7 @@ export default function MatchMeta({ venueName, venueCity, venueCapacity, referee
       )}
       {refereeName && (
         <Tooltip text={refereeNationality} logo={refereeCountryLogo}>
-          <span className="flex items-center gap-1 text-xs text-gray-500 cursor-default">
+          <span className={styles.metaItem}>
             <span>👤</span>
             <span>{refereeName}</span>
           </span>
@@ -27,7 +28,7 @@ export default function MatchMeta({ venueName, venueCity, venueCapacity, referee
       )}
       {temp && (
         <Tooltip text={forecastLabel}>
-          <span className="flex items-center gap-1 text-xs text-gray-500 cursor-default">
+          <span className={styles.metaItem}>
             <span>{forecastIcon}</span>
             <span>{temp}</span>
           </span>

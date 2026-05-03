@@ -5,6 +5,7 @@ import { LIVE_STATUSES, FINISHED_STATUSES } from '../../constants/matchStatus'
 import CountdownStrip                   from './score/CountdownStrip'
 import MatchMeta                        from './score/MatchMeta'
 import GoalsList                        from './score/GoalsList'
+import styles                           from './MatchScore.module.css'
 
 export default function MatchScore({
   matchId, homeTeam, awayTeam,
@@ -77,115 +78,110 @@ export default function MatchScore({
   const metaProps = { venueName, venueCity, venueCapacity, refereeName, refereeNationality, refereeCountryLogo, forecastStatus, forecastTemperature }
 
   return (
-    <div className="bg-gray-900 rounded-xl p-6 mb-4 relative">
+    <div className={styles.card}>
       {notification && (
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-blue-600 text-white
-                        px-4 py-2 rounded-full text-sm font-medium animate-bounce z-10">
-          {notification}
-        </div>
+        <div className={styles.notification}>{notification}</div>
       )}
 
       {/* League */}
-      <div className="flex items-center justify-center gap-1.5 text-gray-500 text-sm mb-4">
+      <div className={styles.leagueRow}>
         {leagueLogo && (
           leaguePath
-            ? <a href={leaguePath}><img src={leagueLogo} alt={leagueName} className="w-4 h-4 object-contain" style={{ filter: 'brightness(0) invert(1)' }} /></a>
-            : <img src={leagueLogo} alt={leagueName} className="w-4 h-4 object-contain" style={{ filter: 'brightness(0) invert(1)' }} />
+            ? <a href={leaguePath}><img src={leagueLogo} alt={leagueName} className={styles.leagueLogo} /></a>
+            : <img src={leagueLogo} alt={leagueName} className={styles.leagueLogo} />
         )}
         {leaguePath
-          ? <a href={leaguePath} className="hover:text-gray-300 transition-colors">{leagueName}</a>
+          ? <a href={leaguePath} className={styles.leagueLink}>{leagueName}</a>
           : <span>{leagueName}</span>
         }
         <span>·</span><span>{round}</span><span>·</span><span>{matchDate}</span>
       </div>
 
       {/* Teams & Score */}
-      <div className="grid grid-cols-3 items-start gap-4">
-        <div className="flex flex-col">
+      <div className={styles.teamsGrid}>
+        <div className={styles.teamCol}>
           {homeTeam.logo && (
-            <a href={homeTeam.path} className="mx-auto">
-              <img src={homeTeam.logo} alt={homeTeam.name} className="w-12 h-12 object-contain mb-2" />
+            <a href={homeTeam.path} className={styles.teamLogoLink}>
+              <img src={homeTeam.logo} alt={homeTeam.name} className={styles.teamLogo} />
             </a>
           )}
-          <a href={homeTeam.path} className="font-bold text-lg text-white hover:text-blue-400 transition-colors text-center">{homeTeam.name}</a>
+          <a href={homeTeam.path} className={styles.teamName}>{homeTeam.name}</a>
           <GoalsList events={homeEvents} />
         </div>
 
-        <div className="text-center" id={`match_score_${matchId}`}>
+        <div className={styles.scoreCenter} id={`match_score_${matchId}`}>
           {isLive ? (
             <>
-              <p className="text-5xl font-bold text-white">{score || '0 - 0'}</p>
-              <div className="flex items-center justify-center gap-1 mt-2">
+              <p className={styles.scoreValue}>{score || '0 - 0'}</p>
+              <div className={styles.liveIndicator}>
                 {isHalfTime ? (
-                  <span className="bg-green-600 text-white text-xs font-bold px-2 py-0.5 rounded">HT</span>
+                  <span className={styles.htBadge}>HT</span>
                 ) : (
                   <>
-                    <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-                    <p className="text-red-400 text-sm font-medium">{clockLabel}</p>
+                    <span className={styles.liveDot} />
+                    <p className={styles.liveClock}>{clockLabel}</p>
                   </>
                 )}
               </div>
             </>
           ) : isFinished ? (
             <>
-              <p className="text-5xl font-bold text-white">{score || '-'}</p>
-              <p className="text-gray-500 text-sm font-semibold mt-2">FT</p>
+              <p className={styles.scoreValue}>{score || '-'}</p>
+              <p className={styles.ftLabel}>FT</p>
             </>
           ) : (
             <>
-              <p className="text-gray-400 text-3xl">
+              <p className={styles.kickoffTime}>
                 {new Date(initialClock).toLocaleTimeString('en', { hour: '2-digit', minute: '2-digit' })}
               </p>
-              <p className="text-gray-600 text-sm mt-1">{status}</p>
+              <p className={styles.statusLabel}>{status}</p>
               <CountdownStrip matchDateIso={matchDateIso} />
             </>
           )}
         </div>
 
-        <div className="flex flex-col">
+        <div className={styles.teamCol}>
           {awayTeam.logo && (
-            <a href={awayTeam.path} className="mx-auto">
-              <img src={awayTeam.logo} alt={awayTeam.name} className="w-12 h-12 object-contain mb-2" />
+            <a href={awayTeam.path} className={styles.teamLogoLink}>
+              <img src={awayTeam.logo} alt={awayTeam.name} className={styles.teamLogo} />
             </a>
           )}
-          <a href={awayTeam.path} className="font-bold text-lg text-white hover:text-blue-400 transition-colors text-center">{awayTeam.name}</a>
+          <a href={awayTeam.path} className={styles.teamName}>{awayTeam.name}</a>
           <GoalsList events={awayEvents} />
         </div>
       </div>
 
       {isFinished && playerOfMatch ? (
-        <div className="mt-4 pt-3 border-t border-gray-800 flex items-center justify-between gap-4 flex-wrap">
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-gray-500 uppercase tracking-wide whitespace-nowrap">Player of the Match</span>
-            <div className="flex items-center gap-2">
-              {playerOfMatch.player_logo
-                ? (
-                  <div className="w-8 h-8 rounded-full bg-gray-800 flex-shrink-0 overflow-hidden">
-                    <img src={playerOfMatch.player_logo} alt="" className="w-full" style={{ height: '200%', objectFit: 'cover', objectPosition: '50% 0%' }} />
-                  </div>
-                )
-                : <span className="w-8 h-8 flex items-center justify-center text-lg bg-gray-800 rounded-full flex-shrink-0">👤</span>
-              }
-              <div>
-                <a href={playerOfMatch.player_path} className="text-sm font-semibold text-white hover:text-blue-400 transition-colors block leading-tight">
-                  {playerOfMatch.player_name}
-                </a>
-                <div className="flex items-center gap-1 mt-0.5">
-                  {playerOfMatch.team_logo && (
-                    <img src={playerOfMatch.team_logo} alt="" className="w-3 h-3 object-contain flex-shrink-0" />
-                  )}
-                  <a href={playerOfMatch.team_path} className="text-xs text-gray-500 hover:text-gray-300 transition-colors">
-                    {playerOfMatch.team_name}
-                  </a>
+        <div className={styles.footer}>
+          <div className={styles.potmRow}>
+            <span className={styles.potmLabel}>Player of the Match</span>
+            {playerOfMatch.player_logo
+              ? (
+                <div className={styles.potmAvatar}>
+                  <img src={playerOfMatch.player_logo} alt="" className={styles.potmAvatarImg} />
                 </div>
+              )
+              : <div className={styles.potmAvatarFallback}>👤</div>
+            }
+            <div className={styles.potmInfo}>
+              <a href={playerOfMatch.player_path} className={styles.potmName}>
+                {playerOfMatch.player_name}
+              </a>
+              <div className={styles.potmTeamRow}>
+                {playerOfMatch.team_logo && (
+                  <img src={playerOfMatch.team_logo} alt="" className={styles.potmTeamLogo} />
+                )}
+                <a href={playerOfMatch.team_path} className={styles.potmTeamLink}>
+                  {playerOfMatch.team_name}
+                </a>
               </div>
-              <span className="text-xl font-bold text-yellow-400 ml-1">{Math.min(parseFloat(playerOfMatch.match_rating), 10).toFixed(2)}</span>
             </div>
+            <span className={styles.potmRating}>{Math.min(parseFloat(playerOfMatch.match_rating), 10).toFixed(2)}</span>
           </div>
           <MatchMeta {...metaProps} />
         </div>
       ) : (
-        <div className="mt-2">
+        <div className={styles.footerMeta}>
           <MatchMeta {...metaProps} />
         </div>
       )}

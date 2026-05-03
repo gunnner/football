@@ -68,7 +68,10 @@ class SyncLiveMatchesWorker < BaseWorker
       newly_finished.map { |m| m.date.to_date }.uniq.each do |match_date|
         SyncHighlightsWorker.perform_async(match_date.to_s)
       end
-      newly_finished.each { |m| SyncMatchFinalStatsWorker.perform_async(m.id) }
+      newly_finished.each do |m|
+        SyncMatchFinalStatsWorker.perform_async(m.id)
+        MatchBroadcastService.broadcast_match_end(m)
+      end
     end
 
     CacheService::Store.invalidate(CacheService::Keys.live_matches)

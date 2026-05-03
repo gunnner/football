@@ -1,0 +1,100 @@
+.card {
+  background: var(--color-bg);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+}
+
+.cardHeader {
+  padding: 0.625rem var(--space-4);
+  border-bottom: 1px solid #1f2937;
+}
+
+.cardTitle {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--color-subtle);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  text-align: center;
+}
+
+.cols {
+  display: flex;
+}
+
+.col {
+  flex: 1;
+  min-width: 0;
+  padding: var(--space-3);
+}
+
+.colDivide {
+  border-left: 1px solid #1f2937;
+}
+
+.colName {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: #9ca3af;
+  text-align: center;
+  margin-bottom: var(--space-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 0 var(--space-1);
+}
+
+.colMatches > * + * { margin-top: var(--space-1); }
+
+.noMatches {
+  font-size: var(--text-xs);
+  color: #4b5563;
+  text-align: center;
+  padding: var(--space-2) 0;
+}
+
+.matchRow {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: var(--text-xs);
+  padding: 0.375rem var(--space-2);
+  border-radius: var(--radius-md);
+  background: rgba(31,41,55,0.5);
+  transition: background 0.15s;
+  text-decoration: none;
+  color: inherit;
+}
+
+.matchRow:hover { background: var(--color-surface); }
+
+.matchLogo {
+  width: 1rem;
+  height: 1rem;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.matchTeam {
+  color: #d1d5db;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
+}
+
+.matchTeamRight {
+  color: #d1d5db;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
+  text-align: right;
+}
+
+.scoreW { font-family: monospace; flex-shrink: 0; color: var(--color-green); font-weight: 600; }
+.scoreD { font-family: monospace; flex-shrink: 0; color: var(--color-yellow); font-weight: 600; }
+.scoreL { font-family: monospace; flex-shrink: 0; color: var(--color-red); font-weight: 600; }
+.scoreN { font-family: monospace; flex-shrink: 0; color: #9ca3af; }

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { signIn, signUp } from '../../services/auth'
+import styles from './AuthForm.module.css'
 
 export default function AuthForm({ onSuccess, defaultMode = 'sign_in' }) {
   const [mode,    setMode]    = useState(defaultMode)
@@ -42,73 +43,71 @@ export default function AuthForm({ onSuccess, defaultMode = 'sign_in' }) {
   }
 
   return (
-    <div className="bg-gray-900 rounded-xl p-6 w-full max-w-sm mx-auto">
-      <h2 className="text-xl font-bold text-white mb-6 text-center">
+    <div className={styles.card}>
+      <h2 className={styles.title}>
         {mode === 'sign_in' ? 'Sign in' : 'Create account'}
       </h2>
 
       {error && (
-        <div className="bg-red-900/40 border border-red-700 text-red-300 text-sm rounded-lg px-4 py-3 mb-4">
-          {error}
-        </div>
+        <div className={styles.errorBox}>{error}</div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className={styles.form}>
         {mode === 'sign_up' && (
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs text-gray-400 mb-1">First name</label>
+          <div className={styles.nameGrid}>
+            <div className={styles.field}>
+              <label className={styles.label}>First name</label>
               <input
                 type="text"
                 value={fields.first_name}
                 onChange={set('first_name')}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500"
+                className={styles.input}
               />
             </div>
-            <div>
-              <label className="block text-xs text-gray-400 mb-1">Last name</label>
+            <div className={styles.field}>
+              <label className={styles.label}>Last name</label>
               <input
                 type="text"
                 value={fields.last_name}
                 onChange={set('last_name')}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500"
+                className={styles.input}
               />
             </div>
           </div>
         )}
 
-        <div>
-          <label className="block text-xs text-gray-400 mb-1">Email</label>
+        <div className={styles.field}>
+          <label className={styles.label}>Email</label>
           <input
             type="email"
             value={fields.email}
             onChange={set('email')}
             required
             autoFocus
-            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500"
+            className={styles.input}
           />
         </div>
 
-        <div>
-          <label className="block text-xs text-gray-400 mb-1">Password</label>
+        <div className={styles.field}>
+          <label className={styles.label}>Password</label>
           <input
             type="password"
             value={fields.password}
             onChange={set('password')}
             required
-            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500"
+            className={styles.input}
           />
         </div>
 
         {mode === 'sign_up' && (
-          <div>
-            <label className="block text-xs text-gray-400 mb-1">Confirm password</label>
+          <div className={styles.field}>
+            <label className={styles.label}>Confirm password</label>
             <input
               type="password"
               value={fields.password_confirmation}
               onChange={set('password_confirmation')}
               required
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500"
+              className={styles.input}
             />
           </div>
         )}
@@ -116,17 +115,17 @@ export default function AuthForm({ onSuccess, defaultMode = 'sign_in' }) {
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-medium py-2 rounded-lg text-sm transition-colors"
+          className={styles.submitBtn}
         >
           {loading ? '...' : mode === 'sign_in' ? 'Sign in' : 'Create account'}
         </button>
       </form>
 
-      <p className="text-center text-sm text-gray-500 mt-4">
+      <p className={styles.footer}>
         {mode === 'sign_in' ? "Don't have an account? " : 'Already have an account? '}
         <button
           onClick={() => { setMode(mode === 'sign_in' ? 'sign_up' : 'sign_in'); setError(null) }}
-          className="text-blue-400 hover:text-blue-300 transition-colors"
+          className={styles.switchBtn}
         >
           {mode === 'sign_in' ? 'Sign up' : 'Sign in'}
         </button>

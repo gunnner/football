@@ -2,10 +2,8 @@ import { useState, useEffect }  from 'react'
 import { LIVE_STATUSES }        from '../../constants/matchStatus'
 import { useLiveMatchChannels } from '../../hooks/useLiveMatchChannels'
 import MatchStandings           from '../match/MatchStandings'
-
-function Skeleton({ className }) {
-  return <div className={`bg-gray-800 animate-pulse rounded ${className}`} />
-}
+import Skeleton                 from '../ui/Skeleton'
+import styles                   from './LeagueShow.module.css'
 
 function formatSeason(s) {
   return `${s}/${String(s + 1).slice(-2)}`
@@ -25,8 +23,8 @@ export default function LeagueShow({ leagueId }) {
   const [standings,        setStandings]        = useState([])
   const [loading,          setLoading]          = useState(true)
   const [standingsLoading, setStandingsLoading] = useState(false)
-  const [liveMatchData,    setLiveMatchData]    = useState([])  // [{matchId, homeExternalId, awayExternalId, score}]
-  const [liveScores,       setLiveScores]       = useState({})  // matchId → score
+  const [liveMatchData,    setLiveMatchData]    = useState([])
+  const [liveScores,       setLiveScores]       = useState({})
 
   useEffect(() => {
     fetch(`/api/v1/leagues/${leagueId}`)
@@ -72,7 +70,6 @@ export default function LeagueShow({ leagueId }) {
       .catch(() => { setLoading(false); setStandingsLoading(false) })
   }, [leagueId, season])
 
-  // Fetch today's live matches to compute projected standings
   useEffect(() => {
     fetch(`/api/v1/matches?date=${todayStr()}&per_page=100`)
       .then(r => r.json())
@@ -114,11 +111,11 @@ export default function LeagueShow({ leagueId }) {
 
   if (loading) {
     return (
-      <div className="space-y-4">
-        <div className="flex gap-2">
-          {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-8 w-20 rounded-md" />)}
+      <div className={styles.skeletonWrap}>
+        <div className={styles.skeletonBtns}>
+          {[...Array(3)].map((_, i) => <Skeleton key={i} style={{ height: '2rem', width: '5rem', borderRadius: '6px' }} />)}
         </div>
-        <Skeleton className="h-96 rounded-xl" />
+        <Skeleton style={{ height: '24rem', borderRadius: '12px' }} />
       </div>
     )
   }
@@ -126,16 +123,12 @@ export default function LeagueShow({ leagueId }) {
   return (
     <>
       {availableSeasons.length > 1 && (
-        <div className="flex gap-1 mb-4 flex-wrap">
+        <div className={styles.seasonTabs}>
           {availableSeasons.map(s => (
             <button
               key={s}
               onClick={() => setSeason(s)}
-              className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                s === season
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white'
-              }`}
+              className={`${styles.seasonBtn} ${s === season ? styles.seasonBtnActive : styles.seasonBtnInactive}`}
             >
               {formatSeason(s)}
             </button>
@@ -144,7 +137,7 @@ export default function LeagueShow({ leagueId }) {
       )}
 
       {standingsLoading
-        ? <Skeleton className="h-96 rounded-xl" />
+        ? <Skeleton style={{ height: '24rem', borderRadius: '12px' }} />
         : <MatchStandings standings={standings} liveMatches={liveMatches} />
       }
     </>

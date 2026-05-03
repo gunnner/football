@@ -12,18 +12,14 @@ export default class extends Controller {
   #debounceTimer = null
 
   open() {
-    this.formTarget.classList.remove('w-0')
-    this.formTarget.classList.add('w-72')
-    this.buttonTarget.classList.add('text-white')
-    this.buttonTarget.classList.remove('text-gray-400')
+    this.formTarget.classList.add('is-open')
+    this.buttonTarget.classList.add('is-active')
     this.inputTarget.focus()
   }
 
   close() {
-    this.formTarget.classList.add('w-0')
-    this.formTarget.classList.remove('w-72')
-    this.buttonTarget.classList.remove('text-white')
-    this.buttonTarget.classList.add('text-gray-400')
+    this.formTarget.classList.remove('is-open')
+    this.buttonTarget.classList.remove('is-active')
     this.inputTarget.value = ''
     this.#hideDropdown()
     clearTimeout(this.#debounceTimer)
@@ -60,35 +56,35 @@ export default class extends Controller {
 
     if (all.length === 0) {
       const msg = document.createElement('p')
-      msg.className = 'px-4 py-3 text-sm text-gray-500'
+      msg.className = 'search-dropdown-empty'
       msg.textContent = 'No results'
       this.dropdownTarget.appendChild(msg)
     } else {
       all.forEach(r => {
         const a = document.createElement('a')
         a.href = r.url  // validated server-side path (e.g. /teams/1)
-        a.className = 'flex items-center gap-3 px-4 py-2.5 hover:bg-gray-700 transition-colors'
+        a.className = 'search-dropdown-item'
 
         if (r.logo) {
           const img = document.createElement('img')
           img.src = r.logo
-          img.className = 'w-6 h-6 object-contain flex-shrink-0'
+          img.className = 'search-dropdown-logo'
           img.alt = ''
           a.appendChild(img)
         } else {
           const icon = document.createElement('span')
-          icon.className = 'w-6 h-6 flex items-center justify-center text-sm flex-shrink-0'
+          icon.className = 'search-dropdown-icon'
           icon.textContent = ICONS[r.type]
           a.appendChild(icon)
         }
 
         const name = document.createElement('span')
-        name.className = 'text-sm text-gray-100 truncate'
+        name.className = 'search-dropdown-name'
         name.textContent = r.name  // safe — no innerHTML
         a.appendChild(name)
 
         const badge = document.createElement('span')
-        badge.className = 'ml-auto text-xs text-gray-600 capitalize flex-shrink-0'
+        badge.className = 'search-dropdown-badge'
         badge.textContent = r.type
         a.appendChild(badge)
 
@@ -96,11 +92,11 @@ export default class extends Controller {
       })
     }
 
-    this.dropdownTarget.classList.remove('hidden')
+    this.dropdownTarget.classList.add('is-open')
   }
 
   #hideDropdown() {
-    this.dropdownTarget.classList.add('hidden')
+    this.dropdownTarget.classList.remove('is-open')
     this.dropdownTarget.innerHTML = ''
   }
 }

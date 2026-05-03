@@ -1,0 +1,158 @@
+.datebar {
+  position: fixed;
+  top: 3.5rem;
+  left: 0;
+  right: 0;
+  z-index: 20;
+  background: #030712;
+  border-bottom: 1px solid rgba(31,41,55,0.6);
+  padding: var(--space-3) 0;
+}
+
+.datebarInner {
+  max-width: 80rem;
+  margin: 0 auto;
+  padding: 0 var(--space-4);
+}
+
+@media (min-width: 1280px) {
+  .datebarInner {
+    padding-left: 19.25rem;
+    padding-right: 13.25rem;
+  }
+}
+
+.datebarSpacer {
+  height: 3.75rem;
+}
+
+.layout {
+  display: flex;
+  gap: 1.25rem;
+  align-items: flex-start;
+  margin-top: var(--space-4);
+}
+
+.sidebarLeft {
+  display: none;
+  width: 18rem;
+  flex-shrink: 0;
+  position: sticky;
+  top: 8rem;
+}
+
+@media (min-width: 1280px) {
+  .sidebarLeft { display: block; }
+}
+
+.main {
+  flex: 1;
+  min-width: 0;
+}
+
+.sidebarRight {
+  display: none;
+  width: 12rem;
+  flex-shrink: 0;
+  position: sticky;
+  top: 8rem;
+}
+
+@media (min-width: 1024px) {
+  .sidebarRight { display: block; }
+}
+
+/* Skeleton */
+.skeletonList > * + * { margin-top: var(--space-2); }
+
+.skeletonHeader {
+  height: 2.25rem;
+  background: var(--color-surface);
+  animation: pulse 1.5s infinite;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+
+.skeletonRow {
+  height: 3.5rem;
+  background: var(--color-surface);
+  animation: pulse 1.5s infinite;
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  margin-top: 0.125rem;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.5; }
+}
+
+/* Empty state */
+.emptyState {
+  text-align: center;
+  padding: 4rem 0;
+  color: var(--color-subtle);
+}
+
+.emptyEmoji { font-size: 2.5rem; margin-bottom: var(--space-4); }
+.emptyText  { font-size: var(--text-lg); }
+
+.emptyTodayBtn {
+  margin-top: var(--space-3);
+  font-size: var(--text-sm);
+  color: #60a5fa;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+
+.emptyTodayBtn:hover { color: #93c5fd; }
+
+/* Live section */
+.liveSection {
+  margin-bottom: 1.5rem;
+}
+
+.liveSectionHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.liveDot {
+  width: 0.5rem;
+  height: 0.5rem;
+  background: #ef4444;
+  border-radius: var(--radius-full);
+  animation: lp 1.5s infinite;
+}
+
+@keyframes lp {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+
+.liveLabel {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: #f87171;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.otherSection {}
+
+.otherSectionHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.otherLabel {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}

@@ -1,0 +1,105 @@
+.stack > * + * {
+  margin-top: var(--space-4);
+}
+
+.noData {
+  background: var(--color-bg);
+  border-radius: var(--radius-xl);
+  padding: var(--space-4);
+  text-align: center;
+  color: var(--color-subtle);
+  padding-top: var(--space-8);
+  padding-bottom: var(--space-8);
+}
+
+.card {
+  background: var(--color-bg);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+}
+
+.cardHeader {
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid #1f2937;
+}
+
+.cardTitle {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--color-subtle);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  text-align: center;
+}
+
+.legend {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-4);
+  padding-top: var(--space-3);
+  padding-left: var(--space-4);
+  padding-right: var(--space-4);
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.legendDot {
+  width: 0.625rem;
+  height: 0.625rem;
+  border-radius: var(--radius-full);
+  flex-shrink: 0;
+}
+
+.legendLabel {
+  font-size: var(--text-xs);
+  color: var(--color-subtle);
+}
+
+.shotGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-4);
+  padding: var(--space-4);
+}
+
+.shotTeam {}
+
+.teamLink {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+  text-decoration: none;
+  transition: opacity 0.15s;
+}
+
+.teamLink:hover { opacity: 0.8; }
+
+.teamLogo {
+  width: 1.25rem;
+  height: 1.25rem;
+  object-fit: contain;
+}
+
+.teamName {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: #9ca3af;
+}
+
+.onTarget {
+  font-size: var(--text-xs);
+  color: var(--color-subtle);
+  text-align: center;
+  margin-top: var(--space-1);
+}
+
+.shotListWrap {
+  padding: var(--space-3) var(--space-4) var(--space-4);
+  border-top: 1px solid #1f2937;
+}

@@ -1,15 +1,15 @@
 <!DOCTYPE html>
-<html class="h-full bg-gray-950">
+<html style="height:100%; background:#030712">
   <head>
     <title><%= content_for(:title) || 'Football' %></title>
     <%= render 'layouts/head' %>
   </head>
 
-  <body class="h-full bg-gray-950 text-gray-100">
+  <body style="height:100%">
     <%= render 'layouts/navbar' %>
     <%= render 'layouts/flash' %>
 
-    <main class="max-w-7xl mx-auto px-4 py-6">
+    <main class="main-content">
       <%= yield %>
     </main>
   </body>

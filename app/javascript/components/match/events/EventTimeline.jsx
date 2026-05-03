@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef } from 'react'
 import { buildGroups, currentMinutePos, FINISHED_STATUSES } from './eventTimelineUtils'
 import { EventGroup } from './EventTimelineItems'
+import styles from './EventTimeline.module.css'
 
 const TIMELINE_H = 140
-const LEFT_COL   = 36  // team logo column + gap
+const LEFT_COL   = 36
 
 export default function EventTimeline({ events, homeTeamExternalId, homeTeam, awayTeam, isLive, matchStatus, clock }) {
   const [tickClock, setTickClock] = useState(clock)
@@ -47,57 +48,58 @@ export default function EventTimeline({ events, homeTeamExternalId, homeTeam, aw
 
   return (
     <div>
-      <div className="flex text-[10px] text-gray-600 mb-0.5">
+      <div className={styles.halves}>
         <div style={{ width: `${LEFT_COL}px`, flexShrink: 0 }} />
-        <div className="flex flex-1">
-          <div className="flex items-center gap-1 justify-center w-1/2">
+        <div style={{ display: 'flex', flex: 1 }}>
+          <div className={styles.halfLabel}>
             First Half
-            {firstHalfLive && <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse inline-block" />}
+            {firstHalfLive && <span className={styles.liveDot} />}
           </div>
-          <div className="flex items-center gap-1 justify-center w-1/2">
-            {halfTimeLive && <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse inline-block" />}
+          <div className={styles.halfLabel}>
+            {halfTimeLive && <span className={styles.liveDot} />}
             Second Half
-            {secondHalfLive && <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse inline-block" />}
+            {secondHalfLive && <span className={styles.liveDot} />}
           </div>
         </div>
       </div>
 
-      <div className="relative" style={{ height: `${TIMELINE_H}px` }}>
-        <div className="absolute left-0 top-0 bottom-0 flex flex-col z-10" style={{ width: `${LEFT_COL}px` }}>
-          <div className="flex-1 flex items-center justify-center">
+      <div className={styles.track} style={{ height: `${TIMELINE_H}px` }}>
+        <div className={styles.teamCol} style={{ width: `${LEFT_COL}px` }}>
+          <div className={styles.teamSlot}>
             {homeTeam?.logo
-              ? <a href={homeTeam?.path}><img src={homeTeam.logo} className="w-5 h-5 object-contain" alt={homeTeam?.name} /></a>
-              : <span className="text-[9px] text-gray-500">{homeTeam?.name}</span>
+              ? <a href={homeTeam?.path}><img src={homeTeam.logo} className={styles.teamLogoImg} alt={homeTeam?.name} /></a>
+              : <span className={styles.teamName}>{homeTeam?.name}</span>
             }
           </div>
-          <div className="flex-1 flex items-center justify-center">
+          <div className={styles.teamSlot}>
             {awayTeam?.logo
-              ? <a href={awayTeam?.path}><img src={awayTeam.logo} className="w-5 h-5 object-contain" alt={awayTeam?.name} /></a>
-              : <span className="text-[9px] text-gray-500">{awayTeam?.name}</span>
+              ? <a href={awayTeam?.path}><img src={awayTeam.logo} className={styles.teamLogoImg} alt={awayTeam?.name} /></a>
+              : <span className={styles.teamName}>{awayTeam?.name}</span>
             }
           </div>
         </div>
 
         <div style={{ position: 'absolute', left: `${LEFT_COL}px`, right: 0, top: 0, bottom: 0, overflow: 'visible' }}>
-          <div className="absolute inset-x-0 bg-gray-700"
-               style={{ top: '50%', height: '2px', transform: 'translateY(-50%)', zIndex: 0 }} />
+          {/* Center line */}
+          <div style={{ position: 'absolute', insetInline: 0, background: '#374151', top: '50%', height: '2px', transform: 'translateY(-50%)', zIndex: 0 }} />
 
           {matchStarted && (
             <div style={{ position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)', zIndex: 5 }}>
-              <div className="w-2 h-2 rounded-full bg-gray-500 border border-gray-700" />
-              <span className="absolute bottom-full mb-0.5 left-0 text-[8px] text-gray-500 whitespace-nowrap">Kick Off</span>
+              <div style={{ width: '0.5rem', height: '0.5rem', borderRadius: '50%', background: '#6b7280', border: '1px solid #374151' }} />
+              <span className={styles.kickOffLabel}>Kick Off</span>
             </div>
           )}
 
+          {/* HT divider */}
           <div style={{ position: 'absolute', left: '50%', top: 0, bottom: 0, width: '1px', background: 'rgba(75,85,99,0.5)', zIndex: 1 }} />
           <div style={{ position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%, -50%)', zIndex: 5, background: '#111827', padding: '0 2px' }}>
-            <span className="text-[8px] text-gray-500">HT</span>
+            <span className={styles.htLabel}>HT</span>
           </div>
 
           {matchFinished && (
             <div style={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)', zIndex: 5 }}>
-              <div className="w-2 h-2 rounded-full bg-gray-500 border border-gray-700" />
-              <span className="absolute bottom-full mb-0.5 right-0 text-[8px] text-gray-500 whitespace-nowrap">Full Time</span>
+              <div style={{ width: '0.5rem', height: '0.5rem', borderRadius: '50%', background: '#6b7280', border: '1px solid #374151' }} />
+              <span className={styles.fullTimeLabel}>Full Time</span>
             </div>
           )}
 
@@ -105,11 +107,9 @@ export default function EventTimeline({ events, homeTeamExternalId, homeTeam, aw
             const allGroups = [...homeGroups, ...awayGroups]
             const tooClose = allGroups.some(g => Math.abs(g.pos - livePos) < 0.5)
             return !tooClose && (
-              <div className="group/live" style={{ position: 'absolute', left: `${livePos}%`, top: '50%', transform: 'translate(-50%, -50%)', zIndex: 4 }}>
-                <div className="w-3 h-3 rounded-full bg-red-500 animate-pulse border-2 border-gray-900" />
-                <div className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 hidden group-hover/live:block bg-gray-800 border border-gray-700 rounded px-1.5 py-0.5 text-[9px] text-red-400 whitespace-nowrap shadow-lg z-20">
-                  {clockMin}'
-                </div>
+              <div className={styles.liveGroup} style={{ position: 'absolute', left: `${livePos}%`, top: '50%', transform: 'translate(-50%, -50%)', zIndex: 4 }}>
+                <div className={styles.liveDotBig} />
+                <div className={styles.liveTooltip}>{clockMin}'</div>
               </div>
             )
           })()}

@@ -1,11 +1,7 @@
 <% if notice %>
-  <div class="bg-green-900/50 border border-green-700 text-green-300 px-4 py-3 text-sm text-center">
-    <%= notice %>
-  </div>
+  <div class="flash-notice"><%= notice %></div>
 <% end %>
 
 <% if alert %>
-  <div class="bg-red-900/50 border border-red-700 text-red-300 px-4 py-3 text-sm text-center">
-    <%= alert %>
-  </div>
+  <div class="flash-alert"><%= alert %></div>
 <% end %>

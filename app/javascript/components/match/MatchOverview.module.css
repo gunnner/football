@@ -1,0 +1,102 @@
+.stack > * + * {
+  margin-top: var(--space-3);
+}
+
+/* Coaches card */
+.coachesCard {
+  background: var(--color-bg);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+}
+
+.cardHeader {
+  padding: var(--space-2) var(--space-4) 0.625rem;
+  border-bottom: 1px solid #1f2937;
+}
+
+.cardTitle {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--color-subtle);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  text-align: center;
+}
+
+.coachesGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.coachesGridDivide {
+  border-left: 1px solid #1f2937;
+}
+
+.coachCol {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-3) var(--space-4);
+}
+
+.coachLogo {
+  width: 1.5rem;
+  height: 1.5rem;
+  object-fit: contain;
+}
+
+.coachName {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: #e5e7eb;
+  text-align: center;
+}
+
+.coachTeam {
+  font-size: 0.625rem;
+  color: var(--color-subtle);
+}
+
+/* Win probability */
+.probCard {
+  background: var(--color-bg);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+}
+
+.probBody {
+  padding: var(--space-3) var(--space-4);
+}
+
+.probTeamLabels {
+  display: flex;
+  font-size: var(--text-xs);
+  color: #9ca3af;
+  justify-content: space-between;
+  margin-bottom: 0.375rem;
+}
+
+.probBar {
+  display: flex;
+  height: 0.625rem;
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  gap: 1px;
+}
+
+.probFillHome { background: #2563eb; }
+.probFillDraw { background: #4b5563; }
+.probFillAway { background: #ea580c; }
+
+.probValues {
+  display: flex;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  justify-content: space-between;
+  margin-top: 0.375rem;
+}
+
+.probHome { color: #60a5fa; }
+.probDraw { color: #9ca3af; }
+.probAway { color: #fb923c; }

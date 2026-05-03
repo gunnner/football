@@ -1,0 +1,218 @@
+.skeletonStack > * + * { margin-top: var(--space-2); }
+
+.skeleton {
+  background: var(--color-surface);
+  animation: pulse 1.5s infinite;
+  border-radius: var(--radius-md);
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.5; }
+}
+
+/* Sidebar card */
+.sidebarCard {
+  background: var(--color-bg);
+  border: 1px solid #1f2937;
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+}
+
+/* Header */
+.sidebarHeaderLink {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3) 0.625rem;
+  background: var(--color-surface);
+  text-decoration: none;
+  transition: background 0.15s;
+}
+
+.sidebarHeaderLink:hover { background: var(--color-border); }
+
+.sidebarHeaderLogo {
+  width: 1.25rem;
+  height: 1.25rem;
+  object-fit: contain;
+  flex-shrink: 0;
+  background: #fff;
+  border-radius: var(--radius-sm);
+  padding: 0.125rem;
+}
+
+.sidebarHeaderName {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: #e5e7eb;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Live badge */
+.liveBar {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: var(--space-1) var(--space-3);
+  background: rgba(31,41,55,0.4);
+  border-bottom: 1px solid #1f2937;
+}
+
+.liveDot {
+  width: 0.375rem;
+  height: 0.375rem;
+  background: #ef4444;
+  border-radius: var(--radius-full);
+  animation: lp 1.5s infinite;
+}
+
+@keyframes lp {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+
+.liveBarText {
+  font-size: var(--text-xs);
+  color: var(--color-subtle);
+}
+
+/* Standings table */
+.standingsTable {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  padding: var(--space-1);
+}
+
+.standingsHeader th {
+  font-size: var(--text-xs);
+  color: var(--color-subtle);
+  font-weight: 500;
+  padding: 0.125rem var(--space-2) var(--space-1);
+}
+
+.standingsHeader th:first-child { width: 1.75rem; }
+.standingsHeader th:nth-child(3),
+.standingsHeader th:nth-child(4),
+.standingsHeader th:last-child   { width: 2.5rem; }
+
+.thRight { text-align: right; }
+
+.standingsRow {
+  transition: background 0.15s;
+  border-radius: var(--radius-lg);
+}
+
+.standingsRow td {
+  padding: var(--space-1) var(--space-2);
+  font-size: var(--text-xs);
+  vertical-align: middle;
+}
+
+.standingsRowLive { background: rgba(23,37,84,0.5); }
+.standingsRowLive:hover { background: rgba(23,37,84,0.7); }
+.standingsRowDefault:hover { background: var(--color-surface); }
+
+.posCell { color: var(--color-subtle); }
+
+.teamCell {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  min-width: 0;
+}
+
+.teamLogo {
+  width: 1rem;
+  height: 1rem;
+  object-fit: contain;
+  flex-shrink: 0;
+  background: #fff;
+  border-radius: var(--radius-sm);
+  padding: 1px;
+}
+
+.teamNameLive {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+.teamNameDefault {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #e5e7eb;
+}
+
+.liveTeamDot {
+  width: 0.375rem;
+  height: 0.375rem;
+  background: #ef4444;
+  border-radius: var(--radius-full);
+  animation: lp 1.5s infinite;
+  flex-shrink: 0;
+}
+
+.mpCell { color: #9ca3af; text-align: right; }
+
+.gdCell { text-align: right; font-weight: 500; }
+.gdGreen  { color: var(--color-green); }
+.gdRed    { color: var(--color-red); }
+.gdGray   { color: #9ca3af; }
+
+.ptsLive    { font-weight: 600; text-align: right; color: var(--color-text); }
+.ptsDefault { font-weight: 600; text-align: right; color: #d1d5db; }
+
+/* Leagues sidebar */
+.leaguesStack > * + * { margin-top: var(--space-2); }
+
+.leaguesList {
+  padding: var(--space-1);
+}
+
+.leagueSimpleHeader {
+  padding: 0.625rem var(--space-3);
+  background: var(--color-surface);
+}
+
+.leagueSimpleTitle {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: #e5e7eb;
+}
+
+.leagueItem {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: var(--space-2);
+  border-radius: var(--radius-lg);
+  text-decoration: none;
+  transition: background 0.15s;
+}
+
+.leagueItem:hover { background: var(--color-surface); }
+
+.leagueItemLogo {
+  width: 1.25rem;
+  height: 1.25rem;
+  object-fit: contain;
+  flex-shrink: 0;
+  background: #fff;
+  border-radius: var(--radius-sm);
+  padding: 0.125rem;
+}
+
+.leagueItemName {
+  font-size: var(--text-sm);
+  color: #e5e7eb;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

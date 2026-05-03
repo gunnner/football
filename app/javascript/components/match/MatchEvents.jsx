@@ -4,6 +4,8 @@ import { parseMinute, getHalf }      from '../../utils/eventTime'
 import EventTimeline                 from './events/EventTimeline'
 import EventRow                      from './events/EventRow'
 import { SystemRow, SectionDivider } from './events/EventDividers'
+import { ProbabilityBars }           from './shots/ShotList'
+import styles                        from './MatchEvents.module.css'
 
 const SYSTEM_STATUSES = new Set(['Half time', 'Break time', 'Full time', 'Finished', 'Finished AET', 'Finished AP'])
 
@@ -11,7 +13,7 @@ const sortEvents = evts => [...evts].sort((a, b) => parseMinute(a.time) - parseM
 
 export default function MatchEvents({
   matchId, homeTeamExternalId, homeTeam, awayTeam,
-  isLive, matchStatus, initialEvents, clock,
+  isLive, matchStatus, initialEvents, clock, predictions,
 }) {
   const [events, setEvents]         = useState(() => sortEvents(initialEvents || []))
   const [newEventId, setNewEventId] = useState(null)
@@ -67,16 +69,15 @@ export default function MatchEvents({
   const matchStarted = events.length > 0 || isLive || SYSTEM_STATUSES.has(currentStatus)
 
   if (events.length === 0 && !matchStarted) {
-    return (
-      <div className="bg-gray-900 rounded-xl p-4">
-        <p className="text-center text-gray-500 py-8">No events yet</p>
-      </div>
-    )
+    return <div className={styles.noEvents}>No events yet</div>
   }
 
   return (
-    <div className="space-y-3">
-      <div className="bg-gray-900 rounded-xl px-4 pt-3 pb-4">
+    <div className={styles.stack}>
+      {predictions && (
+        <ProbabilityBars predictions={predictions} homeTeam={homeTeam} awayTeam={awayTeam} isLive={isLive} />
+      )}
+      <div className={styles.timelineCard}>
         <EventTimeline
           events={events}
           homeTeamExternalId={homeTeamExternalId}
@@ -88,20 +89,20 @@ export default function MatchEvents({
         />
       </div>
 
-      <div className="bg-gray-900 rounded-xl overflow-hidden">
-        <div className="grid grid-cols-3 px-4 py-2 border-b border-gray-800 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-          <a href={homeTeam?.path} className="flex items-center gap-1.5 hover:text-gray-300 transition-colors">
-            {homeTeam?.logo && <img src={homeTeam.logo} className="w-4 h-4 object-contain" alt="" />}
+      <div className={styles.eventsCard}>
+        <div className={styles.eventsHeader}>
+          <a href={homeTeam?.path} className={styles.eventsHeaderHome}>
+            {homeTeam?.logo && <img src={homeTeam.logo} className={styles.teamLogo} alt="" />}
             <span>{homeTeam?.name ?? 'Home'}</span>
           </a>
-          <span className="text-center">Time</span>
-          <a href={awayTeam?.path} className="flex items-center gap-1.5 justify-end hover:text-gray-300 transition-colors">
+          <span className={styles.eventsHeaderCenter}>Time</span>
+          <a href={awayTeam?.path} className={styles.eventsHeaderAway}>
             <span>{awayTeam?.name ?? 'Away'}</span>
-            {awayTeam?.logo && <img src={awayTeam.logo} className="w-4 h-4 object-contain" alt="" />}
+            {awayTeam?.logo && <img src={awayTeam.logo} className={styles.teamLogo} alt="" />}
           </a>
         </div>
 
-        <div className="px-4">
+        <div className={styles.eventsBody}>
           {isLive ? (
             <>
               {(secondHalfLive || hasSecondHalf) && (

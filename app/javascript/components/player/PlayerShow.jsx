@@ -4,27 +4,28 @@ import { calcAge }         from '../../utils/player'
 import { formatMarketValue } from '../../utils/money'
 import Skeleton            from '../ui/Skeleton'
 import PlayerTransfers     from './PlayerTransfers'
+import styles              from './PlayerShow.module.css'
 
 // ── Loading skeleton ──────────────────────────────────────────────────────────
 
 function LoadingSkeleton() {
   return (
-    <div className="space-y-4">
-      <div className="bg-gray-900 rounded-xl p-6">
-        <div className="flex items-start gap-5 mb-8">
-          <Skeleton className="w-20 h-20 rounded-full flex-shrink-0" />
-          <div className="flex-1 space-y-2">
-            <Skeleton className="h-7 w-48" />
-            <Skeleton className="h-4 w-32" />
-            <Skeleton className="h-4 w-24" />
+    <div className={styles.stack}>
+      <div className={styles.skeletonCard}>
+        <div className={styles.skeletonTop}>
+          <Skeleton className={styles.skeletonAvatar} />
+          <div className={styles.skeletonLines}>
+            <Skeleton style={{ height: '1.75rem', width: '12rem' }} />
+            <Skeleton style={{ height: '1rem', width: '8rem' }} />
+            <Skeleton style={{ height: '1rem', width: '6rem' }} />
           </div>
         </div>
-        <div className="grid grid-cols-4 gap-4">
-          {[...Array(8)].map((_, i) => <Skeleton key={i} className="h-10" />)}
+        <div className={styles.skeletonGrid}>
+          {[...Array(8)].map((_, i) => <Skeleton key={i} style={{ height: '2.5rem' }} />)}
         </div>
       </div>
-      <div className="bg-gray-900 rounded-xl h-48" />
-      <div className="bg-gray-900 rounded-xl h-32" />
+      <div className={styles.skeletonBlock} />
+      <div className={styles.skeletonBlock2} />
     </div>
   )
 }
@@ -37,18 +38,16 @@ function RatingBadge({ rating }) {
 
   const r     = Math.min(parseFloat(rating), 10)
   const score = r.toFixed(2)
-  const color = r >= 8 ? 'text-green-400' : r >= 7 ? 'text-yellow-400' : 'text-gray-300'
+  const colorClass = r >= 8 ? styles.ratingScoreGreen : r >= 7 ? styles.ratingScoreYellow : styles.ratingScoreGray
 
   return (
-    <div className="absolute flex flex-col items-center bg-gray-800 rounded-xl px-3 py-2 cursor-default"
-         style={{ top: '1.25rem', right: '1.25rem' }}
+    <div className={styles.ratingBadge}
          onMouseEnter={() => setShow(true)}
          onMouseLeave={() => setShow(false)}>
-      <span className={`text-2xl font-bold ${color}`}>{score}</span>
-      <span className="text-[10px] text-gray-500 mt-0.5">Avg season rating</span>
+      <span className={`${styles.ratingScore} ${colorClass}`}>{score}</span>
+      <span className={styles.ratingLabel}>Avg season rating</span>
       {show && (
-        <span className="absolute top-full mt-1 right-0 w-64 bg-gray-800 border border-gray-700
-                         text-gray-200 text-xs rounded-lg px-3 py-2 leading-snug z-50 shadow-xl pointer-events-none">
+        <span className={styles.ratingTooltip}>
           The player's average match rating across all competitions in the current season
         </span>
       )}
@@ -62,15 +61,14 @@ function PlayerAvatar({ logo, name }) {
   const [failed, setFailed] = useState(false)
   if (logo && !failed) {
     return (
-      <div className="w-20 h-20 rounded-full overflow-hidden flex-shrink-0 bg-gray-700">
-        <img src={logo} alt={name} onError={() => setFailed(true)}
-             className="w-full" style={{ height: '200%', objectFit: 'cover', objectPosition: '50% 0%' }} />
+      <div className={styles.avatarWrap}>
+        <img src={logo} alt={name} onError={() => setFailed(true)} className={styles.avatarImg} />
       </div>
     )
   }
   return (
-    <div className="w-20 h-20 bg-gray-700 rounded-full flex items-center justify-center flex-shrink-0">
-      <span className="text-3xl">👤</span>
+    <div className={styles.avatarFallback}>
+      <span>👤</span>
     </div>
   )
 }
@@ -78,8 +76,8 @@ function PlayerAvatar({ logo, name }) {
 function MetaCell({ label, children }) {
   return (
     <div>
-      <p className="text-xs text-gray-500 uppercase">{label}</p>
-      <div className="mt-1">{children}</div>
+      <p className={styles.metaLabel}>{label}</p>
+      <div style={{ marginTop: '0.25rem' }}>{children}</div>
     </div>
   )
 }
@@ -93,82 +91,78 @@ function PlayerHeader({ player, meta }) {
   const mvText  = formatMarketValue(meta?.market_value)
 
   return (
-    <div className="bg-gray-900 rounded-xl p-6 mb-4 relative">
+    <div className={styles.headerCard}>
       <RatingBadge rating={meta?.average_rating} />
 
-      <div className="flex items-start gap-5">
+      <div className={styles.headerTop}>
         <PlayerAvatar logo={attrs.logo} name={attrs.name} />
-        <div className="flex-1 min-w-0">
-          <h1 className="text-2xl font-bold text-white">{attrs.name}</h1>
+        <div className={styles.headerInfo}>
+          <h1 className={styles.playerName}>{attrs.name}</h1>
           {attrs.full_name && attrs.full_name !== attrs.name && (
-            <p className="text-sm text-gray-500 mt-0.5">{attrs.full_name}</p>
+            <p className={styles.playerFullName}>{attrs.full_name}</p>
           )}
           {meta?.current_team && (
-            <div className="flex items-center gap-1.5 mt-1">
-              <a href={meta.current_team.path} className="flex items-center gap-1.5 group">
-                {meta.current_team.logo && (
-                  <img src={meta.current_team.logo} alt={meta.current_team.name} className="w-5 h-5 object-contain" />
-                )}
-                <span className="text-gray-400 text-sm group-hover:text-white transition-colors">
-                  {meta.current_team.name}
-                </span>
-              </a>
-            </div>
+            <a href={meta.current_team.path} className={styles.teamLink}>
+              {meta.current_team.logo && (
+                <img src={meta.current_team.logo} alt={meta.current_team.name} className={styles.teamLogo} />
+              )}
+              <span className={styles.teamName}>{meta.current_team.name}</span>
+            </a>
           )}
           {(profile.joined_at || profile.contract_expiry) && (
-            <div className="flex items-center gap-2 mt-0.5 text-xs text-gray-500">
+            <div className={styles.contractRow}>
               {profile.joined_at && <span>Joined {profile.joined_at}</span>}
-              {profile.joined_at && profile.contract_expiry && <span className="text-gray-700">·</span>}
+              {profile.joined_at && profile.contract_expiry && <span className={styles.contractDot}>·</span>}
               {profile.contract_expiry && <span>Contract until {profile.contract_expiry}</span>}
             </div>
           )}
         </div>
       </div>
 
-      <div className="grid grid-cols-4 gap-x-4 border-t border-gray-800" style={{ marginTop: '2rem', paddingTop: '2rem', paddingBottom: '1.5rem' }}>
+      <div className={styles.metaGrid1}>
         <MetaCell label="Citizenship">
           {profile.citizenship
             ? (
-              <div className="flex flex-col gap-1">
+              <div className={styles.citizenshipList}>
                 {profile.citizenship.split(', ').map((country, i) => (
-                  <div key={i} className="flex items-center gap-2">
+                  <div key={i} className={styles.citizenshipRow}>
                     {meta?.flags?.[i] && (
-                      <img src={meta.flags[i]} alt="" className="w-5 h-4 object-cover rounded-sm" />
+                      <img src={meta.flags[i]} alt="" className={styles.flagImg} />
                     )}
-                    <span className="text-sm text-gray-100">{country}</span>
+                    <span className={styles.metaValue}>{country}</span>
                   </div>
                 ))}
               </div>
             )
-            : <span className="text-sm text-gray-100">—</span>
+            : <span className={styles.metaValue}>—</span>
           }
         </MetaCell>
         <MetaCell label="Born">
-          <p className="text-sm text-gray-100">{profile.birth_date ?? '—'}</p>
-          {profile.birth_place && <p className="text-xs text-gray-500 mt-0.5">{profile.birth_place}</p>}
+          <p className={styles.metaValue}>{profile.birth_date ?? '—'}</p>
+          {profile.birth_place && <p className={styles.metaSub}>{profile.birth_place}</p>}
         </MetaCell>
         <MetaCell label="Age">
-          <p className="text-sm text-gray-100">{age ?? '—'}</p>
+          <p className={styles.metaValue}>{age ?? '—'}</p>
         </MetaCell>
         <MetaCell label="Height">
-          <p className="text-sm text-gray-100">{profile.height ?? '—'}</p>
+          <p className={styles.metaValue}>{profile.height ?? '—'}</p>
         </MetaCell>
       </div>
 
-      <div className="grid grid-cols-4 gap-x-4 pt-6 border-t border-gray-800">
+      <div className={styles.metaGrid2}>
         <MetaCell label="Position">
-          <p className="text-sm text-gray-100">{profile.main_position ?? '—'}</p>
+          <p className={styles.metaValue}>{profile.main_position ?? '—'}</p>
         </MetaCell>
         <MetaCell label="Shirt Number">
-          <p className="text-sm text-gray-100">{meta?.shirt_number ?? '—'}</p>
+          <p className={styles.metaValue}>{meta?.shirt_number ?? '—'}</p>
         </MetaCell>
         <MetaCell label="Preferred foot">
-          <p className="text-sm text-gray-100">
+          <p className={styles.metaValue}>
             {profile.foot ? profile.foot.charAt(0).toUpperCase() + profile.foot.slice(1) : '—'}
           </p>
         </MetaCell>
         <MetaCell label="Latest Transfer Value">
-          <p className="text-sm text-gray-100">{mvText ?? '—'}</p>
+          <p className={styles.metaValue}>{mvText ?? '—'}</p>
         </MetaCell>
       </div>
     </div>
@@ -180,17 +174,17 @@ function PlayerHeader({ player, meta }) {
 function PlayerStatistics({ stats }) {
   if (!stats?.length) return null
   return (
-    <div className="bg-gray-900 rounded-xl overflow-hidden mb-4">
-      <div className="px-4 py-3 border-b border-gray-800">
-        <h2 className="text-sm font-semibold text-gray-300 uppercase tracking-wider">Statistics</h2>
+    <div className={styles.statsCard}>
+      <div className={styles.statsHeader}>
+        <h2 className={styles.statsTitle}>Statistics</h2>
       </div>
       {stats.map((stat, i) => (
-        <div key={i} className="px-4 py-3 border-b border-gray-800 last:border-0">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm text-gray-400">{stat.league} {stat.season}</span>
-            <span className="text-xs text-gray-500">{stat.club}</span>
+        <div key={i} className={styles.statRow}>
+          <div className={styles.statRowMeta}>
+            <span className={styles.statLeague}>{stat.league} {stat.season}</span>
+            <span className={styles.statClub}>{stat.club}</span>
           </div>
-          <div className="grid grid-cols-4 gap-2 text-center">
+          <div className={styles.statNums}>
             {[
               { val: stat.goals,        label: 'Goals' },
               { val: stat.assists,      label: 'Assists' },
@@ -198,8 +192,8 @@ function PlayerStatistics({ stats }) {
               { val: stat.yellow_cards, label: 'Yellow' },
             ].map(({ val, label }) => (
               <div key={label}>
-                <p className="text-lg font-bold text-white">{val}</p>
-                <p className="text-xs text-gray-500">{label}</p>
+                <p className={styles.statNum}>{val}</p>
+                <p className={styles.statNumLabel}>{label}</p>
               </div>
             ))}
           </div>
@@ -215,7 +209,7 @@ export default function PlayerShow({ playerId }) {
   const { player, meta, stats, transfers, loading, error } = usePlayerData(playerId)
 
   if (loading) return <LoadingSkeleton />
-  if (error)   return <p className="text-red-400 p-4">{error}</p>
+  if (error)   return <p style={{ color: 'var(--color-red)', padding: '1rem' }}>{error}</p>
 
   const mv = meta?.market_value
 
@@ -223,7 +217,7 @@ export default function PlayerShow({ playerId }) {
     <>
       <PlayerHeader player={player} meta={meta} />
       {transfers.length > 0 && (
-        <div className="mb-4">
+        <div style={{ marginBottom: '1rem' }}>
           <PlayerTransfers transfers={transfers} market_value={mv?.value} market_value_date={mv?.recorded_date} />
         </div>
       )}

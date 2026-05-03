@@ -1,0 +1,7 @@
+.link {
+  transition: color 0.15s;
+}
+
+.link:hover {
+  color: #60a5fa; /* blue-400 */
+}

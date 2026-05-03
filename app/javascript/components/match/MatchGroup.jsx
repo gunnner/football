@@ -4,6 +4,7 @@ import { EVENT_EMOJI }                 from '../../constants/matchEvents'
 import { formatClock }                 from '../../utils/clock'
 import { useMatchChannel }             from '../../hooks/useMatchChannel'
 import { ChevronLeft, ChevronRight }   from '../ui/Icons'
+import styles                          from './MatchGroup.module.css'
 
 const FINISHED = ['Finished', 'Finished after penalties', 'Finished after extra time']
 
@@ -13,9 +14,9 @@ function countryFlag(code) {
 }
 
 function CountryFlag({ logo, code }) {
-  if (logo) return <img src={logo} alt="" className="w-5 h-5 object-contain flex-shrink-0" />
+  if (logo) return <img src={logo} alt="" className={styles.countryLogo} />
   const emoji = countryFlag(code)
-  if (emoji) return <span className="text-sm leading-none">{emoji}</span>
+  if (emoji) return <span style={{ fontSize: '0.875rem', lineHeight: 1 }}>{emoji}</span>
   return null
 }
 
@@ -37,31 +38,29 @@ function LiveMatchRow({ match, included }) {
   const [isDone,       setIsDone]       = useState(false)
   const [recentEvents, setRecentEvents] = useState([])
 
-  // Ref stores the authoritative clock value + timestamp when it was received from the API.
-  // Using updated_at (when DB was last written) as the base timestamp means elapsed time
-  // is calculated correctly even if the page was loaded long after the last sync.
   const clockBaseRef = useRef({
     raw: a.clock ?? '0',
     ts:  a.updated_at ? new Date(a.updated_at).getTime() : Date.now(),
   })
 
+  function computeClock({ raw, ts }) {
+    const elapsed = Math.floor((Date.now() - ts) / 60000)
+    if (elapsed === 0) return String(raw)
+    const str = String(raw)
+    if (str.includes('+')) {
+      const [base, extra] = str.split('+').map(Number)
+      return `${base}+${(extra || 0) + elapsed}`
+    }
+    return String((parseInt(str) || 0) + elapsed)
+  }
+
   const tickRef = useRef(null)
   useEffect(() => {
     if (isDone) { clearInterval(tickRef.current); return }
+    // Sync immediately on mount (fixes back-navigation stale clock)
+    setClock(computeClock(clockBaseRef.current))
     tickRef.current = setInterval(() => {
-      const { raw, ts } = clockBaseRef.current
-      const elapsed = Math.floor((Date.now() - ts) / 60000)
-      if (elapsed === 0) return
-
-      const str = String(raw)
-      if (str.includes('+')) {
-        // Overtime: increment the extra minutes part
-        const [base, extra] = str.split('+').map(Number)
-        setClock(`${base}+${(extra || 0) + elapsed}`)
-      } else {
-        const base = parseInt(str) || 0
-        setClock(String(base + elapsed))
-      }
+      setClock(computeClock(clockBaseRef.current))
     }, 15000)
     return () => clearInterval(tickRef.current)
   }, [isDone])
@@ -70,9 +69,17 @@ function LiveMatchRow({ match, included }) {
     if (data.type === 'match_update' || data.type === 'match_event' || data.type === 'goal') {
       if (data.match?.score_current !== undefined) setScore(data.match.score_current)
       if (data.match?.status !== undefined)        setStatus(data.match.status)
-      if (data.match?.clock !== undefined) {
-        clockBaseRef.current = { raw: data.match.clock, ts: Date.now() }
-        setClock(data.match.clock)
+
+      // Use event time as clock floor so displayed minute is never behind the latest event
+      const eventMin  = parseInt(data.event?.time) || 0
+      const matchClock = data.match?.clock
+      const rawClock  = matchClock !== undefined ? matchClock : clockBaseRef.current.raw
+      const clockMin  = parseInt(rawClock) || 0
+      const effective = eventMin > clockMin ? String(eventMin) : rawClock
+
+      if (matchClock !== undefined || eventMin > 0) {
+        clockBaseRef.current = { raw: effective, ts: Date.now() }
+        setClock(effective)
       }
     }
     if (data.type === 'match_end') {
@@ -80,47 +87,51 @@ function LiveMatchRow({ match, included }) {
       setIsDone(true)
     }
     if ((data.type === 'match_event' || data.type === 'goal') && data.event) {
-      setRecentEvents(prev => [data.event, ...prev].slice(0, 3))
+      setRecentEvents(prev => {
+        if (prev.some(e => e.id === data.event.id)) return prev
+        const stamped = { ...data.event, addedAt: Date.now() }
+        setTimeout(() => {
+          setRecentEvents(cur => cur.filter(e => e.addedAt !== stamped.addedAt))
+        }, 60000)
+        return [stamped, ...prev].slice(0, 2)
+      })
     }
   })
 
   const clockStr   = String(clock ?? '')
   const clockMin   = parseInt(clockStr) || 0
   const isOvertime = clockStr.includes('+')
-  // Infer status from clock when the API lags behind (e.g. worker paused for 40 min):
-  //   clock ≥ 46 while still "First half" → must be Second half
-  //   clock ≥ 45 exactly → could be HT injury time or HT, show Half time
   const effectiveStatus = (!isOvertime && status === 'First half' && clockMin >= 46) ? 'Second half'
                         : (!isOvertime && status === 'First half' && clockMin === 45) ? 'Half time'
                         : status
   const isHalfTime = effectiveStatus === 'Half time' || effectiveStatus === 'Break time'
 
   return (
-    <a href={`/matches/${match.id}`} className="block">
-      <div className="flex flex-col px-4 py-2.5 border-b border-gray-800 last:border-0 hover:bg-gray-800 transition-colors">
-        <div className="flex items-center">
-          <div className="flex-1 flex items-center justify-end gap-2">
-            <span className="text-sm font-medium text-gray-100">{home.name ?? '—'}</span>
-            {home.logo && <img src={home.logo} alt="" className="w-6 h-5 object-contain flex-shrink-0" />}
+    <a href={`/matches/${match.id}`} className={styles.matchLink}>
+      <div className={styles.liveMatchBody}>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <div className={`${styles.teamSide} ${styles.teamSideHome}`}>
+            <span className={styles.teamName}>{home.name ?? '—'}</span>
+            {home.logo && <img src={home.logo} alt="" className={styles.teamLogo} />}
           </div>
-          <div className="w-32 text-center mx-4">
-            <span className="text-white font-bold text-sm">{score || '0 - 0'}</span>
+          <div className={styles.scoreBox}>
+            <span className={styles.scoreValue}>{score || '0 - 0'}</span>
             {isDone
-              ? <span className="text-gray-500 text-xs block font-medium">FT</span>
+              ? <span className={styles.scoreFt}>FT</span>
               : isHalfTime
-              ? <span className="text-yellow-500 text-xs block font-medium">HT</span>
-              : <span className="text-red-400 text-xs block animate-pulse">{formatClock(clock, effectiveStatus)}</span>
+              ? <span style={{ color: '#eab308', fontSize: '0.75rem', display: 'block', fontWeight: 500 }}>HT</span>
+              : <span className={styles.scoreLive}>{formatClock(clock, effectiveStatus)}</span>
             }
           </div>
-          <div className="flex-1 flex items-center justify-start gap-2">
-            {away.logo && <img src={away.logo} alt="" className="w-6 h-5 object-contain flex-shrink-0" />}
-            <span className="text-sm font-medium text-gray-100">{away.name ?? '—'}</span>
+          <div className={`${styles.teamSide} ${styles.teamSideAway}`}>
+            {away.logo && <img src={away.logo} alt="" className={styles.teamLogo} />}
+            <span className={styles.teamName}>{away.name ?? '—'}</span>
           </div>
         </div>
         {recentEvents.length > 0 && (
-          <div className="flex items-center justify-center gap-3 mt-1.5 flex-wrap">
+          <div className={styles.recentEvents}>
             {recentEvents.map((e, i) => (
-              <span key={i} className="text-xs text-gray-400 whitespace-nowrap">
+              <span key={i} className={styles.recentEvent}>
                 {EVENT_EMOJI[e.event_type] || '•'} {e.time}' {e.player_name}
               </span>
             ))}
@@ -138,37 +149,37 @@ function MatchRow({ match, included }) {
   const done = FINISHED.includes(a.status)
 
   return (
-    <a href={`/matches/${match.id}`} className="block">
-      <div className="flex items-center px-4 py-3 border-b border-gray-800 last:border-0 hover:bg-gray-800 transition-colors">
-        <div className="flex-1 flex items-center justify-end gap-2">
-          <span className="text-sm font-medium text-gray-100">{home.name ?? '—'}</span>
-          {home.logo && <img src={home.logo} alt="" className="w-6 h-5 object-contain flex-shrink-0" />}
+    <a href={`/matches/${match.id}`} className={styles.matchLink}>
+      <div className={styles.matchRow}>
+        <div className={`${styles.teamSide} ${styles.teamSideHome}`}>
+          <span className={styles.teamName}>{home.name ?? '—'}</span>
+          {home.logo && <img src={home.logo} alt="" className={styles.teamLogo} />}
         </div>
-        <div className="w-32 text-center mx-4">
+        <div className={styles.scoreBox}>
           {done && (
             <>
-              <span className="text-white font-bold text-sm">{a.score_current || '-'}</span>
-              <span className="text-gray-500 text-xs block font-medium">FT</span>
+              <span className={styles.scoreValue}>{a.score_current || '-'}</span>
+              <span className={styles.scoreFt}>FT</span>
             </>
           )}
           {live && (
             <>
-              <span className="text-white font-bold text-sm">{a.score_current || '0 - 0'}</span>
-              <span className="text-red-400 text-xs block animate-pulse">{formatClock(a.clock, a.status)}</span>
+              <span className={styles.scoreValue}>{a.score_current || '0 - 0'}</span>
+              <span className={styles.scoreLive}>{formatClock(a.clock, a.status)}</span>
             </>
           )}
           {!done && !live && (
             <>
-              <span className="text-gray-400 text-sm">
+              <span className={styles.kickoffTime}>
                 {new Date(a.date).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
               </span>
-              <span className="text-gray-600 text-xs block">{a.status}</span>
+              <span className={styles.scoreStatus}>{a.status}</span>
             </>
           )}
         </div>
-        <div className="flex-1 flex items-center justify-start gap-2">
-          {away.logo && <img src={away.logo} alt="" className="w-6 h-5 object-contain flex-shrink-0" />}
-          <span className="text-sm font-medium text-gray-100">{away.name ?? '—'}</span>
+        <div className={`${styles.teamSide} ${styles.teamSideAway}`}>
+          {away.logo && <img src={away.logo} alt="" className={styles.teamLogo} />}
+          <span className={styles.teamName}>{away.name ?? '—'}</span>
         </div>
       </div>
     </a>
@@ -204,16 +215,16 @@ export default function MatchGroup({ leagueName, leagueLogo, countryName, countr
   const [collapsed, setCollapsed] = useState(false)
 
   return (
-    <div className="mb-2">
-      <div className="flex items-center bg-gray-800 px-3 py-2 rounded-t-lg gap-2">
+    <div className={styles.group}>
+      <div className={styles.groupHeader}>
         {leagueLogo && (
-          <img src={leagueLogo} alt="" className="w-5 h-5 object-contain flex-shrink-0 bg-white rounded p-0.5" />
+          <img src={leagueLogo} alt="" className={styles.leagueLogo} />
         )}
 
-        <a href={leagueHref} className="flex-1 min-w-0 flex items-center gap-2 hover:text-white transition-colors">
-          <span className="text-sm font-semibold text-gray-200 truncate">{leagueName}</span>
+        <a href={leagueHref} className={styles.leagueLink}>
+          <span className={styles.leagueName}>{leagueName}</span>
           {countryName && (
-            <span className="flex items-center gap-1.5 text-sm text-gray-500 flex-shrink-0">
+            <span className={styles.countryInfo}>
               <span>—</span>
               <CountryFlag logo={countryLogo} code={countryCode} />
               <span>{countryName}</span>
@@ -221,23 +232,20 @@ export default function MatchGroup({ leagueName, leagueLogo, countryName, countr
           )}
         </a>
 
-        <button
-          onClick={() => setCollapsed(c => !c)}
-          className="flex items-center gap-1.5 text-gray-500 hover:text-gray-300 transition-colors flex-shrink-0 ml-1"
-        >
+        <button onClick={() => setCollapsed(c => !c)} className={styles.collapseBtn}>
           {collapsed ? (
             <>
-              <span className="text-xs tabular-nums">{matches.length} {matches.length === 1 ? 'match' : 'matches'}</span>
-              <ChevronRight className="w-3.5 h-3.5" />
+              <span className={styles.collapseCount}>{matches.length} {matches.length === 1 ? 'match' : 'matches'}</span>
+              <ChevronRight className={styles.collapseIcon} />
             </>
           ) : (
-            <ChevronLeft className="w-3.5 h-3.5 rotate-90" />
+            <ChevronLeft className={`${styles.collapseIcon}`} style={{ transform: 'rotate(90deg)' }} />
           )}
         </button>
       </div>
 
       {!collapsed && (
-        <div className="bg-gray-900 rounded-b-lg overflow-hidden">
+        <div className={styles.matchesBody}>
           {matches.map(m =>
             isLive
               ? <LiveMatchRow key={m.id} match={m} included={included} />

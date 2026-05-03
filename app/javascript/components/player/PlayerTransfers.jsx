@@ -2,6 +2,7 @@ import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine
 } from 'recharts'
 import { formatFee } from '../../utils/money'
+import styles from './PlayerTransfers.module.css'
 
 const JUNIOR_PAT = /\bU\d{2}\b|\bYouth\b|\bJuniors?\b|\bAcademy\b/i
 
@@ -16,24 +17,24 @@ function typeLabel(type) {
   return type?.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) ?? '—'
 }
 
+function badgeClass(type) {
+  if (type === 'loan')        return styles.badgeLoan
+  if (type === 'end_of_loan') return styles.badgeEndLoan
+  return styles.badgeTransfer
+}
+
 function TeamCell({ name, logo, path }) {
   const inner = (
-    <span className="flex items-center gap-1.5 min-w-0">
+    <span className={styles.teamCell}>
       {logo
         ? <img src={logo} alt="" style={{ width: 16, height: 16, objectFit: 'contain', flexShrink: 0 }} />
         : <span style={{ width: 16, height: 16, flexShrink: 0 }} />
       }
-      <span className="truncate">{name}</span>
+      <span className={styles.teamName}>{name}</span>
     </span>
   )
-  if (path) return <a href={path} className="hover:text-white transition-colors">{inner}</a>
+  if (path) return <a href={path} className={styles.teamLink}>{inner}</a>
   return inner
-}
-
-function badgeClass(type) {
-  if (type === 'loan')        return 'bg-blue-900/60 text-blue-300'
-  if (type === 'end_of_loan') return 'bg-purple-900/60 text-purple-300'
-  return 'bg-green-900/60 text-green-300'
 }
 
 function ChartTooltip({ active, payload }) {
@@ -135,53 +136,51 @@ export default function PlayerTransfers({ transfers = [], market_value, market_v
   const chartData  = [...senior].sort((a, b) => seasonToYear(a.season) - seasonToYear(b.season))
 
   return (
-    <div className="bg-gray-900 rounded-xl overflow-hidden">
-      <div className="px-4 py-3 border-b border-gray-800">
-        <h2 className="text-sm font-semibold text-gray-300 uppercase tracking-wider">Transfers</h2>
+    <div className={styles.card}>
+      <div className={styles.header}>
+        <h2 className={styles.title}>Transfers</h2>
       </div>
-      <div className="flex p-4 gap-6 items-stretch">
+      <div className={styles.body}>
 
         {/* ── Left: table ── */}
-        <div className="w-1/2">
-          <table className="w-full text-xs">
+        <div className={styles.tableWrap}>
+          <table className={styles.table}>
             <thead>
-              <tr className="text-gray-600 uppercase">
-                <th className="text-left font-medium pb-2 pr-2">Season</th>
-                <th className="text-left font-medium pb-2 pr-2">From</th>
-                <th className="text-left font-medium pb-2 pr-2">To</th>
-                <th className="text-left font-medium pb-2 pr-2">Type</th>
-                <th className="text-right font-medium pb-2">Fee</th>
+              <tr className={styles.thRow}>
+                <th scope="col" className={styles.th}>Season</th>
+                <th scope="col" className={styles.th}>From</th>
+                <th scope="col" className={styles.th}>To</th>
+                <th scope="col" className={styles.th}>Type</th>
+                <th scope="col" className={styles.thRight}>Fee</th>
               </tr>
             </thead>
             <tbody>
               {seniorDesc.map((t, i) => (
-                <tr key={i} className="border-t border-gray-800/60">
-                  <td className="py-2 pr-2 text-gray-500 whitespace-nowrap">{t.season ?? '—'}</td>
-                  <td className="py-2 pr-2 text-gray-400"><TeamCell name={t.team_from} logo={t.team_from_logo} path={t.team_from_path} /></td>
-                  <td className="py-2 pr-2 text-gray-100 font-medium"><TeamCell name={t.team_to} logo={t.team_to_logo} path={t.team_to_path} /></td>
-                  <td className="py-2 pr-2">
-                    <span className={`px-1.5 py-0.5 rounded ${badgeClass(t.transfer_type)}`}>
-                      {typeLabel(t.transfer_type)}
-                    </span>
+                <tr key={i} className={styles.tr}>
+                  <td className={styles.tdSeason}>{t.season ?? '—'}</td>
+                  <td className={styles.tdFrom}><TeamCell name={t.team_from} logo={t.team_from_logo} path={t.team_from_path} /></td>
+                  <td className={styles.tdTo}><TeamCell name={t.team_to} logo={t.team_to_logo} path={t.team_to_path} /></td>
+                  <td className={styles.tdType}>
+                    <span className={badgeClass(t.transfer_type)}>{typeLabel(t.transfer_type)}</span>
                   </td>
-                  <td className="py-2 text-right text-green-400 whitespace-nowrap">{t.fee ?? '—'}</td>
+                  <td className={styles.tdFee}>{t.fee ?? '—'}</td>
                 </tr>
               ))}
 
               {junior.length > 0 && (
                 <>
                   <tr>
-                    <td colSpan={5} className="pt-4 pb-1.5">
-                      <span className="text-gray-600 uppercase tracking-wider font-medium">Junior career</span>
+                    <td colSpan={5} style={{ paddingTop: '1rem', paddingBottom: '0.375rem' }}>
+                      <span className={styles.juniorLabel}>Junior career</span>
                     </td>
                   </tr>
                   {junior.map((t, i) => (
                     <tr key={`jr-${i}`}>
-                      <td className="py-1.5 pr-2 text-gray-600 whitespace-nowrap">{t.season ?? '—'}</td>
-                      <td className="py-1.5 pr-2 text-gray-600"><TeamCell name={t.team_from} logo={t.team_from_logo} path={t.team_from_path} /></td>
-                      <td className="py-1.5 pr-2 text-gray-500"><TeamCell name={t.team_to} logo={t.team_to_logo} path={t.team_to_path} /></td>
-                      <td className="py-1.5 pr-2 text-gray-600">—</td>
-                      <td className="py-1.5 text-right text-gray-600 whitespace-nowrap">{t.fee ?? '—'}</td>
+                      <td className={styles.tdJuniorSeason}>{t.season ?? '—'}</td>
+                      <td className={styles.tdJuniorFrom}><TeamCell name={t.team_from} logo={t.team_from_logo} path={t.team_from_path} /></td>
+                      <td className={styles.tdJuniorTo}><TeamCell name={t.team_to} logo={t.team_to_logo} path={t.team_to_path} /></td>
+                      <td className={styles.tdJuniorType}>—</td>
+                      <td className={styles.tdJuniorFee}>{t.fee ?? '—'}</td>
                     </tr>
                   ))}
                 </>
@@ -191,9 +190,9 @@ export default function PlayerTransfers({ transfers = [], market_value, market_v
         </div>
 
         {/* ── Right: chart ── */}
-        <div className="w-1/2 border-l border-gray-800 pl-6 flex flex-col min-h-0">
-          <p className="text-xs text-gray-600 uppercase tracking-wider font-medium mb-4">Transfer Value</p>
-          <div className="flex-1 min-h-0">
+        <div className={styles.chartWrap}>
+          <p className={styles.chartLabel}>Transfer Value</p>
+          <div className={styles.chartInner}>
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={chartData} margin={{ top: 20, right: 14, left: 6, bottom: 44 }}>
                 <defs>
