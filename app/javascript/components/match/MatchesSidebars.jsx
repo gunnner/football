@@ -4,27 +4,8 @@ import { today }                  from '../../utils/date'
 import { shortTeamName }          from '../../utils/team'
 import { useLiveMatchChannels }   from '../../hooks/useLiveMatchChannels'
 import { projectStandings }       from '../../services/standings'
+import styles                     from './MatchesSidebars.module.css'
 
-function Skeleton({ className }) {
-  return <div className={`bg-gray-800 animate-pulse rounded ${className}`} />
-}
-
-function SidebarCard({ children }) {
-  return (
-    <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
-      {children}
-    </div>
-  )
-}
-
-function SidebarHeader({ logo, name, href }) {
-  return (
-    <a href={href} className="flex items-center gap-2 px-3 py-2.5 bg-gray-800 hover:bg-gray-700 transition-colors">
-      {logo && <img src={logo} alt="" className="w-5 h-5 object-contain flex-shrink-0 bg-white rounded p-0.5" />}
-      <span className="text-sm font-semibold text-gray-200 truncate">{name}</span>
-    </a>
-  )
-}
 
 export function LeaguesSidebar() {
   const [leagues, setLeagues] = useState(null)
@@ -37,28 +18,27 @@ export function LeaguesSidebar() {
   }, [])
 
   if (leagues === null) return (
-    <div className="space-y-2">
-      {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-10" />)}
+    <div className={styles.skeletonStack}>
+      {[...Array(3)].map((_, i) => <div key={i} className={styles.skeleton} style={{ height: '2.5rem' }} />)}
     </div>
   )
 
   return (
-    <SidebarCard>
-      <div className="px-3 py-2.5 bg-gray-800">
-        <span className="text-sm font-semibold text-gray-200">Leagues</span>
+    <div className={styles.sidebarCard}>
+      <div className={styles.leagueSimpleHeader}>
+        <span className={styles.leagueSimpleTitle}>Leagues</span>
       </div>
-      <div className="p-1">
+      <div className={styles.leaguesList}>
         {leagues.map(l => (
-          <a key={l.id} href={`/leagues/${l.id}`}
-             className="flex items-center gap-2.5 px-2 py-2 rounded-lg hover:bg-gray-800 transition-colors">
+          <a key={l.id} href={`/leagues/${l.id}`} className={styles.leagueItem}>
             {l.attributes.logo && (
-              <img src={l.attributes.logo} alt="" className="w-5 h-5 object-contain flex-shrink-0 bg-white rounded p-0.5" />
+              <img src={l.attributes.logo} alt="" className={styles.leagueItemLogo} />
             )}
-            <span className="text-sm text-gray-200 truncate">{l.attributes.name}</span>
+            <span className={styles.leagueItemName}>{l.attributes.name}</span>
           </a>
         ))}
       </div>
-    </SidebarCard>
+    </div>
   )
 }
 
@@ -126,16 +106,19 @@ export function StandingsSidebar() {
     if (data.match?.score_current !== undefined) {
       setLiveScores(prev => ({ ...prev, [matchId]: data.match.score_current }))
     }
+    if (data.type === 'match_end') {
+      setLiveMatchData(prev => prev.filter(m => m.matchId !== matchId))
+    }
   })
 
   if (groups === null) return (
-    <div className="space-y-2">
-      {[...Array(5)].map((_, i) => <Skeleton key={i} className="h-8" />)}
+    <div className={styles.skeletonStack}>
+      {[...Array(5)].map((_, i) => <div key={i} className={styles.skeleton} style={{ height: '2rem' }} />)}
     </div>
   )
 
   return (
-    <div className="space-y-4">
+    <div className={styles.leaguesStack}>
       {groups.map(({ leagueId, leagueName, leagueLogo, standings }) => {
         const liveForLeague = liveMatchData
           .filter(m => String(m.leagueId) === String(leagueId))
@@ -148,49 +131,59 @@ export function StandingsSidebar() {
         const liveTeamIds = new Set(liveForLeague.flatMap(m => [m.homeExternalId, m.awayExternalId]))
 
         return (
-          <SidebarCard key={leagueId}>
-            <SidebarHeader logo={leagueLogo} name={leagueName} href={`/leagues/${leagueId}`} />
+          <div key={leagueId} className={styles.sidebarCard}>
+            <a href={`/leagues/${leagueId}`} className={styles.sidebarHeaderLink}>
+              {leagueLogo && <img src={leagueLogo} alt="" className={styles.sidebarHeaderLogo} />}
+              <span className={styles.sidebarHeaderName}>{leagueName}</span>
+            </a>
             {liveForLeague.length > 0 && (
-              <div className="flex items-center gap-1.5 px-3 py-1 bg-gray-800/40 border-b border-gray-800">
-                <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
-                <span className="text-xs text-gray-500">Live projected</span>
+              <div className={styles.liveBar}>
+                <span className={styles.liveDot} />
+                <span className={styles.liveBarText}>Live projected</span>
               </div>
             )}
-            <div className="px-1 py-1">
-              <div className="grid grid-cols-[1.25rem_1fr_1.75rem_2.25rem_1.75rem] text-xs text-gray-500 px-2 pb-1 pt-0.5">
-                <span>#</span><span>Team</span>
-                <span className="text-right">MP</span>
-                <span className="text-right">GD</span>
-                <span className="text-right">Pts</span>
-              </div>
-              {projected.map(s => {
-                const gd        = (s.scored_goals ?? 0) - (s.received_goals ?? 0)
-                const isPlaying = liveTeamIds.has(s.team_external_id)
-                return (
-                  <a key={s.id} href={s.teamId ? `/teams/${s.teamId}` : '#'}
-                     className={`grid grid-cols-[1.25rem_1fr_1.75rem_2.25rem_1.75rem] items-center px-2 py-1 rounded-lg transition-colors ${
-                       isPlaying ? 'bg-blue-950/50 hover:bg-blue-950/70' : 'hover:bg-gray-800'
-                     }`}>
-                    <span className="text-xs text-gray-500">{s.position}</span>
-                    <div className="flex items-center gap-1.5 min-w-0">
-                      {s.team?.logo && (
-                        <img src={s.team.logo} alt="" className="w-4 h-4 object-contain flex-shrink-0 bg-white rounded p-px" />
-                      )}
-                      <span className={`text-xs truncate ${isPlaying ? 'text-white font-semibold' : 'text-gray-200'}`}>
-                        {shortTeamName(s.team?.name ?? '—')}
-                      </span>
-                      {isPlaying && <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse flex-shrink-0" />}
-                    </div>
-                    <span className="text-xs text-gray-400 text-right">{s.games_played}</span>
-                    <span className={`text-xs text-right font-medium ${gd > 0 ? 'text-green-400' : gd < 0 ? 'text-red-400' : 'text-gray-400'}`}>
-                      {gd > 0 ? `+${gd}` : gd}
-                    </span>
-                    <span className={`text-xs font-semibold text-right ${isPlaying ? 'text-white' : 'text-gray-300'}`}>{s.points}</span>
-                  </a>
-                )
-              })}
-            </div>
-          </SidebarCard>
+            <table className={styles.standingsTable}>
+              <thead>
+                <tr className={styles.standingsHeader}>
+                  <th scope="col">#</th>
+                  <th scope="col">Team</th>
+                  <th scope="col" className={styles.thRight}>MP</th>
+                  <th scope="col" className={styles.thRight}>GD</th>
+                  <th scope="col" className={styles.thRight}>Pts</th>
+                </tr>
+              </thead>
+              <tbody>
+                {projected.map(s => {
+                  const gd        = (s.scored_goals ?? 0) - (s.received_goals ?? 0)
+                  const isPlaying = liveTeamIds.has(s.team_external_id)
+                  return (
+                    <tr
+                      key={s.id}
+                      className={`${styles.standingsRow} ${isPlaying ? styles.standingsRowLive : styles.standingsRowDefault}`}
+                      onClick={() => { if (s.teamId) window.location.href = `/teams/${s.teamId}` }}
+                      style={{ cursor: s.teamId ? 'pointer' : 'default' }}
+                    >
+                      <td className={styles.posCell}>{s.position}</td>
+                      <td className={styles.teamCell}>
+                        {s.team?.logo && (
+                          <img src={s.team.logo} alt="" className={styles.teamLogo} />
+                        )}
+                        <span className={isPlaying ? styles.teamNameLive : styles.teamNameDefault}>
+                          {shortTeamName(s.team?.name ?? '—')}
+                        </span>
+                        {isPlaying && <span className={styles.liveTeamDot} />}
+                      </td>
+                      <td className={styles.mpCell}>{s.games_played}</td>
+                      <td className={`${styles.gdCell} ${gd > 0 ? styles.gdGreen : gd < 0 ? styles.gdRed : styles.gdGray}`}>
+                        {gd > 0 ? `+${gd}` : gd}
+                      </td>
+                      <td className={isPlaying ? styles.ptsLive : styles.ptsDefault}>{s.points}</td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
         )
       })}
     </div>

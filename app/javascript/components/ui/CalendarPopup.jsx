@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
-import { localDateStr, today, shiftDate } from '../../utils/date'
+import { localDateStr, today } from '../../utils/date'
 import { ChevronLeft, ChevronRight } from './Icons'
+import styles from './CalendarPopup.module.css'
 
 const DAY_HEADERS = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su']
 
@@ -40,42 +41,38 @@ export default function CalendarPopup({ date, onChange, onClose }) {
   const monthLabel = view.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })
 
   return (
-    <div
-      ref={ref}
-      className="absolute z-50 top-full mt-2 left-1/2 -translate-x-1/2
-                 bg-gray-900 border border-gray-700 rounded-xl shadow-2xl p-3 w-64"
-    >
-      <div className="flex items-center justify-between mb-3">
+    <div ref={ref} className={styles.popup}>
+      <div className={styles.header}>
         <button
           onClick={() => setView(new Date(year, month - 1, 1))}
-          className="p-1 rounded-lg hover:bg-gray-800 text-gray-400 hover:text-white transition-colors"
+          className={styles.monthNavBtn}
         >
           <ChevronLeft />
         </button>
-        <span className="text-sm font-semibold text-white">{monthLabel}</span>
+        <span className={styles.monthLabel}>{monthLabel}</span>
         <button
           onClick={() => setView(new Date(year, month + 1, 1))}
-          className="p-1 rounded-lg hover:bg-gray-800 text-gray-400 hover:text-white transition-colors"
+          className={styles.monthNavBtn}
         >
           <ChevronRight />
         </button>
       </div>
 
-      <div className="grid grid-cols-7 mb-1">
+      <div className={styles.dayHeaders}>
         {DAY_HEADERS.map(d => (
-          <div key={d} className="text-center text-xs text-gray-500 py-1">{d}</div>
+          <div key={d} className={styles.dayHeader}>{d}</div>
         ))}
       </div>
 
-      <div className="grid grid-cols-7">
+      <div className={styles.daysGrid}>
         {days.map(({ str, current }) => {
           const isSelected = str === date
           const isToday    = str === todayStr
-          let cls = 'text-center text-sm py-1.5 rounded-lg transition-colors '
-          if (isSelected)   cls += 'bg-blue-600 text-white font-semibold'
-          else if (isToday) cls += 'text-blue-400 font-semibold hover:bg-gray-800'
-          else if (current) cls += 'text-gray-200 hover:bg-gray-800'
-          else              cls += 'text-gray-600 hover:bg-gray-800'
+          let cls = styles.dayBtn + ' '
+          if (isSelected)        cls += styles.daySelected
+          else if (isToday)      cls += styles.dayToday
+          else if (current)      cls += styles.dayDefault
+          else                   cls += styles.dayOther
           return (
             <button key={str} onClick={() => { onChange(str); onClose() }} className={cls}>
               {new Date(str + 'T00:00:00').getDate()}
@@ -84,10 +81,10 @@ export default function CalendarPopup({ date, onChange, onClose }) {
         })}
       </div>
 
-      <div className="mt-3 pt-2 border-t border-gray-800">
+      <div className={styles.footer}>
         <button
           onClick={() => { onChange(todayStr); onClose() }}
-          className="text-xs text-blue-400 hover:text-blue-300 transition-colors"
+          className={styles.todayBtn}
         >
           Today
         </button>

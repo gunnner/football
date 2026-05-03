@@ -1,54 +1,46 @@
-<nav class="bg-gray-900 border-b border-gray-800 sticky top-0 z-50">
-  <div class="max-w-7xl mx-auto px-4">
-    <div class="flex items-center justify-between h-14" data-controller="search-bar">
+<nav class="navbar">
+  <div class="navbar-inner">
+    <div class="navbar-row" data-controller="search-bar">
 
-      <%# Left: logo + nav links %>
-      <div class="flex items-center gap-8">
-        <%= link_to root_path, class: "flex items-center gap-2 text-white font-bold text-lg" do %>
-          <span class="text-2xl">⚽</span>
-          <span class="hidden sm:block">Football</span>
+      <%# Left: logo %>
+      <div class="navbar-left">
+        <%= link_to root_path, class: "navbar-logo" do %>
+          <span class="navbar-logo-icon">⚽</span>
+          <span class="navbar-logo-name">Football</span>
         <% end %>
-
       </div>
 
       <%# Right: search + user %>
-      <div class="flex items-center gap-4">
+      <div class="navbar-right">
 
-        <%# Search — icon + expanding input + dropdown %>
-        <div class="flex items-center gap-2">
-          <div class="relative">
-            <div class="overflow-hidden transition-all duration-200 ease-in-out w-0"
-                 data-search-bar-target="form"
-                 style="display: block;">
-              <div class="relative flex items-center">
+        <%# Search %>
+        <div class="navbar-search-wrap">
+          <div class="navbar-search-positioner">
+            <div class="navbar-search-form-wrap"
+                 data-search-bar-target="form">
+              <div class="navbar-search-input-row">
                 <input type="text"
                        placeholder="Search teams, players, leagues..."
                        data-search-bar-target="input"
                        data-action="input->search-bar#onInput keydown->search-bar#onKeydown"
-                       class="bg-gray-800 text-white placeholder-gray-500 rounded-lg
-                              pl-4 pr-8 py-1.5 text-sm w-72 focus:outline-none
-                              border border-gray-700" />
+                       class="navbar-search-input" />
                 <button type="button"
                         data-action="click->search-bar#close"
-                        class="absolute right-2 text-gray-500 hover:text-white transition-colors">
-                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        class="navbar-search-clear">
+                  <svg class="navbar-search-icon-svg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                   </svg>
                 </button>
               </div>
-
-              <%# Dropdown results %>
-              <div data-search-bar-target="dropdown"
-                   class="hidden absolute top-full right-0 mt-1 w-72 bg-gray-800 border border-gray-700
-                          rounded-xl shadow-xl overflow-hidden z-50 max-h-80 overflow-y-auto">
-              </div>
             </div>
+
+            <div data-search-bar-target="dropdown" class="navbar-search-dropdown"></div>
           </div>
 
           <button data-action="click->search-bar#open"
                   data-search-bar-target="button"
-                  class="text-gray-400 hover:text-white transition-colors flex-shrink-0">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  class="navbar-search-btn">
+            <svg class="navbar-search-btn-svg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
             </svg>
@@ -56,23 +48,19 @@
         </div>
 
         <% if user_signed_in? %>
-          <div class="flex items-center gap-3">
-            <span class="text-gray-400 text-sm hidden sm:block">
+          <div class="navbar-auth">
+            <span class="navbar-username">
               <%= current_user.first_name.presence || current_user.email %>
             </span>
             <%= button_to 'Sign Out',
                           destroy_user_session_path,
                           method: :delete,
-                          class: "text-sm text-gray-400 hover:text-white transition-colors bg-transparent border-0 p-0 cursor-pointer" %>
+                          class: "navbar-signout-btn" %>
           </div>
         <% else %>
-          <div class="flex items-center gap-3">
-            <%= link_to 'Sign In',
-                        new_user_session_path,
-                        class: "text-sm text-gray-400 hover:text-white transition-colors" %>
-            <%= link_to 'Sign Up',
-                        new_user_registration_path,
-                        class: "text-sm bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded-md transition-colors" %>
+          <div class="navbar-auth">
+            <%= link_to 'Sign In', new_user_session_path, class: "navbar-signin-link" %>
+            <%= link_to 'Sign Up', new_user_registration_path, class: "navbar-signup-link" %>
           </div>
         <% end %>
       </div>

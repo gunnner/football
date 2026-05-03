@@ -1,0 +1,72 @@
+.card {
+  background: var(--color-bg);
+  border-radius: var(--radius-xl);
+}
+
+.divider {
+  border-top: 1px solid var(--color-border);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: var(--radius-full);
+  padding: 0.125rem var(--space-2);
+  font-size: var(--text-xs);
+  font-weight: 600;
+}
+
+.badgeGreen {
+  background: rgba(74, 222, 128, 0.15);
+  color: var(--color-green);
+}
+
+.badgeRed {
+  background: rgba(248, 113, 113, 0.15);
+  color: var(--color-red);
+}
+
+.badgeYellow {
+  background: rgba(250, 204, 21, 0.15);
+  color: var(--color-yellow);
+}
+
+.badgeBlue {
+  background: rgba(59, 130, 246, 0.15);
+  color: var(--color-primary);
+}
+
+.badgeGray {
+  background: var(--color-surface);
+  color: var(--color-muted);
+}
+
+.skeleton {
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  animation: skeletonPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes skeletonPulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.5; }
+}
+
+.sectionHeader {
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.sectionTitle {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

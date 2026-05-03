@@ -23,11 +23,7 @@ module Highlightly
 
         return { imported: 0 } if player_records.blank?
 
-        Player.upsert_all(
-          player_records.uniq { it[:external_id] },
-          unique_by:   :external_id,
-          update_only: %i[name full_name logo]
-        )
+        upsert_players(player_records.uniq { it[:external_id] })
 
         link_box_scores_to_players(player_records.map { it[:external_id] })
 
@@ -39,6 +35,12 @@ module Highlightly
       end
 
       private
+
+      def upsert_players(records)
+        with_logo, without_logo = records.partition { it[:logo].present? }
+        Player.upsert_all(with_logo,    unique_by: :external_id, update_only: %i[name full_name logo]) if with_logo.any?
+        Player.upsert_all(without_logo, unique_by: :external_id, update_only: %i[name full_name])      if without_logo.any?
+      end
 
       def link_box_scores_to_players(external_ids)
         players = Player.where(external_id: external_ids)

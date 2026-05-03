@@ -1,0 +1,40 @@
+.skeletonWrap > * + * {
+  margin-top: var(--space-4);
+}
+
+.skeletonBtns {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.seasonTabs {
+  display: flex;
+  gap: var(--space-1);
+  margin-bottom: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.seasonBtn {
+  padding: 0.375rem var(--space-3);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.seasonBtnActive {
+  background: var(--color-primary2);
+  color: var(--color-text);
+}
+
+.seasonBtnInactive {
+  background: var(--color-surface);
+  color: var(--color-muted);
+}
+
+.seasonBtnInactive:hover {
+  background: var(--color-surface2);
+  color: var(--color-text);
+}

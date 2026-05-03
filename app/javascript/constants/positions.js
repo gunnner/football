@@ -22,10 +22,10 @@ export const POSITION_ABBR = {
   Forward:    'FW',
 }
 
-// Tailwind text color classes
-export const POSITION_COLOR_CLASS = {
-  Forward:    'text-red-400',
-  Midfielder: 'text-green-400',
-  Defender:   'text-blue-400',
-  Goalkeeper: 'text-yellow-400',
+// CSS color values for position text
+export const POSITION_COLOR = {
+  Forward:    '#f87171',
+  Midfielder: '#4ade80',
+  Defender:   '#60a5fa',
+  Goalkeeper: '#facc15',
 }

@@ -1,4 +1,5 @@
 import { useCountdown } from '../../../hooks/useCountdown'
+import styles from './CountdownStrip.module.css'
 
 export default function CountdownStrip({ matchDateIso }) {
   const { days, hours, minutes, seconds, reached } = useCountdown(matchDateIso, true)
@@ -11,6 +12,6 @@ export default function CountdownStrip({ matchDateIso }) {
   const label = parts.map(({ v, l }) => `${String(v).padStart(2, '0')} ${l}`).join('  ·  ')
 
   return (
-    <p className="text-xs text-gray-300 font-semibold mt-1.5 tabular-nums">Starts in: {label}</p>
+    <p className={styles.strip}>Starts in: {label}</p>
   )
 }

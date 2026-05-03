@@ -1,25 +1,26 @@
 import PlayerLink from '../../ui/PlayerLink'
 import { GoalSVG, OwnGoalSVG } from '../../ui/Icons'
+import styles from './GoalsList.module.css'
 
 function GoalEntry({ event }) {
   const isOwnGoal = event.type === 'Own Goal'
   return (
-    <div className="flex items-center gap-1 text-xs">
-      <span className="flex-shrink-0">{isOwnGoal ? <OwnGoalSVG /> : <GoalSVG />}</span>
-      <span className="text-gray-500 flex-shrink-0">{event.time}'</span>
-      <span className="text-gray-300">
+    <div className={styles.entry}>
+      <span className={styles.icon}>{isOwnGoal ? <OwnGoalSVG /> : <GoalSVG />}</span>
+      <span className={styles.time}>{event.time}'</span>
+      <span className={styles.detail}>
         <PlayerLink
           name={event.player_name?.split(' ').pop()}
           path={event.player_path}
-          className="hover:text-blue-400 transition-colors"
+          className={styles.playerLink}
         />
-        {event.type === 'Penalty' && <span className="text-gray-500 ml-1">(pen)</span>}
+        {event.type === 'Penalty' && <span className={styles.pen}>(pen)</span>}
         {event.assisting_player_name && (
-          <span className="text-gray-500 ml-1">
+          <span className={styles.assist}>
             (assist by <PlayerLink
               name={event.assisting_player_name?.split(' ').pop()}
               path={event.assisting_player_path}
-              className="hover:text-blue-400 transition-colors"
+              className={styles.playerLink}
             />)
           </span>
         )}
@@ -31,8 +32,8 @@ function GoalEntry({ event }) {
 export default function GoalsList({ events }) {
   if (!events?.length) return null
   return (
-    <div className="mt-2 flex justify-center">
-      <div className="space-y-0.5 flex flex-col items-start">
+    <div className={styles.wrap}>
+      <div className={styles.list}>
         {events.map((e, i) => <GoalEntry key={i} event={e} />)}
       </div>
     </div>

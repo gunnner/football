@@ -1,11 +1,12 @@
 import { useState, useMemo } from 'react'
-import { POSITION_ABBR, POSITION_COLOR_CLASS } from '../../../constants/positions'
+import { POSITION_ABBR, POSITION_COLOR } from '../../../constants/positions'
+import styles from './PlayerTable.module.css'
 
 const STATS_POSITION_ORDER = { Forward: 1, Midfielder: 2, Defender: 3, Goalkeeper: 4 }
 
 function SortIcon({ active, dir }) {
-  if (!active) return <span className="text-gray-700 ml-0.5 text-xs">⇅</span>
-  return <span className="text-blue-400 ml-0.5 text-xs">{dir === 'desc' ? '↓' : '↑'}</span>
+  if (!active) return <span className={styles.sortIconInactive}>⇅</span>
+  return <span className={styles.sortIconActive}>{dir === 'desc' ? '↓' : '↑'}</span>
 }
 
 function splitLabel(label) {
@@ -89,41 +90,35 @@ export default function PlayerTable({ tab, players }) {
 
   const gridTemplate = effectiveColumns.map(c => c.w).join(' ')
 
-  if (!rows.length) return <p className="text-center text-gray-500 py-8">No data</p>
+  if (!rows.length) return <p className={styles.noData}>No data</p>
 
   return (
-    <div className="grid px-3" style={{ gridTemplateColumns: gridTemplate, columnGap: '0.75rem' }}>
+    <div role="table" className={styles.grid} style={{ gridTemplateColumns: gridTemplate, columnGap: '0.75rem' }}>
       {/* Header */}
-      <div className="col-span-full grid py-2 border-b border-gray-800 bg-gray-900"
+      <div role="rowgroup">
+      <div role="row"
+           className={styles.headerRow}
            style={{ gridTemplateColumns: 'subgrid', gridColumn: '1 / -1' }}>
         {effectiveColumns.map(col => (
           <div
+            role="columnheader"
+            aria-sort={sortKey === col.key ? (sortDir === 'asc' ? 'ascending' : 'descending') : (col.noSort ? undefined : 'none')}
             key={col.key}
             onClick={() => handleSort(col)}
-            className={[
-              'flex items-center justify-center text-xs font-semibold text-gray-500 uppercase tracking-wider select-none',
-              col.noSort ? '' : 'cursor-pointer hover:text-gray-300',
-            ].join(' ')}
+            className={`${styles.headerCell}${col.noSort ? '' : ` ${styles.headerCellSortable}`}`}
           >
-            {!col.noSort && <span className="invisible ml-0.5 text-xs">⇅</span>}
+            {!col.noSort && <span className={styles.sortIconInvisible}>⇅</span>}
             {col.tooltip ? (
-              <span className="relative group/tip leading-tight text-center">
-                <span className="border-b border-dashed border-gray-500 cursor-help">
+              <div className={styles.tooltipWrap}>
+                <span className={styles.tooltipTrigger}>
                   {splitLabel(col.label).map((part, i, arr) => (
                     <span key={i}>{part}{i < arr.length - 1 && <br />}</span>
                   ))}
                 </span>
-                <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2
-                                 px-2 py-1 bg-gray-700 text-gray-100 text-xs font-normal
-                                 normal-case tracking-normal rounded whitespace-nowrap
-                                 pointer-events-none z-50 shadow-lg
-                                 opacity-0 group-hover/tip:opacity-100
-                                 transition-opacity duration-150 delay-150">
-                  {col.tooltip}
-                </span>
-              </span>
+                <span className={styles.tooltipPopup}>{col.tooltip}</span>
+              </div>
             ) : (
-              <span className="leading-tight text-center">
+              <span className={styles.labelWrap}>
                 {splitLabel(col.label).map((part, i, arr) => (
                   <span key={i}>{part}{i < arr.length - 1 && <br />}</span>
                 ))}
@@ -133,12 +128,15 @@ export default function PlayerTable({ tab, players }) {
           </div>
         ))}
       </div>
+      </div>
 
       {/* Rows */}
+      <div role="rowgroup">
       {rows.map((p, i) => (
         <div
+          role="row"
           key={`${p.player_id || p.player_name}-${i}`}
-          className="col-span-full grid py-2.5 border-b border-gray-800/60 last:border-0 hover:bg-gray-800/40 transition-colors items-center"
+          className={styles.dataRow}
           style={{ gridTemplateColumns: 'subgrid', gridColumn: '1 / -1' }}
         >
           {effectiveColumns.map(col => {
@@ -146,26 +144,26 @@ export default function PlayerTable({ tab, players }) {
 
             if (col.key === 'player_name') {
               const content = (
-                <div className="flex items-center gap-2 min-w-0 pl-4">
+                <div className={styles.playerCell}>
                   {p.player_logo
                     ? (
-                      <div className="w-5 h-5 rounded-full flex-shrink-0 bg-gray-700 overflow-hidden">
-                        <img src={p.player_logo} alt="" className="w-full" style={{ height: '200%', objectFit: 'cover', objectPosition: '50% 0%' }} />
+                      <div className={styles.playerAvatar}>
+                        <img src={p.player_logo} alt="" className={styles.playerAvatarImg} />
                       </div>
                     )
-                    : <div className="w-5 h-5 rounded-full bg-gray-700 flex-shrink-0 flex items-center justify-center text-[10px]">👤</div>
+                    : <div className={styles.playerAvatarFallback}>👤</div>
                   }
-                  <span className="text-sm text-gray-200 truncate">
-                    {p.is_captain ? <span className="text-yellow-400 mr-0.5 text-xs">©</span> : null}
+                  <span className={styles.playerName}>
+                    {p.is_captain ? <span className={styles.captainBadge}>©</span> : null}
                     {val}
-                    {p.is_substitute ? <span className="text-green-600 text-xs ml-1" title="Substituted in">sub</span> : null}
+                    {p.is_substitute ? <span className={styles.subBadge} title="Substituted in">sub</span> : null}
                   </span>
                 </div>
               )
               return (
-                <div key={col.key} className="min-w-0">
+                <div role="cell" key={col.key} style={{ minWidth: 0 }}>
                   {p.player_path
-                    ? <a href={p.player_path} className="hover:opacity-80 transition-opacity">{content}</a>
+                    ? <a href={p.player_path} className={styles.playerLink}>{content}</a>
                     : content
                   }
                 </div>
@@ -174,12 +172,12 @@ export default function PlayerTable({ tab, players }) {
 
             if (col.key === 'team_name') {
               const logo = p.team_logo
-                ? <img src={p.team_logo} alt={val || ''} title={val || ''} className="w-6 h-6 object-contain" />
-                : <div className="w-6 h-6 rounded-full bg-gray-700" title={val || ''} />
+                ? <img src={p.team_logo} alt={val || ''} title={val || ''} className={styles.teamLogo} />
+                : <div className={styles.teamLogoFallback} title={val || ''} />
               return (
-                <div key={col.key} className="flex justify-center">
+                <div role="cell" key={col.key} className={styles.teamCell}>
                   {p.team_path
-                    ? <a href={p.team_path} className="hover:opacity-75 transition-opacity">{logo}</a>
+                    ? <a href={p.team_path} className={styles.teamLink}>{logo}</a>
                     : logo
                   }
                 </div>
@@ -187,25 +185,22 @@ export default function PlayerTable({ tab, players }) {
             }
 
             if (col.key === 'match_rating') {
-              if (val == null) return <div key={col.key} className="flex items-center justify-center text-gray-600 text-sm">-</div>
+              if (val == null) return <div role="cell" key={col.key} className={`${styles.ratingCell} ${styles.ratingEmpty}`}>-</div>
               const r = Math.min(parseFloat(val), 10)
-              const color = r >= 8 ? 'text-green-400' : r >= 7 ? 'text-blue-400' : r >= 6 ? 'text-gray-200' : 'text-red-400'
-              return <div key={col.key} className={`flex items-center justify-center text-sm font-bold ${color}`}>{r.toFixed(2)}</div>
+              const ratingCls = r >= 8 ? styles.ratingGreen : r >= 7 ? styles.ratingBlue : r >= 6 ? styles.ratingGray : styles.ratingRed
+              return <div role="cell" key={col.key} className={`${styles.ratingCell} ${ratingCls}`}>{r.toFixed(2)}</div>
             }
 
             if (col.key === 'position') {
-              const color = POSITION_COLOR_CLASS[val] || 'text-gray-500'
-              return <div key={col.key} className={`flex items-center justify-center text-xs font-semibold ${color}`}>{POSITION_ABBR[val] || val || '-'}</div>
+              const color = POSITION_COLOR[val] || '#6b7280'
+              return <div role="cell" key={col.key} className={styles.posCell} style={{ color }}>{POSITION_ABBR[val] || val || '-'}</div>
             }
 
             return (
               <div
+                role="cell"
                 key={col.key}
-                className={[
-                  'text-sm flex items-center',
-                  col.align === 'center' ? 'justify-center' : 'justify-start',
-                  sortKey === col.key ? 'text-white font-semibold' : 'text-gray-300',
-                ].join(' ')}
+                className={`${styles.statCell} ${col.align === 'center' ? styles.statCellCenter : styles.statCellLeft} ${sortKey === col.key ? styles.statActive : styles.statDefault}`}
               >
                 {fmt(val, col.pct)}
               </div>
@@ -213,6 +208,7 @@ export default function PlayerTable({ tab, players }) {
           })}
         </div>
       ))}
+      </div>
     </div>
   )
 }

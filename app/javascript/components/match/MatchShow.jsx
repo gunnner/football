@@ -11,6 +11,7 @@ import MatchEvents             from './MatchEvents'
 import ShotMap                 from './ShotMap'
 import MatchHighlights         from './MatchHighlights'
 import MatchOdds               from './MatchOdds'
+import styles                  from './MatchShow.module.css'
 
 function formatRound(round) {
   if (!round) return ''
@@ -21,26 +22,24 @@ function formatRound(round) {
 
 function LoadingSkeleton() {
   return (
-    <div className="space-y-4">
-      <div className="bg-gray-800 animate-pulse rounded-xl h-44" />
-      <div className="flex gap-1">
-        {[1, 2, 3, 4, 5].map(i => <div key={i} className="flex-1 h-10 bg-gray-800 animate-pulse rounded-md" />)}
+    <div className={styles.loadingStack}>
+      <div className={styles.skeletonScore} />
+      <div className={styles.skeletonTabsRow}>
+        {[1, 2, 3, 4, 5].map(i => <div key={i} className={styles.skeletonTab} />)}
       </div>
-      <div className="bg-gray-800 animate-pulse rounded-xl h-64" />
+      <div className={styles.skeletonContent} />
     </div>
   )
 }
 
 function MatchTabs({ tabs, activeTab, onSelect }) {
   return (
-    <div className="flex gap-1 mb-4 bg-gray-900 p-1 rounded-lg overflow-x-auto scrollbar-none">
+    <div className={styles.tabsBar}>
       {tabs.map(t => (
         <button
           key={t}
           onClick={() => onSelect(t)}
-          className={`flex-1 min-w-max py-2 px-2 text-sm font-medium rounded-md transition-colors ${
-            activeTab === t ? 'bg-gray-700 text-white' : 'text-gray-400 hover:text-gray-200'
-          }`}
+          className={`${styles.tab} ${activeTab === t ? styles.tabActive : styles.tabInactive}`}
         >
           {t}
         </button>
@@ -74,7 +73,7 @@ export default function MatchShow({ matchId }) {
   }, [!!match])
 
   if (loading || !tabsReady) return <LoadingSkeleton />
-  if (!match)               return <div className="text-center py-16 text-gray-500">Match not found</div>
+  if (!match)               return <div className={styles.notFound}>Match not found</div>
 
   const homeTeam = { name: homeAttr.name, logo: homeAttr.logo, path: `/teams/${homeId}`, external_id: homeAttr.external_id }
   const awayTeam = { name: awayAttr.name, logo: awayAttr.logo, path: `/teams/${awayId}`, external_id: awayAttr.external_id }
@@ -177,6 +176,7 @@ export default function MatchShow({ matchId }) {
           homeTeamExternalId={homeAttr.external_id}
           homeTeam={homeTeam} awayTeam={awayTeam}
           isLive={isLive} matchStatus={liveStatus} initialEvents={events} clock={a.clock}
+          predictions={predictions}
         />
       )}
 
@@ -184,7 +184,6 @@ export default function MatchShow({ matchId }) {
         <ShotMap
           shots={shots} homeTeam={homeTeam} awayTeam={awayTeam}
           homeExternalId={homeAttr.external_id} awayExternalId={awayAttr.external_id}
-          predictions={predictions} isLive={isLive}
         />
       )}
 

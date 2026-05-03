@@ -1,0 +1,78 @@
+/* ── CSS Reset ── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+img, svg { display: block; }
+
+button, input, select, textarea {
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+}
+
+a { color: inherit; }
+
+:root {
+  /* Colors */
+  --color-bg:        #111827;  /* gray-900 */
+  --color-surface:   #1f2937;  /* gray-800 */
+  --color-surface2:  #374151;  /* gray-700 */
+  --color-border:    #374151;  /* gray-700 */
+  --color-border2:   #1f2937;  /* gray-800 */
+  --color-text:      #f9fafb;  /* gray-50 */
+  --color-text2:     #e5e7eb;  /* gray-200 */
+  --color-muted:     #9ca3af;  /* gray-400 */
+  --color-subtle:    #6b7280;  /* gray-500 */
+  --color-dimmer:    #4b5563;  /* gray-600 */
+  --color-primary:   #3b82f6;  /* blue-500 */
+  --color-primary2:  #2563eb;  /* blue-600 */
+  --color-primary3:  #1d4ed8;  /* blue-700 */
+  --color-primary-t: #93c5fd;  /* blue-300 */
+  --color-green:     #4ade80;  /* green-400 */
+  --color-yellow:    #facc15;  /* yellow-400 */
+  --color-red:       #f87171;  /* red-400 */
+  --color-orange:    #fb923c;  /* orange-400 */
+
+  /* Spacing */
+  --space-1:  0.25rem;
+  --space-2:  0.5rem;
+  --space-3:  0.75rem;
+  --space-4:  1rem;
+  --space-5:  1.25rem;
+  --space-6:  1.5rem;
+  --space-8:  2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+
+  /* Border radius */
+  --radius-sm:   0.25rem;
+  --radius-md:   0.5rem;
+  --radius-lg:   0.75rem;
+  --radius-xl:   1rem;
+  --radius-2xl:  1.5rem;
+  --radius-full: 9999px;
+
+  /* Typography */
+  --text-xs:   0.75rem;
+  --text-sm:   0.875rem;
+  --text-base: 1rem;
+  --text-lg:   1.125rem;
+  --text-xl:   1.25rem;
+  --text-2xl:  1.5rem;
+  --text-3xl:  1.875rem;
+
+  /* Shadows */
+  --shadow-md:  0 4px 6px -1px rgba(0,0,0,.3), 0 2px 4px -1px rgba(0,0,0,.2);
+  --shadow-xl:  0 20px 25px -5px rgba(0,0,0,.5), 0 10px 10px -5px rgba(0,0,0,.3);
+  --shadow-2xl: 0 25px 50px -12px rgba(0,0,0,.7);
+}

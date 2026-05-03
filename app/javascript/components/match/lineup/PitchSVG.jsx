@@ -1,5 +1,6 @@
 import { POSITION_COLORS } from '../../../constants/positions'
 import { BADGE_SVG, badgeForEvent } from './badges'
+import styles from './PitchSVG.module.css'
 
 const W          = 520
 const H          = 220
@@ -117,7 +118,7 @@ export default function PitchSVG({ homeRows, awayRows, eventMap, ratingMap = {} 
   const gaW = 22, gaH =  56, gaY = (H - gaH) / 2
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="w-full rounded-lg overflow-hidden">
+    <svg viewBox={`0 0 ${W} ${H}`} className={styles.pitch}>
       <defs>
         <clipPath id="pitch-clip">
           <rect x="0" y="0" width={W} height={H} />

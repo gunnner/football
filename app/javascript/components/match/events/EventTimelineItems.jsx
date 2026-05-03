@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import { EVENT_ICONS, EVENT_DOT_COLORS } from '../../../constants/matchEvents'
 import { labelTransform } from '../../../utils/eventTime'
 import { tooltipText, subLastName } from './eventTimelineUtils'
+import styles from './EventTimelineItems.module.css'
 
 export function EventLabel({ e, isAbove, lastName }) {
   const isSub = e.event_type === 'Substitution'
@@ -10,27 +11,25 @@ export function EventLabel({ e, isAbove, lastName }) {
 
   if (isSub) {
     return (
-      <div className="flex flex-col items-center whitespace-nowrap">
-        <div className="flex items-center gap-0.5">
-          <span className="text-[10px] leading-none">{(EVENT_ICONS['Substitution'] || { emoji: '🔄' }).emoji}</span>
-          {lastName(e) && <span className="text-[9px] text-green-400 leading-snug">↑ {lastName(e)}</span>}
+      <div className={styles.subWrap}>
+        <div className={styles.subRow}>
+          <span className={styles.eventIcon}>{(EVENT_ICONS['Substitution'] || { emoji: '🔄' }).emoji}</span>
+          {lastName(e) && <span className={styles.subNameIn}>↑ {lastName(e)}</span>}
         </div>
         {e.substituted_player && (
-          <span className="text-[9px] text-red-400 leading-snug">↓ {subLastName(e.substituted_player)}</span>
+          <span className={styles.subNameOut}>↓ {subLastName(e.substituted_player)}</span>
         )}
       </div>
     )
   }
 
   return (
-    <div className="group/evt relative flex items-center gap-0.5 whitespace-nowrap cursor-default"
+    <div className={styles.eventLabelWrap}
          style={{ flexDirection: isAbove ? 'row-reverse' : 'row' }}>
-      <span className="text-[10px] leading-none">{(EVENT_ICONS[e.event_type] || { emoji: '•' }).emoji}</span>
-      {lastName(e) && <span className="text-[9px] text-gray-300 leading-snug">{lastName(e)}</span>}
+      <span className={styles.eventIcon}>{(EVENT_ICONS[e.event_type] || { emoji: '•' }).emoji}</span>
+      {lastName(e) && <span className={styles.eventName}>{lastName(e)}</span>}
       {tip && (
-        <div className="absolute top-full mt-1 left-1/2 -translate-x-1/2 hidden group-hover/evt:block z-20 bg-gray-800 border border-gray-700 rounded px-1.5 py-0.5 text-[9px] text-gray-300 whitespace-nowrap shadow-lg">
-          {tip}
-        </div>
+        <div className={styles.eventTooltip}>{tip}</div>
       )}
     </div>
   )
@@ -53,11 +52,11 @@ export function SubsCompact({ subs, isAbove }) {
 
   return (
     <div ref={anchorRef}
-         className="flex items-center gap-0.5 cursor-default whitespace-nowrap"
+         className={styles.subsCompactWrap}
          onMouseEnter={handleEnter}
          onMouseLeave={() => setPos(null)}>
-      <span className="text-[10px] leading-none">{subIcon}</span>
-      <span className="text-[9px] text-gray-400 leading-snug">×{subs.length}</span>
+      <span className={styles.subsIcon}>{subIcon}</span>
+      <span className={styles.subsCount}>×{subs.length}</span>
       {pos && createPortal(
         <div style={{
                position:  'fixed',
@@ -65,13 +64,17 @@ export function SubsCompact({ subs, isAbove }) {
                left:      pos.left,
                transform: pos.flip ? 'translate(-50%, -100%)' : 'translateX(-50%)',
                zIndex:    9999,
+               background: '#030712',
+               border: '1px solid var(--color-border)',
+               borderRadius: '4px',
+               padding: '4px 8px',
                boxShadow: '0 4px 20px rgba(0,0,0,0.9)',
              }}
-             className="bg-gray-950 border border-gray-700 rounded px-2 py-1 pointer-events-none">
+             className={styles.subsPopup}>
           {subs.map((e, i) => (
-            <div key={i} className="flex flex-col items-start py-0.5 border-b border-gray-700 last:border-0">
-              {e.player_name        && <span className="text-[9px] text-green-400 whitespace-nowrap">↑ {e.player_name}</span>}
-              {e.substituted_player && <span className="text-[9px] text-red-400 whitespace-nowrap">↓ {e.substituted_player}</span>}
+            <div key={i} className={styles.subsPopupItem}>
+              {e.player_name        && <span className={styles.subIn}>↑ {e.player_name}</span>}
+              {e.substituted_player && <span className={styles.subOut}>↓ {e.substituted_player}</span>}
             </div>
           ))}
         </div>,
@@ -114,16 +117,16 @@ export function EventGroup({ group, side }) {
 
       {lane > 0 && <div style={connectorStyle} />}
 
-      <div key={key} style={labelStyle} className="relative flex flex-col items-center text-center">
+      <div key={key} style={labelStyle} className={styles.groupLabel}>
         {isAbove ? (
           <>
             {nonSubs.map((e, i) => <EventLabel key={i} e={e} isAbove={true} lastName={lastName} />)}
             {subs.length > 0 && <SubsCompact subs={subs} isAbove={true} />}
-            <span className="text-[9px] text-gray-500 leading-none">{evts[0].time}'</span>
+            <span className={styles.timeLabel}>{evts[0].time}'</span>
           </>
         ) : (
           <>
-            <span className="text-[9px] text-gray-500 leading-none">{evts[0].time}'</span>
+            <span className={styles.timeLabel}>{evts[0].time}'</span>
             {nonSubs.map((e, i) => <EventLabel key={i} e={e} isAbove={false} lastName={lastName} />)}
             {subs.length > 0 && <SubsCompact subs={subs} isAbove={false} />}
           </>

@@ -1,14 +1,7 @@
-// API response (after backend flattening):
-// [{ bookmakerId, bookmakerName, type, market, values: [{odd, value}] }, ...]
-//
-// Market naming: "Full Time Result", "Total Goals 2.5", "Asian Handicap -1/+1",
-//                "Total Corners 9.5", "Total Cards 3.5", "Correct Score 0 : 0", etc.
+import styles from './MatchOdds.module.css'
 
 const LINE_MARKET_RE = /^(Total Goals|Total Corners|Total Cards|Asian Handicap|Correct Score)\s+(.+)$/
-
-// Minimum bookmakers required to show a line (filters out obscure lines)
 const MIN_BOOKMAKERS = 3
-
 const SKIP_BASE = new Set(['Correct Score'])
 
 const BASE_ORDER = [
@@ -49,15 +42,14 @@ function colLabel(value, homeTeam, awayTeam) {
 const toNum = v => (v == null || isNaN(Number(v))) ? Infinity : Number(v)
 
 function OddsCell({ odd, best }) {
-  if (odd == null) return <td className="px-3 py-2 text-center text-gray-700 text-sm">—</td>
+  if (odd == null) return <td className={styles.tdOddEmpty}>—</td>
   return (
-    <td className={`px-3 py-2 text-center font-mono text-sm tabular-nums ${best ? 'text-green-400 font-semibold' : 'text-gray-300'}`}>
+    <td className={`${styles.tdOdd}${best ? ` ${styles.tdOddBest}` : ''}`}>
       {Number(odd).toFixed(2)}
     </td>
   )
 }
 
-// ── Simple market (no line in name) ──────────────────────────────────────────
 function SimpleMarketTable({ base, entries, homeTeam, awayTeam }) {
   const valSet = new Set()
   entries.forEach(e => e.values.forEach(v => valSet.add(v.value)))
@@ -73,26 +65,24 @@ function SimpleMarketTable({ base, entries, homeTeam, awayTeam }) {
   const bestOdd = Object.fromEntries(cols.map(c => [c, Math.min(...rows.map(([, o]) => toNum(o[c])))]))
 
   return (
-    <div className="bg-gray-900 rounded-xl overflow-hidden">
-      <div className="px-4 py-2.5 border-b border-gray-800">
-        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider text-center">{base}</p>
+    <div className={styles.marketCard}>
+      <div className={styles.marketHeader}>
+        <p className={styles.marketTitle}>{base}</p>
       </div>
-      <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-gray-800">
-              <th className="px-3 py-2 text-left text-xs text-gray-500 font-medium w-40">Bookmaker</th>
+      <div className={styles.tableWrap}>
+        <table className={styles.table}>
+          <thead className={styles.thead}>
+            <tr>
+              <th scope="col" className={styles.thBookmaker}>Bookmaker</th>
               {cols.map(c => (
-                <th key={c} className="px-3 py-2 text-center text-xs text-gray-500 font-medium">
-                  {colLabel(c, homeTeam, awayTeam)}
-                </th>
+                <th scope="col" key={c} className={styles.thValue}>{colLabel(c, homeTeam, awayTeam)}</th>
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-800/50">
+          <tbody className={styles.tbody}>
             {rows.map(([name, odds]) => (
-              <tr key={name} className="hover:bg-gray-800/30">
-                <td className="px-3 py-2 text-sm text-gray-300 whitespace-nowrap">{name}</td>
+              <tr key={name}>
+                <td className={styles.tdBookmaker}>{name}</td>
                 {cols.map(c => <OddsCell key={c} odd={odds[c]} best={toNum(odds[c]) === bestOdd[c]} />)}
               </tr>
             ))}
@@ -103,7 +93,6 @@ function SimpleMarketTable({ base, entries, homeTeam, awayTeam }) {
   )
 }
 
-// ── Line market (Total Goals / Asian Handicap / Corners / Cards) ──────────────
 function LineMarketTable({ base, lineGroups, homeTeam, awayTeam }) {
   const lines = Object.keys(lineGroups)
     .filter(l => lineGroups[l].length >= MIN_BOOKMAKERS)
@@ -111,16 +100,15 @@ function LineMarketTable({ base, lineGroups, homeTeam, awayTeam }) {
 
   if (!lines.length) return null
 
-  // All cols are the same across lines for a given base market
   const firstEntries = lineGroups[lines[0]]
   const valSet       = new Set()
   firstEntries.forEach(e => e.values.forEach(v => valSet.add(v.value)))
   const cols = [...valSet].sort()
 
   return (
-    <div className="bg-gray-900 rounded-xl overflow-hidden">
-      <div className="px-4 py-2.5 border-b border-gray-800">
-        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider text-center">{base}</p>
+    <div className={styles.marketCard}>
+      <div className={styles.marketHeader}>
+        <p className={styles.marketTitle}>{base}</p>
       </div>
 
       {lines.map((line, li) => {
@@ -135,24 +123,22 @@ function LineMarketTable({ base, lineGroups, homeTeam, awayTeam }) {
 
         return (
           <div key={line}>
-            <div className={`px-4 py-1.5 bg-gray-800/50 ${li > 0 ? 'border-t border-gray-800' : ''}`}>
-              <p className="text-xs font-medium text-gray-400">{line}</p>
+            <div className={`${styles.lineGroupHeader}${li > 0 ? ` ${styles.lineGroupBorder}` : ''}`}>
+              <p className={styles.lineLabel}>{line}</p>
             </div>
-            <table className="w-full">
+            <table className={styles.table}>
               <thead>
-                <tr className="border-b border-gray-800/60">
-                  <th className="px-3 py-1.5 text-left text-xs text-gray-600 font-medium w-40">Bookmaker</th>
+                <tr>
+                  <th scope="col" className={styles.thSmall}>Bookmaker</th>
                   {cols.map(c => (
-                    <th key={c} className="px-3 py-1.5 text-center text-xs text-gray-600 font-medium">
-                      {colLabel(c, homeTeam, awayTeam)}
-                    </th>
+                    <th scope="col" key={c} className={styles.thSmallValue}>{colLabel(c, homeTeam, awayTeam)}</th>
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-800/30">
+              <tbody className={styles.tbodyLast}>
                 {rows.map(([name, odds]) => (
-                  <tr key={name} className="hover:bg-gray-800/30">
-                    <td className="px-3 py-1.5 text-sm text-gray-300 whitespace-nowrap">{name}</td>
+                  <tr key={name}>
+                    <td className={styles.tdSmall}>{name}</td>
                     {cols.map(c => <OddsCell key={c} odd={odds[c]} best={toNum(odds[c]) === bestOdd[c]} />)}
                   </tr>
                 ))}
@@ -165,13 +151,11 @@ function LineMarketTable({ base, lineGroups, homeTeam, awayTeam }) {
   )
 }
 
-// ── Main ──────────────────────────────────────────────────────────────────────
 export default function MatchOdds({ bookmakers, homeTeam, awayTeam }) {
   if (!bookmakers?.length) return null
 
-  // Split into simple markets and line markets
-  const simple    = {}   // base → [entry]
-  const lineGroup = {}   // base → { line → [entry] }
+  const simple    = {}
+  const lineGroup = {}
 
   bookmakers.forEach(entry => {
     if (!entry.values?.length) return
@@ -194,7 +178,7 @@ export default function MatchOdds({ bookmakers, homeTeam, awayTeam }) {
   if (!allBases.length) return null
 
   return (
-    <div className="space-y-3">
+    <div className={styles.stack}>
       {allBases.map(base => {
         if (lineGroup[base]) {
           return (
@@ -217,7 +201,7 @@ export default function MatchOdds({ bookmakers, homeTeam, awayTeam }) {
           />
         )
       })}
-      <p className="text-[10px] text-gray-600 text-center pb-1">Odds for informational purposes only</p>
+      <p className={styles.disclaimer}>Odds for informational purposes only</p>
     </div>
   )
 }

@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
+import styles from './SearchPage.module.css'
 
 const SEARCH_SVG = (
-  <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
           d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
   </svg>
@@ -9,19 +10,18 @@ const SEARCH_SVG = (
 
 function ResultItem({ logo, name, url, rounded }) {
   return (
-    <a href={url} className="block">
-      <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-800
-                      last:border-0 hover:bg-gray-800 transition-colors">
+    <a href={url} className={styles.resultLink}>
+      <div className={styles.resultItem}>
         {logo
           ? (rounded
-              ? <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 bg-gray-700"><img src={logo} alt="" className="w-full" style={{ height: '200%', objectFit: 'cover', objectPosition: '50% 0%' }} /></div>
-              : <img src={logo} alt="" className="w-8 h-8 object-contain" />
+              ? <div className={styles.resultAvatar}><img src={logo} alt="" className={styles.resultLogo} style={{ height: '200%', objectFit: 'cover', objectPosition: '50% 0%' }} /></div>
+              : <img src={logo} alt="" className={styles.resultLogo} />
             )
-          : <div className={`w-8 h-8 bg-gray-700 flex-shrink-0 ${rounded ? 'rounded-full flex items-center justify-center' : 'rounded'}`}>
-              {rounded && <span className="text-xs text-gray-400">👤</span>}
+          : <div className={rounded ? styles.resultAvatar : styles.resultAvatarSquare}>
+              {rounded && <span style={{ fontSize: '0.75rem', color: 'var(--color-muted)' }}>👤</span>}
             </div>
         }
-        <p className="text-sm font-medium text-gray-100">{name}</p>
+        <p className={styles.resultName}>{name}</p>
       </div>
     </a>
   )
@@ -30,9 +30,9 @@ function ResultItem({ logo, name, url, rounded }) {
 function ResultSection({ title, items, rounded }) {
   if (!items?.length) return null
   return (
-    <div className="mb-6">
-      <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 px-1">{title}</h2>
-      <div className="bg-gray-900 rounded-xl overflow-hidden">
+    <div className={styles.section}>
+      <h2 className={styles.sectionTitle}>{title}</h2>
+      <div className={styles.sectionList}>
         {items.map(item => (
           <ResultItem key={item.id} logo={item.logo} name={item.name} url={item.url} rounded={rounded} />
         ))}
@@ -81,9 +81,9 @@ export default function SearchPage({ initialQuery = '' }) {
 
   return (
     <>
-      <div className="mb-6">
-        <div className="relative">
-          <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+      <div className={styles.searchWrap}>
+        <div className={styles.inputWrap}>
+          <div className={styles.searchIcon}>
             {SEARCH_SVG}
           </div>
           <input
@@ -92,32 +92,30 @@ export default function SearchPage({ initialQuery = '' }) {
             value={query}
             onChange={e => setQuery(e.target.value)}
             placeholder="Search teams, players, leagues..."
-            className="w-full bg-gray-800 text-white placeholder-gray-500 rounded-xl
-                       pl-12 pr-4 py-4 text-lg focus:outline-none focus:ring-2
-                       focus:ring-blue-500 border border-gray-700"
+            className={styles.input}
           />
           {loading && (
-            <div className="absolute inset-y-0 right-4 flex items-center">
-              <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+            <div className={styles.spinner}>
+              <div className={styles.spinnerDot} />
             </div>
           )}
         </div>
       </div>
 
       {!query && (
-        <div className="text-center py-16 text-gray-600">
-          <p className="text-4xl mb-4">🔍</p>
+        <div className={styles.emptyState}>
+          <p className={styles.emptyIcon}>🔍</p>
           <p>Search for teams, players or leagues</p>
         </div>
       )}
 
       {query && query.length < 2 && (
-        <p className="text-center text-gray-500 py-8">Type at least 2 characters</p>
+        <p className={styles.hint}>Type at least 2 characters</p>
       )}
 
       {empty && (
-        <div className="text-center py-16 text-gray-500">
-          <p className="text-4xl mb-4">😕</p>
+        <div className={styles.emptyState}>
+          <p className={styles.emptyIcon}>😕</p>
           <p>No results for "{query}"</p>
         </div>
       )}

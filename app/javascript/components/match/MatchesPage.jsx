@@ -4,18 +4,15 @@ import { today }                            from '../../utils/date'
 import DateNavigator                        from '../ui/DateNavigator'
 import MatchGroup, { groupByLeague }        from './MatchGroup'
 import { StandingsSidebar, LeaguesSidebar } from './MatchesSidebars'
-
-function Skeleton({ className }) {
-  return <div className={`bg-gray-800 animate-pulse rounded ${className}`} />
-}
+import styles                               from './MatchesPage.module.css'
 
 function MatchListSkeleton() {
   return (
-    <div className="space-y-2">
+    <div className={styles.skeletonList}>
       {[...Array(4)].map((_, i) => (
         <div key={i}>
-          <Skeleton className="h-9 rounded-t-lg rounded-b-none" />
-          <Skeleton className="h-14 rounded-t-none rounded-b-lg mt-0.5" />
+          <div className={styles.skeletonHeader} />
+          <div className={styles.skeletonRow} />
         </div>
       ))}
     </div>
@@ -24,11 +21,11 @@ function MatchListSkeleton() {
 
 function EmptyState({ isToday, onGoToToday }) {
   return (
-    <div className="text-center py-16 text-gray-500">
-      <p className="text-4xl mb-4">⚽</p>
-      <p className="text-lg">No matches on this day</p>
+    <div className={styles.emptyState}>
+      <p className={styles.emptyEmoji}>⚽</p>
+      <p className={styles.emptyText}>No matches on this day</p>
       {!isToday && (
-        <button onClick={onGoToToday} className="mt-3 text-sm text-blue-400 hover:text-blue-300">
+        <button onClick={onGoToToday} className={styles.emptyTodayBtn}>
           Go to today
         </button>
       )}
@@ -66,20 +63,20 @@ export default function MatchesPage({ initialDate }) {
 
   return (
     <>
-      <div className="fixed top-14 left-0 right-0 z-20 bg-gray-950 border-b border-gray-800/60 py-3">
-        <div className="max-w-7xl mx-auto px-4 xl:pl-[17.25rem] lg:pr-[13.25rem]">
+      <div className={styles.datebar}>
+        <div className={styles.datebarInner}>
           <DateNavigator date={date} onChange={setDate} />
         </div>
       </div>
 
-      <div className="h-[60px]" />
+      <div className={styles.datebarSpacer} />
 
-      <div className="flex gap-5 items-start mt-4">
-        <aside className="hidden xl:block w-64 flex-shrink-0 sticky top-32">
+      <div className={styles.layout}>
+        <aside className={styles.sidebarLeft}>
           <StandingsSidebar />
         </aside>
 
-        <div className="flex-1 min-w-0">
+        <div className={styles.main}>
           {loading && <MatchListSkeleton />}
 
           {!loading && matches.length === 0 && (
@@ -87,10 +84,10 @@ export default function MatchesPage({ initialDate }) {
           )}
 
           {!loading && liveMatches.length > 0 && (
-            <div className="mb-6">
-              <div className="flex items-center gap-2 mb-3">
-                <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-                <span className="text-sm font-semibold text-red-400 uppercase tracking-wider">Live</span>
+            <div className={styles.liveSection}>
+              <div className={styles.liveSectionHeader}>
+                <span className={styles.liveDot} />
+                <span className={styles.liveLabel}>Live</span>
               </div>
               {liveGroups.map(g => (
                 <MatchGroup key={g.leagueHref} {...g} included={included} isLive />
@@ -99,10 +96,10 @@ export default function MatchesPage({ initialDate }) {
           )}
 
           {!loading && otherMatches.length > 0 && (
-            <div>
+            <div className={styles.otherSection}>
               {liveMatches.length > 0 && (
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Other matches</span>
+                <div className={styles.otherSectionHeader}>
+                  <span className={styles.otherLabel}>Other matches</span>
                 </div>
               )}
               {otherGroups.map(g => (
@@ -112,7 +109,7 @@ export default function MatchesPage({ initialDate }) {
           )}
         </div>
 
-        <aside className="hidden lg:block w-48 flex-shrink-0 sticky top-32">
+        <aside className={styles.sidebarRight}>
           <LeaguesSidebar />
         </aside>
       </div>

@@ -1,0 +1,103 @@
+.pageTitle {
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  color: var(--color-text);
+  margin: 0 0 var(--space-6);
+}
+
+.stack > * + * {
+  margin-top: var(--space-2);
+}
+
+.skeletonStack > * + * {
+  margin-top: var(--space-2);
+}
+
+.skeletonGroup > * + * {
+  margin-top: 0.125rem;
+}
+
+.emptyState {
+  text-align: center;
+  padding: 4rem 0;
+  color: var(--color-subtle);
+}
+
+.emptyIcon {
+  font-size: 2.25rem;
+  margin-bottom: var(--space-4);
+}
+
+.emptyText {
+  font-size: var(--text-lg);
+  margin: 0;
+}
+
+.group {
+  margin-bottom: var(--space-2);
+}
+
+.groupHeader {
+  background: var(--color-surface);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+
+.groupTitle {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: #d1d5db;
+}
+
+.rowLink {
+  display: block;
+  text-decoration: none;
+}
+
+.row {
+  background: var(--color-bg);
+  transition: background 0.15s;
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--color-border2);
+}
+
+.row:last-child {
+  border-bottom: none;
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+}
+
+.rowLink:hover .row {
+  background: var(--color-surface);
+}
+
+.rowInner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.leagueLogo {
+  width: 1.75rem;
+  height: 1.75rem;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.leagueLogoFallback {
+  width: 1.75rem;
+  height: 1.75rem;
+  background: var(--color-surface2);
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+}
+
+.leagueName {
+  flex: 1;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--color-text2);
+}
+
+.chevron {
+  color: var(--color-muted);
+}

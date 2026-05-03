@@ -1,3 +1,5 @@
+import styles from './MatchNews.module.css'
+
 function timeAgo(dateStr) {
   if (!dateStr) return ''
   const diff = Date.now() - new Date(dateStr).getTime()
@@ -10,34 +12,30 @@ function timeAgo(dateStr) {
 
 export default function MatchNews({ news }) {
   if (!news || news.length === 0) {
-    return (
-      <div className="bg-gray-900 rounded-xl p-4">
-        <p className="text-center text-gray-500 py-8">No news available</p>
-      </div>
-    )
+    return <div className={styles.noData}>No news available</div>
   }
 
   return (
-    <div className="space-y-3">
+    <div className={styles.stack}>
       {news.map((article, i) => (
         <a
           key={i}
           href={article.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex gap-3 bg-gray-900 rounded-xl overflow-hidden hover:bg-gray-800 transition-colors p-3"
+          className={styles.article}
         >
           {article.image_url && (
             <img
               src={article.image_url}
               alt=""
-              className="w-24 h-16 object-cover rounded-lg flex-shrink-0 bg-gray-800"
+              className={styles.thumbnail}
               onError={e => { e.target.style.display = 'none' }}
             />
           )}
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-gray-100 line-clamp-2 leading-snug">{article.title}</p>
-            <p className="text-xs text-gray-500 mt-1">{timeAgo(article.published_at)}</p>
+          <div className={styles.body}>
+            <p className={styles.title}>{article.title}</p>
+            <p className={styles.time}>{timeAgo(article.published_at)}</p>
           </div>
         </a>
       ))}

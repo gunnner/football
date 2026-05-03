@@ -1,5 +1,7 @@
-export default function PlayerLink({ name, path, className = 'hover:text-blue-400 transition-colors' }) {
+import styles from './PlayerLink.module.css'
+
+export default function PlayerLink({ name, path, className }) {
   if (!name) return null
-  if (path)  return <a href={path} className={className}>{name}</a>
+  if (path)  return <a href={path} className={className ?? styles.link}>{name}</a>
   return <span>{name}</span>
 }

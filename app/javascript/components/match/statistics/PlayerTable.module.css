@@ -1,0 +1,247 @@
+.grid {
+  display: grid;
+  padding: 0 var(--space-3);
+}
+
+/* rowgroup wrappers must span all columns and use subgrid so nested rows inherit tracks */
+.grid > [role="rowgroup"] {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+}
+
+.headerRow {
+  grid-column: 1 / -1;
+  display: grid;
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-bg);
+  position: sticky;
+  top: 0;
+}
+
+.headerCell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--color-subtle);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  user-select: none;
+}
+
+.headerCellSortable {
+  cursor: pointer;
+}
+
+.headerCellSortable:hover {
+  color: #d1d5db;
+}
+
+.sortIconInvisible {
+  visibility: hidden;
+  margin-left: 0.125rem;
+  font-size: var(--text-xs);
+}
+
+.sortIconActive {
+  color: #60a5fa;
+  margin-left: 0.125rem;
+  font-size: var(--text-xs);
+}
+
+.sortIconInactive {
+  color: var(--color-surface2);
+  margin-left: 0.125rem;
+  font-size: var(--text-xs);
+}
+
+/* Tooltip column header */
+.tooltipWrap {
+  position: relative;
+  line-height: 1.25;
+  text-align: center;
+}
+
+.tooltipTrigger {
+  border-bottom: 1px dashed var(--color-subtle);
+  cursor: help;
+}
+
+.tooltipPopup {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-bottom: var(--space-2);
+  padding: var(--space-1) var(--space-2);
+  background: var(--color-surface2);
+  color: var(--color-text2);
+  font-size: var(--text-xs);
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: normal;
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 50;
+  box-shadow: var(--shadow-md);
+  opacity: 0;
+  transition: opacity 0.15s 0.15s;
+}
+
+.tooltipWrap:hover .tooltipPopup {
+  opacity: 1;
+}
+
+.labelWrap {
+  line-height: 1.25;
+  text-align: center;
+}
+
+/* Data rows */
+.dataRow {
+  grid-column: 1 / -1;
+  display: grid;
+  padding: 0.625rem 0;
+  border-bottom: 1px solid rgba(55,65,81,0.6);
+  transition: background 0.15s;
+  align-items: center;
+}
+
+.dataRow:last-child { border-bottom: none; }
+.dataRow:hover { background: rgba(31,41,55,0.4); }
+
+.noData {
+  text-align: center;
+  color: var(--color-subtle);
+  padding: var(--space-8) 0;
+}
+
+/* Player name cell */
+.playerCell {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+  padding-left: var(--space-4);
+}
+
+.playerAvatar {
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: var(--radius-full);
+  flex-shrink: 0;
+  background: var(--color-surface2);
+  overflow: hidden;
+}
+
+.playerAvatarImg {
+  width: 100%;
+  height: 200%;
+  object-fit: cover;
+  object-position: 50% 0%;
+}
+
+.playerAvatarFallback {
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: var(--radius-full);
+  background: var(--color-surface2);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.625rem;
+}
+
+.playerName {
+  font-size: var(--text-sm);
+  color: var(--color-text2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.captainBadge {
+  color: var(--color-yellow);
+  margin-right: 0.125rem;
+  font-size: var(--text-xs);
+}
+
+.subBadge {
+  color: #16a34a;
+  font-size: var(--text-xs);
+  margin-left: var(--space-1);
+}
+
+.playerLink {
+  text-decoration: none;
+  transition: opacity 0.15s;
+}
+
+.playerLink:hover { opacity: 0.8; }
+
+/* Team logo cell */
+.teamCell {
+  display: flex;
+  justify-content: center;
+}
+
+.teamLogo {
+  width: 1.5rem;
+  height: 1.5rem;
+  object-fit: contain;
+}
+
+.teamLogoFallback {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: var(--radius-full);
+  background: var(--color-surface2);
+}
+
+.teamLink {
+  text-decoration: none;
+  transition: opacity 0.15s;
+}
+
+.teamLink:hover { opacity: 0.75; }
+
+/* Rating cell */
+.ratingCell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--text-sm);
+  font-weight: 700;
+}
+
+.ratingGreen  { color: var(--color-green); }
+.ratingBlue   { color: #60a5fa; }
+.ratingGray   { color: var(--color-text2); }
+.ratingRed    { color: var(--color-red); }
+.ratingEmpty  { color: var(--color-dimmer); }
+
+/* Position cell */
+.posCell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--text-xs);
+  font-weight: 600;
+}
+
+/* Generic stat cell */
+.statCell {
+  display: flex;
+  align-items: center;
+  font-size: var(--text-sm);
+}
+
+.statCellCenter { justify-content: center; }
+.statCellLeft   { justify-content: flex-start; }
+.statActive     { color: var(--color-text); font-weight: 600; }
+.statDefault    { color: #d1d5db; }

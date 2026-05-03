@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react'
 import { createPortal } from 'react-dom'
+import styles from './Tooltip.module.css'
 
 export default function Tooltip({ text, logo, children }) {
   const [rect, setRect] = useState(null)
@@ -12,12 +13,13 @@ export default function Tooltip({ text, logo, children }) {
   const hide = () => setRect(null)
 
   return (
-    <span ref={triggerRef} className="inline-flex items-center"
+    <span ref={triggerRef} className={styles.trigger}
       onMouseEnter={show}
       onMouseLeave={hide}>
       {children}
       {rect && hasContent && createPortal(
         <span
+          className={styles.popup}
           style={{
             position:  'fixed',
             top:       rect.top - 8,
@@ -25,9 +27,8 @@ export default function Tooltip({ text, logo, children }) {
             transform: 'translate(-50%, -100%)',
             zIndex:    9999,
           }}
-          className="px-2 py-1 bg-gray-800 border border-gray-700 text-gray-200 text-xs rounded whitespace-nowrap pointer-events-none flex items-center gap-1.5"
         >
-          {logo && <img src={logo} alt="" className="w-4 h-4 object-contain" />}
+          {logo && <img src={logo} alt="" className={styles.logo} />}
           {text && <span>{text}</span>}
         </span>,
         document.body

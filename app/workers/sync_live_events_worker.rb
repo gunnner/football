@@ -31,6 +31,7 @@ class SyncLiveEventsWorker < BaseWorker
     # Fetch rich match data once — used for events, statistics, details, predictions, shots, news
     rich_data = client.match(match.external_id)&.first
     Interactors::MatchData::SyncMatchDetails.call(match: match, match_data: rich_data) if rich_data.present?
+    match.reload
 
     before_keys = match.match_events
                        .pluck(:time, :event_type, :player_external_id)

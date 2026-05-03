@@ -1,11 +1,12 @@
 import { POSITION_ORDER } from '../../../constants/positions'
 import { BADGE_SVG, SUB_ON_SVG, badgeForEvent } from './badges'
+import styles from './SubstitutesList.module.css'
 
 function SubBadge({ type, isSubOn }) {
-  if (isSubOn) return <svg width="16" height="16" viewBox="-3.5 -3.5 7 7" className="flex-shrink-0">{SUB_ON_SVG}</svg>
+  if (isSubOn) return <svg width="16" height="16" viewBox="-3.5 -3.5 7 7" style={{ flexShrink: 0 }}>{SUB_ON_SVG}</svg>
   const b = badgeForEvent({ type })
   if (!b) return null
-  return <svg width="16" height="16" viewBox="-3.5 -3.5 7 7" className="flex-shrink-0">{BADGE_SVG[b.svgKey]}</svg>
+  return <svg width="16" height="16" viewBox="-3.5 -3.5 7 7" style={{ flexShrink: 0 }}>{BADGE_SVG[b.svgKey]}</svg>
 }
 
 export default function SubstitutesList({ lineup, eventMap }) {
@@ -16,35 +17,35 @@ export default function SubstitutesList({ lineup, eventMap }) {
   )
 
   return (
-    <div className="space-y-1">
+    <div className={styles.list}>
       {sorted.map(player => {
         const allEvents   = eventMap[player.id] || []
         const subOnEvent  = allEvents.find(e => e._sub_on)
         const otherEvents = allEvents.filter(e => !e._assist && !e._sub_on && e.type !== 'Substitution')
         return (
-          <div key={player.id ?? player.name} className="flex items-center gap-2 py-0.5">
+          <div key={player.id ?? player.name} className={styles.playerRow}>
             {player.logo
               ? (
-                <div className="w-6 h-6 rounded-full flex-shrink-0 bg-gray-800 overflow-hidden">
-                  <img src={player.logo} alt={player.name} className="w-full" style={{ height: '200%', objectFit: 'cover', objectPosition: '50% 0%' }} />
+                <div className={styles.avatar}>
+                  <img src={player.logo} alt={player.name} className={styles.avatarImg} />
                 </div>
               )
-              : <div className="w-6 h-6 rounded-full bg-gray-800 flex-shrink-0 flex items-center justify-center text-xs">👤</div>
+              : <div className={styles.avatarFallback}>👤</div>
             }
             {player.path
-              ? <a href={player.path} className="text-gray-300 truncate hover:text-blue-400 transition-colors" style={{ fontSize: '13px' }}>{player.number}. {player.name}</a>
-              : <span className="text-gray-300 truncate" style={{ fontSize: '13px' }}>{player.number}. {player.name}</span>
+              ? <a href={player.path} className={styles.playerLink}>{player.number}. {player.name}</a>
+              : <span className={styles.playerName}>{player.number}. {player.name}</span>
             }
             {subOnEvent && (
-              <span className="flex items-center gap-0.5 flex-shrink-0">
+              <span className={styles.eventBadge}>
                 <SubBadge isSubOn />
-                {subOnEvent.time && <span className="text-gray-500" style={{ fontSize: '10px' }}>{subOnEvent.time}'</span>}
+                {subOnEvent.time && <span className={styles.eventTime}>{subOnEvent.time}'</span>}
               </span>
             )}
             {otherEvents.map((e, i) => (
-              <span key={i} className="flex items-center gap-0.5 flex-shrink-0">
+              <span key={i} className={styles.eventBadge}>
                 <SubBadge type={e.type} />
-                {e.time && <span className="text-gray-500" style={{ fontSize: '10px' }}>{e.time}'</span>}
+                {e.time && <span className={styles.eventTime}>{e.time}'</span>}
               </span>
             ))}
           </div>
